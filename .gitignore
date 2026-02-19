@@ -1,23 +1,8 @@
-# Persönliche Daten & Laufzeit-Daten
+# Laufzeit-Daten (Datenbank & Encryption Key)
 data/
-
-# Alte Versionen
-v1/
-v2/
-
-# Nicht veröffentlichen
-doku/
-marketing/
-dockerhub/
-test/
-
-# Synology Extended Attributes
-@eaDir/
 
 # Python Cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-logo/
