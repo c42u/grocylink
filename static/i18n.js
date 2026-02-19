@@ -1,0 +1,432 @@
+// Grocylink i18n - Translation Dictionary
+const I18N = {
+  de: {
+    // Navigation
+    'nav.dashboard': 'Dashboard',
+    'nav.channels': 'Kanäle',
+    'nav.products': 'Produkte',
+    'nav.log': 'Log',
+    'nav.caldav': 'CalDAV',
+    'nav.help': 'Hilfe',
+    'nav.settings': 'Einstellungen',
+    'nav.support': 'Unterstützung',
+    'nav.issues': 'Fehlermeldung',
+
+    // Dashboard
+    'dash.title': 'Dashboard',
+    'dash.check_now': 'Jetzt prüfen',
+    'dash.expiring': 'Bald ablaufend',
+    'dash.expired': 'Abgelaufen',
+    'dash.missing': 'Unter Mindestbestand',
+    'dash.total': 'Produkte gesamt',
+    'dash.expiring_title': 'Bald ablaufende Produkte',
+    'dash.expired_title': 'Abgelaufene Produkte',
+    'dash.missing_title': 'Unter Mindestbestand',
+    'dash.th_product': 'Produkt',
+    'dash.th_amount': 'Menge',
+    'dash.th_expiry': 'Ablaufdatum',
+    'dash.th_missing_amount': 'Fehlmenge',
+    'dash.no_entries': 'Keine Einträge',
+    'dash.unknown': 'Unbekannt',
+    'dash.check_running': 'Check wird durchgeführt...',
+    'dash.load_error': 'Fehler beim Laden des Dashboards',
+
+    // Channels
+    'ch.title': 'Benachrichtigungskanäle',
+    'ch.add': '+ Kanal hinzufügen',
+    'ch.add_title': 'Kanal hinzufügen',
+    'ch.edit_title': 'Kanal bearbeiten',
+    'ch.name': 'Name',
+    'ch.name_ph': 'z.B. Meine Email',
+    'ch.type': 'Typ',
+    'ch.enabled': 'Aktiviert',
+    'ch.cancel': 'Abbrechen',
+    'ch.save': 'Speichern',
+    'ch.test': 'Test',
+    'ch.edit': 'Bearbeiten',
+    'ch.delete': 'Löschen',
+    'ch.no_channels': 'Noch keine Kanäle konfiguriert. Fügen Sie einen hinzu!',
+    'ch.saved': 'Kanal gespeichert!',
+    'ch.deleted': 'Kanal gelöscht.',
+    'ch.confirm_delete': 'Kanal wirklich löschen?',
+    'ch.test_sending': 'Sende Testnachricht...',
+    'ch.test_sent': 'Gesendet!',
+    'ch.test_error': 'Kanal-Test Fehler:',
+    'ch.fields_empty': 'Folgende Felder sind nicht ausgefüllt:\n\n{fields}\n\nDer Kanal kann nur genutzt werden, wenn alle Parameter ausgefüllt sind.\n\nTrotzdem speichern?',
+    // Channel field labels
+    'ch.smtp_host': 'SMTP Host',
+    'ch.smtp_port': 'SMTP Port',
+    'ch.username': 'Benutzername',
+    'ch.password': 'Passwort',
+    'ch.from_email': 'Absender-Email',
+    'ch.to_email': 'Empfänger-Email',
+    'ch.use_tls': 'TLS verwenden',
+    'ch.api_token': 'API Token',
+    'ch.user_key': 'User Key',
+    'ch.priority': 'Priorität (-2 bis 2)',
+    'ch.bot_token': 'Bot Token',
+    'ch.chat_id': 'Chat ID',
+    'ch.webhook_url': 'Webhook URL',
+    'ch.server_url': 'Server URL',
+    'ch.app_token': 'App Token',
+    'ch.gotify_priority': 'Priorität',
+    // Channel types
+    'ch.type_email': 'Email (SMTP)',
+    'ch.type_pushover': 'Pushover',
+    'ch.type_telegram': 'Telegram',
+    'ch.type_slack': 'Slack (Webhook)',
+    'ch.type_discord': 'Discord (Webhook)',
+    'ch.type_gotify': 'Gotify',
+
+    // Products
+    'prod.title': 'Produkte & Ablaufeinstellungen',
+    'prod.hint': 'Hier können Sie individuelle Ablauf-Warntage pro Produkt festlegen. Ohne Override gilt der Standardwert aus den Einstellungen.',
+    'prod.th_product': 'Produkt',
+    'prod.th_stock': 'Bestand',
+    'prod.th_expiry': 'Ablaufdatum',
+    'prod.th_warn_days': 'Warntage',
+    'prod.th_action': 'Aktion',
+    'prod.placeholder': 'Standard',
+    'prod.reset': 'Reset',
+    'prod.no_products': 'Keine Produkte gefunden. Bitte Grocy konfigurieren.',
+    'prod.saved': 'Warntage gespeichert.',
+    'prod.override_removed': 'Override entfernt.',
+
+    // Log
+    'log.title': 'Benachrichtigungsprotokoll',
+    'log.clear': 'Log leeren',
+    'log.confirm_clear': 'Log wirklich leeren?',
+    'log.cleared': 'Log geleert.',
+    'log.th_time': 'Zeitpunkt',
+    'log.th_product': 'Produkt',
+    'log.th_type': 'Typ',
+    'log.th_channel': 'Kanal',
+    'log.th_message': 'Nachricht',
+    'log.th_status': 'Status',
+    'log.no_entries': 'Keine Log-Einträge vorhanden.',
+    'log.click_details': 'Klicken für Details',
+    'log.no_details': 'Keine Details verfügbar',
+    'log.error_title': 'Fehlerdetails',
+    // Log types
+    'log.type_expiring': 'Ablaufend',
+    'log.type_expired': 'Abgelaufen',
+    'log.type_missing': 'Fehlend',
+    'log.type_test': 'Test',
+    'log.type_error': 'Fehler',
+    'log.status_ok': 'OK',
+    'log.status_error': 'Fehler',
+    'log.filter_all': 'Alle',
+    'log.filter_ph': 'Filter...',
+    'log.msg_expiry_date': 'Ablaufdatum',
+    'log.msg_expired_since': 'Abgelaufen seit',
+    'log.msg_missing_amount': 'Fehlmenge',
+    'log.msg_type_expiring': 'Bald ablaufend',
+    'log.msg_type_expired': 'Abgelaufen',
+    'log.msg_type_missing': 'Mindestbestand unterschritten',
+
+    // CalDAV
+    'cal.title': 'CalDAV Synchronisation',
+    'cal.sync_now': 'Jetzt synchronisieren',
+    'cal.tasks_synced': 'Tasks synchronisiert',
+    'cal.chores_synced': 'Chores synchronisiert',
+    'cal.last_sync': 'Letzte Synchronisation',
+    'cal.status': 'Status',
+    'cal.active': 'Aktiv',
+    'cal.inactive': 'Inaktiv',
+    'cal.connection': 'Verbindungseinstellungen',
+    'cal.url': 'CalDAV Server URL',
+    'cal.username': 'Benutzername',
+    'cal.password': 'Passwort',
+    'cal.server_type': 'Server-Typ / Pfad',
+    'cal.type_custom': 'Benutzerdefiniert',
+    'cal.verify_ssl': 'SSL-Zertifikat verifizieren',
+    'cal.test_connection': 'Verbindung testen',
+    'cal.calendar': 'Kalender',
+    'cal.calendar_select': '-- Kalender wählen --',
+    'cal.calendar_load': 'Laden',
+    'cal.calendar_loading': 'Laden...',
+    'cal.interval': 'Sync-Intervall (Minuten)',
+    'cal.auto_sync': 'Automatische Synchronisation aktiviert',
+    'cal.save': 'CalDAV-Einstellungen speichern',
+    'cal.saved': 'CalDAV-Einstellungen gespeichert!',
+    'cal.clear_map': 'Sync leeren',
+    'cal.confirm_clear_map': 'Sync-Mapping wirklich leeren?',
+    'cal.map_cleared': 'Sync-Mapping geleert.',
+    'cal.sync_running': 'Synchronisation läuft...',
+    'cal.sync_error': 'Sync-Fehler',
+    'cal.load_error': 'Fehler beim Laden der CalDAV-Daten',
+    'cal.calendar_error': 'Kalender konnten nicht geladen werden',
+    'cal.never': 'Nie',
+    'cal.mapping': 'Sync-Mapping',
+    'cal.th_type': 'Typ',
+    'cal.th_grocy_id': 'Grocy ID',
+    'cal.th_caldav_uid': 'CalDAV UID',
+    'cal.th_name': 'Name',
+    'cal.th_status': 'Status',
+    'cal.th_direction': 'Richtung',
+    'cal.th_last_sync': 'Letzter Sync',
+    'cal.no_entries': 'Noch keine Einträge synchronisiert.',
+    'cal.testing': 'Teste...',
+
+    // Settings
+    'set.title': 'Einstellungen',
+    'set.grocy_connection': 'Grocy-Verbindung',
+    'set.grocy_url': 'Grocy URL',
+    'set.api_key': 'API-Key',
+    'set.api_key_ph': 'Dein Grocy API Key',
+    'set.verify_ssl': 'SSL-Zertifikat verifizieren',
+    'set.test_connection': 'Verbindung testen',
+    'set.testing': 'Teste...',
+    'set.notifications': 'Benachrichtigungen',
+    'set.default_days': 'Standard-Warntage vor Ablauf',
+    'set.check_interval': 'Check-Intervall (Stunden)',
+    'set.notify_expiring': 'Benachrichtigung bei bald ablaufenden Produkten',
+    'set.notify_expired': 'Benachrichtigung bei abgelaufenen Produkten',
+    'set.notify_missing': 'Benachrichtigung bei Mindestbestand-Unterschreitung',
+    'set.save': 'Einstellungen speichern',
+    'set.saved': 'Einstellungen gespeichert!',
+    'set.language': 'Sprache',
+    'set.general': 'Allgemein',
+
+    // General
+    'gen.error': 'Fehler',
+    'gen.theme_toggle': 'Design wechseln',
+  },
+
+  en: {
+    // Navigation
+    'nav.dashboard': 'Dashboard',
+    'nav.channels': 'Channels',
+    'nav.products': 'Products',
+    'nav.log': 'Log',
+    'nav.caldav': 'CalDAV',
+    'nav.help': 'Help',
+    'nav.settings': 'Settings',
+    'nav.support': 'Support',
+    'nav.issues': 'Report Issue',
+
+    // Dashboard
+    'dash.title': 'Dashboard',
+    'dash.check_now': 'Check now',
+    'dash.expiring': 'Expiring soon',
+    'dash.expired': 'Expired',
+    'dash.missing': 'Below minimum stock',
+    'dash.total': 'Total products',
+    'dash.expiring_title': 'Expiring soon',
+    'dash.expired_title': 'Expired products',
+    'dash.missing_title': 'Below minimum stock',
+    'dash.th_product': 'Product',
+    'dash.th_amount': 'Amount',
+    'dash.th_expiry': 'Expiry date',
+    'dash.th_missing_amount': 'Missing amount',
+    'dash.no_entries': 'No entries',
+    'dash.unknown': 'Unknown',
+    'dash.check_running': 'Running check...',
+    'dash.load_error': 'Error loading dashboard',
+
+    // Channels
+    'ch.title': 'Notification channels',
+    'ch.add': '+ Add channel',
+    'ch.add_title': 'Add channel',
+    'ch.edit_title': 'Edit channel',
+    'ch.name': 'Name',
+    'ch.name_ph': 'e.g. My Email',
+    'ch.type': 'Type',
+    'ch.enabled': 'Enabled',
+    'ch.cancel': 'Cancel',
+    'ch.save': 'Save',
+    'ch.test': 'Test',
+    'ch.edit': 'Edit',
+    'ch.delete': 'Delete',
+    'ch.no_channels': 'No channels configured yet. Add one!',
+    'ch.saved': 'Channel saved!',
+    'ch.deleted': 'Channel deleted.',
+    'ch.confirm_delete': 'Really delete this channel?',
+    'ch.test_sending': 'Sending test message...',
+    'ch.test_sent': 'Sent!',
+    'ch.test_error': 'Channel test error:',
+    'ch.fields_empty': 'The following fields are empty:\n\n{fields}\n\nThe channel can only be used if all parameters are filled in.\n\nSave anyway?',
+    // Channel field labels
+    'ch.smtp_host': 'SMTP Host',
+    'ch.smtp_port': 'SMTP Port',
+    'ch.username': 'Username',
+    'ch.password': 'Password',
+    'ch.from_email': 'Sender email',
+    'ch.to_email': 'Recipient email',
+    'ch.use_tls': 'Use TLS',
+    'ch.api_token': 'API Token',
+    'ch.user_key': 'User Key',
+    'ch.priority': 'Priority (-2 to 2)',
+    'ch.bot_token': 'Bot Token',
+    'ch.chat_id': 'Chat ID',
+    'ch.webhook_url': 'Webhook URL',
+    'ch.server_url': 'Server URL',
+    'ch.app_token': 'App Token',
+    'ch.gotify_priority': 'Priority',
+    // Channel types
+    'ch.type_email': 'Email (SMTP)',
+    'ch.type_pushover': 'Pushover',
+    'ch.type_telegram': 'Telegram',
+    'ch.type_slack': 'Slack (Webhook)',
+    'ch.type_discord': 'Discord (Webhook)',
+    'ch.type_gotify': 'Gotify',
+
+    // Products
+    'prod.title': 'Products & expiry settings',
+    'prod.hint': 'Here you can set individual expiry warning days per product. Without an override, the default value from settings applies.',
+    'prod.th_product': 'Product',
+    'prod.th_stock': 'Stock',
+    'prod.th_expiry': 'Expiry date',
+    'prod.th_warn_days': 'Warning days',
+    'prod.th_action': 'Action',
+    'prod.placeholder': 'Default',
+    'prod.reset': 'Reset',
+    'prod.no_products': 'No products found. Please configure Grocy.',
+    'prod.saved': 'Warning days saved.',
+    'prod.override_removed': 'Override removed.',
+
+    // Log
+    'log.title': 'Notification log',
+    'log.clear': 'Clear log',
+    'log.confirm_clear': 'Really clear the log?',
+    'log.cleared': 'Log cleared.',
+    'log.th_time': 'Timestamp',
+    'log.th_product': 'Product',
+    'log.th_type': 'Type',
+    'log.th_channel': 'Channel',
+    'log.th_message': 'Message',
+    'log.th_status': 'Status',
+    'log.no_entries': 'No log entries.',
+    'log.click_details': 'Click for details',
+    'log.no_details': 'No details available',
+    'log.error_title': 'Error details',
+    // Log types
+    'log.type_expiring': 'Expiring',
+    'log.type_expired': 'Expired',
+    'log.type_missing': 'Missing',
+    'log.type_test': 'Test',
+    'log.type_error': 'Error',
+    'log.status_ok': 'OK',
+    'log.status_error': 'Error',
+    'log.filter_all': 'All',
+    'log.filter_ph': 'Filter...',
+    'log.msg_expiry_date': 'Expiry date',
+    'log.msg_expired_since': 'Expired since',
+    'log.msg_missing_amount': 'Missing amount',
+    'log.msg_type_expiring': 'Expiring soon',
+    'log.msg_type_expired': 'Expired',
+    'log.msg_type_missing': 'Below minimum stock',
+
+    // CalDAV
+    'cal.title': 'CalDAV Synchronization',
+    'cal.sync_now': 'Sync now',
+    'cal.tasks_synced': 'Tasks synced',
+    'cal.chores_synced': 'Chores synced',
+    'cal.last_sync': 'Last synchronization',
+    'cal.status': 'Status',
+    'cal.active': 'Active',
+    'cal.inactive': 'Inactive',
+    'cal.connection': 'Connection settings',
+    'cal.url': 'CalDAV Server URL',
+    'cal.username': 'Username',
+    'cal.password': 'Password',
+    'cal.server_type': 'Server type / Path',
+    'cal.type_custom': 'Custom',
+    'cal.verify_ssl': 'Verify SSL certificate',
+    'cal.test_connection': 'Test connection',
+    'cal.calendar': 'Calendar',
+    'cal.calendar_select': '-- Select calendar --',
+    'cal.calendar_load': 'Load',
+    'cal.calendar_loading': 'Loading...',
+    'cal.interval': 'Sync interval (minutes)',
+    'cal.auto_sync': 'Automatic synchronization enabled',
+    'cal.save': 'Save CalDAV settings',
+    'cal.saved': 'CalDAV settings saved!',
+    'cal.clear_map': 'Clear sync',
+    'cal.confirm_clear_map': 'Really clear sync mapping?',
+    'cal.map_cleared': 'Sync mapping cleared.',
+    'cal.sync_running': 'Synchronization running...',
+    'cal.sync_error': 'Sync error',
+    'cal.load_error': 'Error loading CalDAV data',
+    'cal.calendar_error': 'Could not load calendars',
+    'cal.never': 'Never',
+    'cal.mapping': 'Sync mapping',
+    'cal.th_type': 'Type',
+    'cal.th_grocy_id': 'Grocy ID',
+    'cal.th_caldav_uid': 'CalDAV UID',
+    'cal.th_name': 'Name',
+    'cal.th_status': 'Status',
+    'cal.th_direction': 'Direction',
+    'cal.th_last_sync': 'Last sync',
+    'cal.no_entries': 'No entries synced yet.',
+    'cal.testing': 'Testing...',
+
+    // Settings
+    'set.title': 'Settings',
+    'set.grocy_connection': 'Grocy Connection',
+    'set.grocy_url': 'Grocy URL',
+    'set.api_key': 'API Key',
+    'set.api_key_ph': 'Your Grocy API Key',
+    'set.verify_ssl': 'Verify SSL certificate',
+    'set.test_connection': 'Test connection',
+    'set.testing': 'Testing...',
+    'set.notifications': 'Notifications',
+    'set.default_days': 'Default warning days before expiry',
+    'set.check_interval': 'Check interval (hours)',
+    'set.notify_expiring': 'Notify for expiring products',
+    'set.notify_expired': 'Notify for expired products',
+    'set.notify_missing': 'Notify when below minimum stock',
+    'set.save': 'Save settings',
+    'set.saved': 'Settings saved!',
+    'set.language': 'Language',
+    'set.general': 'General',
+
+    // General
+    'gen.error': 'Error',
+    'gen.theme_toggle': 'Toggle theme',
+  }
+};
+
+let currentLang = localStorage.getItem('grocylink-lang') || 'de';
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || (I18N['de'] && I18N['de'][key]) || key;
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('grocylink-lang', lang);
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('data-lang', lang);
+  // Persist language to backend
+  fetch('/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ language: lang })
+  }).catch(() => {});
+  // Update language selector if it exists
+  const langSel = document.getElementById('langSelect');
+  if (langSel) langSel.value = lang;
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const attr = el.getAttribute('data-i18n-attr');
+    if (attr === 'placeholder') el.placeholder = t(key);
+    else if (attr === 'title') el.title = t(key);
+    else el.textContent = t(key);
+  });
+  // Update support page visibility
+  const supportDe = document.getElementById('supportDe');
+  const supportEn = document.getElementById('supportEn');
+  if (supportDe) supportDe.style.display = lang === 'de' ? '' : 'none';
+  if (supportEn) supportEn.style.display = lang === 'en' ? '' : 'none';
+  // Reload dynamic content for active page
+  if (typeof loadPageData === 'function') {
+    const activePage = document.querySelector('.page.active');
+    if (activePage) loadPageData(activePage.id.replace('page-', ''));
+  }
+}
+
+// Apply stored language on load
+document.documentElement.setAttribute('lang', currentLang);
+document.documentElement.setAttribute('data-lang', currentLang);

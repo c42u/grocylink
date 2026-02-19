@@ -1,0 +1,22 @@
+services:
+  grocylink:
+    image: grocylink:latest
+    pull_policy: never
+    container_name: grocylink
+    restart: unless-stopped
+    environment:
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS}
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${PATH_TO}/grocylink/data:/app/data
+      - ${PATH_TO}/grocylink/caddy:/data/caddy
+    ports:
+      - "443:443"
+      - "80:80"
+    networks:
+      DockerNetwork:
+        ipv4_address: ${GROCYLINK_IP}
+
+networks:
+  DockerNetwork:
+    external: true
