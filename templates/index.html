@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="de" data-lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocylink</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app">
+        <nav class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span>Grocylink</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active" data-page="dashboard">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    <span data-i18n="nav.dashboard">Dashboard</span>
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="channels">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                    <span data-i18n="nav.channels">Kanäle</span>
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="products">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                    <span data-i18n="nav.products">Produkte</span>
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="log">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span data-i18n="nav.log">Log</span>
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="caldav">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+                    <span data-i18n="nav.caldav">CalDAV</span>
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="help">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span data-i18n="nav.help">Hilfe</span>
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="settings">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                    <span data-i18n="nav.settings">Einstellungen</span>
+                </a></li>
+            </ul>
+            <div class="sidebar-section">
+                <a href="#" class="nav-link" data-page="support">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <span data-i18n="nav.support">Unterstützung</span>
+                </a>
+                <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="nav-link nav-link-external">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span data-i18n="nav.issues">Fehlermeldung</span>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="external-icon"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+            </div>
+            <div class="sidebar-footer">
+                <button class="theme-toggle" id="themeToggle" data-i18n="gen.theme_toggle" data-i18n-attr="title" title="Design wechseln">
+                    <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                </button>
+            </div>
+        </nav>
+
+        <main class="content">
+            <!-- Dashboard -->
+            <div class="page active" id="page-dashboard">
+                <div class="page-header">
+                    <h1 data-i18n="dash.title">Dashboard</h1>
+                    <button class="btn btn-primary" onclick="checkNow()" data-i18n="dash.check_now">Jetzt prüfen</button>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card stat-warning">
+                        <div class="stat-number" id="statExpiring">-</div>
+                        <div class="stat-label" data-i18n="dash.expiring">Bald ablaufend</div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-number" id="statExpired">-</div>
+                        <div class="stat-label" data-i18n="dash.expired">Abgelaufen</div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-number" id="statMissing">-</div>
+                        <div class="stat-label" data-i18n="dash.missing">Unter Mindestbestand</div>
+                    </div>
+                    <div class="stat-card stat-ok">
+                        <div class="stat-number" id="statTotal">-</div>
+                        <div class="stat-label" data-i18n="dash.total">Produkte gesamt</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 data-i18n="dash.expiring_title">Bald ablaufende Produkte</h2>
+                    <div class="table-wrap">
+                        <table id="tableDue">
+                            <thead><tr><th data-i18n="dash.th_product">Produkt</th><th data-i18n="dash.th_amount">Menge</th><th data-i18n="dash.th_expiry">Ablaufdatum</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="section">
+                    <h2 data-i18n="dash.expired_title">Abgelaufene Produkte</h2>
+                    <div class="table-wrap">
+                        <table id="tableExpired">
+                            <thead><tr><th data-i18n="dash.th_product">Produkt</th><th data-i18n="dash.th_amount">Menge</th><th data-i18n="dash.th_expiry">Ablaufdatum</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="section">
+                    <h2 data-i18n="dash.missing_title">Unter Mindestbestand</h2>
+                    <div class="table-wrap">
+                        <table id="tableMissing">
+                            <thead><tr><th data-i18n="dash.th_product">Produkt</th><th data-i18n="dash.th_missing_amount">Fehlmenge</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Channels -->
+            <div class="page" id="page-channels">
+                <div class="page-header">
+                    <h1 data-i18n="ch.title">Benachrichtigungskanäle</h1>
+                    <button class="btn btn-primary" onclick="showAddChannel()" data-i18n="ch.add">+ Kanal hinzufügen</button>
+                </div>
+                <div id="channelsList"></div>
+
+                <div class="modal-overlay" id="channelModal">
+                    <div class="modal">
+                        <h2 id="channelModalTitle" data-i18n="ch.add_title">Kanal hinzufügen</h2>
+                        <form id="channelForm" onsubmit="saveChannel(event)">
+                            <input type="hidden" id="channelId">
+                            <div id="channelUntested" class="channel-untested" style="display:none">
+                                <span class="lang-de">aktuell ungetestet</span>
+                                <span class="lang-en">currently untested</span>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="ch.name">Name</label>
+                                <input type="text" id="channelName" required data-i18n="ch.name_ph" data-i18n-attr="placeholder" placeholder="z.B. Meine Email">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="ch.type">Typ</label>
+                                <select id="channelType" onchange="updateChannelFields()">
+                                    <option value="email" data-i18n="ch.type_email">Email (SMTP)</option>
+                                    <option value="pushover" data-i18n="ch.type_pushover">Pushover</option>
+                                    <option value="telegram" data-i18n="ch.type_telegram">Telegram</option>
+                                    <option value="slack" data-i18n="ch.type_slack">Slack (Webhook)</option>
+                                    <option value="discord" data-i18n="ch.type_discord">Discord (Webhook)</option>
+                                    <option value="gotify" data-i18n="ch.type_gotify">Gotify</option>
+                                </select>
+                            </div>
+                            <div id="channelConfigFields"></div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="channelEnabled" checked>
+                                    <span data-i18n="ch.enabled">Aktiviert</span>
+                                </label>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeModal('channelModal')" data-i18n="ch.cancel">Abbrechen</button>
+                                <button type="submit" class="btn btn-primary" data-i18n="ch.save">Speichern</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div class="page" id="page-products">
+                <div class="page-header">
+                    <h1 data-i18n="prod.title">Produkte & Ablaufeinstellungen</h1>
+                </div>
+                <p class="hint" data-i18n="prod.hint">Hier können Sie individuelle Ablauf-Warntage pro Produkt festlegen. Ohne Override gilt der Standardwert aus den Einstellungen.</p>
+                <div class="table-wrap">
+                    <table id="tableProducts">
+                        <thead><tr><th data-i18n="prod.th_product">Produkt</th><th data-i18n="prod.th_stock">Bestand</th><th data-i18n="prod.th_expiry">Ablaufdatum</th><th data-i18n="prod.th_warn_days">Warntage</th><th data-i18n="prod.th_action">Aktion</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Log -->
+            <div class="page" id="page-log">
+                <div class="page-header">
+                    <h1 data-i18n="log.title">Benachrichtigungsprotokoll</h1>
+                    <button class="btn btn-secondary" onclick="clearLog()" data-i18n="log.clear">Log leeren</button>
+                </div>
+                <div class="table-wrap">
+                    <table id="tableLog">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="timestamp" data-i18n="log.th_time">Zeitpunkt</th>
+                                <th class="sortable" data-sort="product_name" data-i18n="log.th_product">Produkt</th>
+                                <th class="sortable" data-sort="notification_type" data-i18n="log.th_type">Typ</th>
+                                <th class="sortable" data-sort="channel_name" data-i18n="log.th_channel">Kanal</th>
+                                <th class="sortable" data-sort="message" data-i18n="log.th_message">Nachricht</th>
+                                <th class="sortable" data-sort="success" data-i18n="log.th_status">Status</th>
+                            </tr>
+                            <tr class="filter-row">
+                                <td></td>
+                                <td><input type="text" class="filter-input" data-filter="product_name" data-i18n="log.filter_ph" data-i18n-attr="placeholder" placeholder="Filter..."></td>
+                                <td><select class="filter-select" data-filter="notification_type"><option value="" data-i18n="log.filter_all">Alle</option></select></td>
+                                <td><input type="text" class="filter-input" data-filter="channel_name" data-i18n="log.filter_ph" data-i18n-attr="placeholder" placeholder="Filter..."></td>
+                                <td><input type="text" class="filter-input" data-filter="message" data-i18n="log.filter_ph" data-i18n-attr="placeholder" placeholder="Filter..."></td>
+                                <td><select class="filter-select" data-filter="success"><option value="" data-i18n="log.filter_all">Alle</option><option value="1" data-i18n="log.status_ok">OK</option><option value="0" data-i18n="log.status_error">Fehler</option></select></td>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CalDAV -->
+            <div class="page" id="page-caldav">
+                <div class="page-header">
+                    <h1 data-i18n="cal.title">CalDAV Synchronisation</h1>
+                    <button class="btn btn-primary" onclick="caldavSyncNow()" data-i18n="cal.sync_now">Jetzt synchronisieren</button>
+                </div>
+
+                <div class="stats-grid" id="caldavStatsGrid">
+                    <div class="stat-card stat-info">
+                        <div class="stat-number" id="caldavTasks">-</div>
+                        <div class="stat-label" data-i18n="cal.tasks_synced">Tasks synchronisiert</div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-number" id="caldavChores">-</div>
+                        <div class="stat-label" data-i18n="cal.chores_synced">Chores synchronisiert</div>
+                    </div>
+                    <div class="stat-card stat-ok">
+                        <div class="stat-number" id="caldavLastSync">-</div>
+                        <div class="stat-label" data-i18n="cal.last_sync">Letzte Synchronisation</div>
+                    </div>
+                    <div class="stat-card" id="caldavStatusCard">
+                        <div class="stat-number" id="caldavEnabled">-</div>
+                        <div class="stat-label" data-i18n="cal.status">Status</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 data-i18n="cal.connection">Verbindungseinstellungen</h3>
+                    <div class="form-group">
+                        <label data-i18n="cal.url">CalDAV Server URL</label>
+                        <input type="url" id="caldavUrl" placeholder="https://cloud.example.com">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="cal.server_type">Server-Typ / Pfad</label>
+                        <div style="display:flex;gap:10px">
+                            <select id="caldavServerType" style="width:auto;min-width:160px" onchange="caldavApplyServerType()">
+                                <option value="" data-i18n="cal.type_custom">Benutzerdefiniert</option>
+                                <option value="/remote.php/dav">Nextcloud / ownCloud</option>
+                                <option value="/.well-known/caldav">Well-Known (RFC)</option>
+                                <option value="/baikal/html/dav.php">Baikal</option>
+                                <option value="/radicale/">Radicale</option>
+                            </select>
+                            <input type="text" id="caldavPath" placeholder="/.well-known/caldav" style="flex:1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="cal.username">Benutzername</label>
+                        <input type="text" id="caldavUsername" data-i18n="cal.username" data-i18n-attr="placeholder" placeholder="Benutzername">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="cal.password">Passwort</label>
+                        <input type="password" id="caldavPassword" data-i18n="cal.password" data-i18n-attr="placeholder" placeholder="Passwort">
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label"><input type="checkbox" id="caldavVerifySsl" checked> <span data-i18n="cal.verify_ssl">SSL-Zertifikat verifizieren</span></label>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+                        <button type="button" class="btn btn-secondary" onclick="caldavTestConnection()" data-i18n="cal.test_connection">Verbindung testen</button>
+                        <span id="caldavConnectionStatus"></span>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="cal.calendar">Kalender</label>
+                        <div style="display:flex;gap:10px">
+                            <select id="caldavCalendar" style="flex:1"><option value="" data-i18n="cal.calendar_select">-- Kalender wählen --</option></select>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="caldavLoadCalendars()" data-i18n="cal.calendar_load">Laden</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="cal.interval">Sync-Intervall (Minuten)</label>
+                        <input type="number" id="caldavInterval" min="5" max="1440" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="caldavSyncEnabled">
+                            <span data-i18n="cal.auto_sync">Automatische Synchronisation aktiviert</span>
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="saveCaldavSettings()" data-i18n="cal.save">CalDAV-Einstellungen speichern</button>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 data-i18n="cal.mapping">Sync-Mapping</h2>
+                        <button class="btn btn-secondary" onclick="clearSyncMap()" data-i18n="cal.clear_map">Sync leeren</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table id="tableSyncMap">
+                            <thead><tr><th data-i18n="cal.th_type">Typ</th><th data-i18n="cal.th_grocy_id">Grocy ID</th><th data-i18n="cal.th_caldav_uid">CalDAV UID</th><th data-i18n="cal.th_name">Name</th><th data-i18n="cal.th_status">Status</th><th data-i18n="cal.th_direction">Richtung</th><th data-i18n="cal.th_last_sync">Letzter Sync</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="page" id="page-settings">
+                <div class="page-header">
+                    <h1 data-i18n="set.title">Einstellungen</h1>
+                </div>
+                <form id="settingsForm" onsubmit="saveSettings(event)">
+                    <div class="card">
+                        <h3 data-i18n="set.general">Allgemein</h3>
+                        <div class="form-group">
+                            <label data-i18n="set.language">Sprache</label>
+                            <select id="langSelect" onchange="setLanguage(this.value)">
+                                <option value="de">Deutsch</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 data-i18n="set.grocy_connection">Grocy-Verbindung</h3>
+                        <div class="form-group">
+                            <label data-i18n="set.grocy_url">Grocy URL</label>
+                            <input type="url" id="setGrocyUrl" placeholder="https://grocy.example.com">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.api_key">API-Key</label>
+                            <input type="password" id="setApiKey" data-i18n="set.api_key_ph" data-i18n-attr="placeholder" placeholder="Dein Grocy API Key">
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label"><input type="checkbox" id="setVerifySsl" checked> <span data-i18n="set.verify_ssl">SSL-Zertifikat verifizieren</span></label>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="testConnection()" data-i18n="set.test_connection">Verbindung testen</button>
+                        <span id="connectionStatus"></span>
+                    </div>
+                    <div class="card">
+                        <h3 data-i18n="set.notifications">Benachrichtigungen</h3>
+                        <div class="form-group">
+                            <label data-i18n="set.default_days">Standard-Warntage vor Ablauf</label>
+                            <input type="number" id="setDefaultDays" min="1" max="365" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.check_interval">Check-Intervall (Stunden)</label>
+                            <input type="number" id="setInterval" min="1" max="168" value="6">
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label"><input type="checkbox" id="setNotifyExpiring" checked> <span data-i18n="set.notify_expiring">Benachrichtigung bei bald ablaufenden Produkten</span></label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label"><input type="checkbox" id="setNotifyExpired" checked> <span data-i18n="set.notify_expired">Benachrichtigung bei abgelaufenen Produkten</span></label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label"><input type="checkbox" id="setNotifyMissing" checked> <span data-i18n="set.notify_missing">Benachrichtigung bei Mindestbestand-Unterschreitung</span></label>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="lang-de">Haftungsausschluss</h3>
+                        <h3 class="lang-en">Disclaimer</h3>
+                        <p class="lang-de" style="color:var(--text-secondary);font-size:0.92em;line-height:1.6">Grocylink wurde unter Einsatz von kuenstlicher Intelligenz (KI) entwickelt. Die Software wird &quot;wie besehen&quot; (&quot;as is&quot;) ohne jegliche Gewaehrleistung bereitgestellt. Die Nutzung erfolgt ausschliesslich auf eigene Gefahr und Verantwortung des Anwenders.</p>
+                        <p class="lang-de" style="color:var(--text-secondary);font-size:0.92em;line-height:1.6">Der Entwickler uebernimmt keinerlei Haftung fuer Schaeden, Datenverluste, Fehlfunktionen oder sonstige Nachteile, die direkt oder indirekt durch die Nutzung dieser Software entstehen. Jegliche Haftungsansprueche sind ausgeschlossen, soweit gesetzlich zulaessig.</p>
+                        <p class="lang-en" style="color:var(--text-secondary);font-size:0.92em;line-height:1.6">Grocylink was developed with the assistance of artificial intelligence (AI). The software is provided &quot;as is&quot; without any warranty of any kind. Use of this software is entirely at your own risk and responsibility.</p>
+                        <p class="lang-en" style="color:var(--text-secondary);font-size:0.92em;line-height:1.6">The developer assumes no liability for any damages, data loss, malfunctions, or other disadvantages arising directly or indirectly from the use of this software. All liability claims are excluded to the fullest extent permitted by law.</p>
+                    </div>
+                    <button type="submit" class="btn btn-primary" data-i18n="set.save">Einstellungen speichern</button>
+                </form>
+            </div>
+
+            <!-- Hilfe -->
+            <div class="page" id="page-help">
+                <div class="page-header">
+                    <h1 data-i18n="nav.help">Hilfe</h1>
+                </div>
+
+                <!-- Disclaimer DE -->
+                <div class="lang-de">
+                    <div class="help-section">
+                        <div class="help-card">
+                            <h3>Haftungsausschluss</h3>
+                            <p>Grocylink wurde unter Einsatz von kuenstlicher Intelligenz (KI) entwickelt. Die Software wird &quot;wie besehen&quot; (&quot;as is&quot;) ohne jegliche Gewaehrleistung bereitgestellt. Die Nutzung erfolgt ausschliesslich auf eigene Gefahr und Verantwortung des Anwenders.</p>
+                            <p>Der Entwickler uebernimmt keinerlei Haftung fuer Schaeden, Datenverluste, Fehlfunktionen oder sonstige Nachteile, die direkt oder indirekt durch die Nutzung dieser Software entstehen. Jegliche Haftungsansprueche sind ausgeschlossen, soweit gesetzlich zulaessig.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Disclaimer EN -->
+                <div class="lang-en">
+                    <div class="help-section">
+                        <div class="help-card">
+                            <h3>Disclaimer</h3>
+                            <p>Grocylink was developed with the assistance of artificial intelligence (AI). The software is provided &quot;as is&quot; without any warranty of any kind. Use of this software is entirely at your own risk and responsibility.</p>
+                            <p>The developer assumes no liability for any damages, data loss, malfunctions, or other disadvantages arising directly or indirectly from the use of this software. All liability claims are excluded to the fullest extent permitted by law.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deutsche Hilfe -->
+                <div class="lang-de">
+                    <div class="help-section">
+                        <h2>Erste Schritte</h2>
+                        <div class="help-card">
+                            <h3>1. Grocy-Verbindung einrichten</h3>
+                            <ol class="help-steps">
+                                <li>Navigiere zu <strong>Einstellungen</strong> in der Seitenleiste</li>
+                                <li>Trage die <strong>Grocy URL</strong> ein (z.B. <code class="help-code">https://grocy.example.com</code>)</li>
+                                <li>Trage den <strong>API-Key</strong> ein (in Grocy unter Einstellungen &gt; API-Keys zu finden)</li>
+                                <li>Klicke auf <strong>Verbindung testen</strong></li>
+                                <li>Speichere die Einstellungen</li>
+                            </ol>
+                            <div class="help-note">
+                                <strong>SSL-Zertifikat:</strong> Falls die Verbindung mit einem SSL-Fehler fehlschlaegt, kann die Checkbox &quot;SSL-Zertifikat verifizieren&quot; voruebergehend deaktiviert werden. Besser ist es, das SSL-Problem auf dem Grocy-Server zu beheben (siehe Abschnitt HTTPS / SSL).
+                            </div>
+                        </div>
+                        <div class="help-card">
+                            <h3>2. Benachrichtigungen konfigurieren</h3>
+                            <ol class="help-steps">
+                                <li>Stelle unter <strong>Einstellungen</strong> die <strong>Standard-Warntage</strong> ein (z.B. 5 Tage vor Ablauf)</li>
+                                <li>Lege das <strong>Check-Intervall</strong> fest (z.B. alle 6 Stunden)</li>
+                                <li>Waehle, welche Benachrichtigungen aktiv sein sollen (ablaufend, abgelaufen, Mindestbestand)</li>
+                                <li>Richte mindestens einen <strong>Benachrichtigungskanal</strong> ein (siehe unten)</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Benachrichtigungskanaele</h2>
+                        <p>Navigiere zu <strong>Kanaele</strong> und klicke auf <strong>+ Kanal hinzufuegen</strong>. Waehle den gewuenschten Typ und fulle die Konfigurationsfelder aus.</p>
+
+                        <div class="help-card">
+                            <h3>Email (SMTP)</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Feld</th><th>Beispiel</th><th>Beschreibung</th></tr></thead>
+                                <tbody>
+                                    <tr><td>SMTP Host</td><td><code class="help-code">smtp.gmail.com</code></td><td>SMTP-Server Adresse</td></tr>
+                                    <tr><td>SMTP Port</td><td><code class="help-code">587</code></td><td>Port (587 fuer STARTTLS, 465 fuer SSL)</td></tr>
+                                    <tr><td>Benutzername</td><td><code class="help-code">user@gmail.com</code></td><td>Login-Name</td></tr>
+                                    <tr><td>Passwort</td><td></td><td>Passwort oder App-Passwort</td></tr>
+                                    <tr><td>Absender-Email</td><td><code class="help-code">user@gmail.com</code></td><td>Von-Adresse</td></tr>
+                                    <tr><td>Empfaenger-Email</td><td><code class="help-code">notify@example.com</code></td><td>Ziel-Adresse</td></tr>
+                                    <tr><td>TLS verwenden</td><td>Ja</td><td>STARTTLS aktivieren</td></tr>
+                                </tbody>
+                            </table>
+                            <div class="help-note">
+                                <strong>Gmail:</strong> Es muss ein <strong>App-Passwort</strong> verwendet werden (kein normales Passwort). Erstelle eines unter: Google-Konto &gt; Sicherheit &gt; App-Passwoerter.
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Pushover</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Feld</th><th>Beschreibung</th></tr></thead>
+                                <tbody>
+                                    <tr><td>API Token</td><td>App-Token von pushover.net (unter &quot;Your Applications&quot;)</td></tr>
+                                    <tr><td>User Key</td><td>User/Group Key (auf der Pushover-Startseite sichtbar)</td></tr>
+                                    <tr><td>Prioritaet</td><td>-2 (leise) bis 2 (Notfall), Standard: 0</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Telegram</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Feld</th><th>Beschreibung</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Bot Token</td><td>Token vom BotFather (kompletter String inkl. Zahl und Buchstaben)</td></tr>
+                                    <tr><td>Chat ID</td><td>Numerische ID des Ziel-Chats</td></tr>
+                                </tbody>
+                            </table>
+                            <h4>Schritt-fuer-Schritt Einrichtung:</h4>
+                            <ol class="help-steps">
+                                <li>Oeffne Telegram und suche nach <strong>@BotFather</strong></li>
+                                <li>Sende <code class="help-code">/newbot</code> und vergib einen Namen und Benutzernamen (muss auf <code class="help-code">bot</code> enden)</li>
+                                <li>Der BotFather gibt einen <strong>HTTP API Token</strong> zurueck im Format:<br><code class="help-code">1234567890:AABBccDDeeFFggHHiiJJkkLLmmNNooPPqq</code><br>Diesen vollstaendigen Token (beides - links und rechts vom Doppelpunkt) in Grocylink eintragen.</li>
+                                <li>Oeffne deinen neuen Bot in Telegram und klicke auf <strong>Start</strong> oder sende eine Nachricht</li>
+                                <li>Rufe diese URL im Browser auf (Token einsetzen):<br><code class="help-code">https://api.telegram.org/bot&lt;DEIN_TOKEN&gt;/getUpdates</code></li>
+                                <li>In der JSON-Antwort findest du die <strong>Chat ID</strong> als Zahl hinter <code class="help-code">"id":</code> im <code class="help-code">"chat"</code>-Objekt</li>
+                                <li>Trage die Chat ID in Grocylink ein und klicke auf <strong>Test</strong></li>
+                            </ol>
+                            <div class="help-note">
+                                <strong>Leere Antwort?</strong> Falls <code class="help-code">getUpdates</code> ein leeres <code class="help-code">"result": []</code> zeigt, hast du noch keine Nachricht an den Bot gesendet. Erst eine Nachricht schicken, dann erneut aufrufen.
+                            </div>
+                            <div class="help-note">
+                                <strong>Gruppen:</strong> Um Nachrichten in eine Telegram-Gruppe zu senden, fuege den Bot zur Gruppe hinzu, sende dort eine Nachricht und nutze dann <code class="help-code">getUpdates</code>. Gruppen-IDs sind negativ (z.B. <code class="help-code">-100123456789</code>).
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Slack</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Feld</th><th>Beschreibung</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Webhook URL</td><td>Incoming Webhook URL aus der Slack App-Konfiguration</td></tr>
+                                </tbody>
+                            </table>
+                            <div class="help-note">
+                                Webhook erstellen: Slack App &gt; Incoming Webhooks &gt; Add New Webhook to Workspace
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Discord</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Feld</th><th>Beschreibung</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Webhook URL</td><td>Discord Channel Webhook URL</td></tr>
+                                </tbody>
+                            </table>
+                            <div class="help-note">
+                                Webhook erstellen: Kanal-Einstellungen &gt; Integrationen &gt; Webhooks &gt; Neuer Webhook
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Gotify</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Feld</th><th>Beschreibung</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Server URL</td><td>Gotify-Serveradresse (z.B. <code class="help-code">https://gotify.example.com</code>)</td></tr>
+                                    <tr><td>App Token</td><td>App-Token aus Gotify (unter Apps erstellen)</td></tr>
+                                    <tr><td>Prioritaet</td><td>Numerisch, Standard: 5</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Produkte & Warntage</h2>
+                        <div class="help-card">
+                            <p>Unter <strong>Produkte</strong> kann fuer jedes Produkt ein individueller Warnzeitraum festgelegt werden.</p>
+                            <ul>
+                                <li><strong>Standard:</strong> Gilt der Wert aus den Einstellungen (z.B. 5 Tage)</li>
+                                <li><strong>Individuell:</strong> Pro Produkt anpassbar (z.B. Milch = 2 Tage, Konserven = 30 Tage)</li>
+                            </ul>
+                            <p>Einfach im Feld &quot;Warntage&quot; den gewuenschten Wert eingeben. <strong>Reset</strong> setzt auf den Standardwert zurueck.</p>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>CalDAV-Synchronisation</h2>
+                        <div class="help-card">
+                            <p>Grocylink synchronisiert Tasks und Chores aus Grocy bidirektional mit einem CalDAV-Server. Jeder Task und jede Chore wird als <strong>VTODO-Eintrag</strong> im Kalender angelegt.</p>
+                            <h4>Einrichtung:</h4>
+                            <ol class="help-steps">
+                                <li>Navigiere zu <strong>CalDAV</strong> in der Seitenleiste</li>
+                                <li>Trage <strong>Server URL</strong>, <strong>Benutzername</strong> und <strong>Passwort</strong> ein</li>
+                                <li>Klicke auf <strong>Verbindung testen</strong></li>
+                                <li>Klicke auf <strong>Laden</strong> und waehle den gewuenschten Kalender</li>
+                                <li>Setze das <strong>Sync-Intervall</strong> (Standard: 30 Minuten)</li>
+                                <li>Aktiviere die <strong>Automatische Synchronisation</strong></li>
+                                <li>Klicke auf <strong>CalDAV-Einstellungen speichern</strong></li>
+                            </ol>
+                            <h4>Kompatible CalDAV-Server:</h4>
+                            <table class="help-table">
+                                <thead><tr><th>Server</th><th>URL-Format</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Nextcloud</td><td><code class="help-code">https://server.example.com/remote.php/dav</code></td></tr>
+                                    <tr><td>Radicale</td><td><code class="help-code">https://server.example.com/radicale/</code></td></tr>
+                                    <tr><td>Baikal</td><td><code class="help-code">https://server.example.com/baikal/html/dav.php</code></td></tr>
+                                    <tr><td>iCloud</td><td><code class="help-code">https://caldav.icloud.com</code></td></tr>
+                                </tbody>
+                            </table>
+                            <h4>Sync-Verhalten:</h4>
+                            <ul>
+                                <li><strong>Grocy &rarr; CalDAV:</strong> Tasks/Chores werden als VTODO angelegt. Erledigte Tasks werden auf COMPLETED gesetzt.</li>
+                                <li><strong>CalDAV &rarr; Grocy:</strong> Wird ein VTODO im CalDAV-Client erledigt, wird der Task auch in Grocy als erledigt markiert (und umgekehrt).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>HTTPS / SSL</h2>
+                        <div class="help-card">
+                            <h4>SSL-Zertifikatskette</h4>
+                            <p>Wenn ein eigenes Zertifikat (z.B. Let's Encrypt) verwendet wird, muss die <strong>vollstaendige Zertifikatskette</strong> (Fullchain) konfiguriert werden - nicht nur das Leaf-Zertifikat. Andernfalls koennen Clients die Verbindung nicht verifizieren.</p>
+                            <p>Eine <code class="help-code">fullchain.pem</code> besteht aus dem Leaf-Zertifikat gefolgt vom Intermediate-Zertifikat:</p>
+                            <pre class="help-code-block">cat cert.pem &gt; fullchain.pem
+curl -s https://letsencrypt.org/certs/2024/e7.pem &gt;&gt; fullchain.pem</pre>
+                            <p>Pruefen ob die Chain korrekt ist:</p>
+                            <pre class="help-code-block">grep -c "BEGIN CERTIFICATE" fullchain.pem    # muss 2 zeigen
+openssl s_client -connect domain:443 2&gt;&amp;1 | grep "depth="    # depth=0 + depth=1</pre>
+                        </div>
+                        <div class="help-card">
+                            <h4>SSL-Verifizierung der Grocy-Verbindung</h4>
+                            <p>Grocylink verifiziert standardmaessig das SSL-Zertifikat der Grocy-Instanz. Falls es Probleme gibt, kann die Verifizierung unter <strong>Einstellungen</strong> temporaer deaktiviert werden.</p>
+                            <div class="help-warning">
+                                Die SSL-Verifizierung sollte nur voruebergehend deaktiviert werden. Besser ist es, das SSL-Problem auf dem Grocy-Server zu beheben.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Fehlerbehebung</h2>
+                        <div class="help-card">
+                            <h4>Verbindungstest schlaegt fehl</h4>
+                            <ul>
+                                <li>Ist die Grocy-URL korrekt (inkl. <code class="help-code">https://</code>)?</li>
+                                <li>Ist der API-Key gueltig? (In Grocy pruefen)</li>
+                                <li>Ist Grocy vom Server aus erreichbar?</li>
+                                <li>Liefert der Grocy-Server die vollstaendige Zertifikatskette?</li>
+                            </ul>
+                        </div>
+                        <div class="help-card">
+                            <h4>Benachrichtigungen kommen nicht an</h4>
+                            <ul>
+                                <li>Kanal-Testfunktion nutzen (Button &quot;Test&quot;)</li>
+                                <li>Log pruefen (Seite &quot;Log&quot;) - Fehler werden dort mit Details angezeigt</li>
+                                <li>Bei Email: App-Passwort statt normalem Passwort verwenden</li>
+                                <li>Bei Telegram: Chat-ID muss numerisch sein</li>
+                                <li>DNS-Problem: Container kann Hostnamen nicht aufloesen &rarr; <code class="help-code">dns:</code> in compose.yaml konfigurieren</li>
+                            </ul>
+                        </div>
+                        <div class="help-card">
+                            <h4>Daten nach Redeploy verloren</h4>
+                            <ul>
+                                <li>Pruefen ob Docker-Volumes korrekt gemountet sind</li>
+                                <li>Nie <code class="help-code">docker compose down -v</code> verwenden (loescht Volumes!)</li>
+                                <li>Falls der Encryption Key verloren ging, muessen alle Zugangsdaten neu eingegeben werden</li>
+                                <li>Regelmaessige Backups der Datenbank und des Encryption Keys erstellen</li>
+                            </ul>
+                        </div>
+                        <div class="help-card">
+                            <h4>CalDAV-Sync funktioniert nicht</h4>
+                            <ul>
+                                <li>Verbindung testen auf der CalDAV-Seite</li>
+                                <li>URL muss den vollstaendigen DAV-Pfad enthalten (z.B. <code class="help-code">/remote.php/dav</code> bei Nextcloud)</li>
+                                <li>Kalender muss ausgewaehlt und gespeichert sein</li>
+                                <li>Bei Nextcloud ggf. ein App-Passwort verwenden</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Fehler melden &amp; Features vorschlagen</h2>
+                        <div class="help-card">
+                            <p>Du hast einen Fehler gefunden oder eine Idee fuer ein neues Feature? Melde es ueber GitHub Issues:</p>
+                            <div class="feedback-buttons">
+                                <a href="https://github.com/c42u/grocylink/issues/new?labels=bug&template=bug_report.md" target="_blank" rel="noopener" class="btn btn-danger feedback-btn">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    Bug melden
+                                </a>
+                                <a href="https://github.com/c42u/grocylink/issues/new?labels=enhancement&template=feature_request.md" target="_blank" rel="noopener" class="btn btn-primary feedback-btn">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                    Feature vorschlagen
+                                </a>
+                                <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="btn btn-secondary feedback-btn">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                                    Alle Issues ansehen
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- English Help -->
+                <div class="lang-en">
+                    <div class="help-section">
+                        <h2>Getting Started</h2>
+                        <div class="help-card">
+                            <h3>1. Set up Grocy Connection</h3>
+                            <ol class="help-steps">
+                                <li>Navigate to <strong>Settings</strong> in the sidebar</li>
+                                <li>Enter the <strong>Grocy URL</strong> (e.g. <code class="help-code">https://grocy.example.com</code>)</li>
+                                <li>Enter the <strong>API Key</strong> (found in Grocy under Settings &gt; API Keys)</li>
+                                <li>Click <strong>Test connection</strong></li>
+                                <li>Save the settings</li>
+                            </ol>
+                            <div class="help-note">
+                                <strong>SSL Certificate:</strong> If the connection fails with an SSL error, you can temporarily uncheck "Verify SSL certificate". It is better to fix the SSL issue on the Grocy server (see HTTPS / SSL section).
+                            </div>
+                        </div>
+                        <div class="help-card">
+                            <h3>2. Configure Notifications</h3>
+                            <ol class="help-steps">
+                                <li>Under <strong>Settings</strong>, set the <strong>Default warning days</strong> (e.g. 5 days before expiry)</li>
+                                <li>Set the <strong>Check interval</strong> (e.g. every 6 hours)</li>
+                                <li>Choose which notifications should be active (expiring, expired, minimum stock)</li>
+                                <li>Set up at least one <strong>notification channel</strong> (see below)</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Notification Channels</h2>
+                        <p>Navigate to <strong>Channels</strong> and click <strong>+ Add channel</strong>. Select the desired type and fill in the configuration fields.</p>
+
+                        <div class="help-card">
+                            <h3>Email (SMTP)</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Field</th><th>Example</th><th>Description</th></tr></thead>
+                                <tbody>
+                                    <tr><td>SMTP Host</td><td><code class="help-code">smtp.gmail.com</code></td><td>SMTP server address</td></tr>
+                                    <tr><td>SMTP Port</td><td><code class="help-code">587</code></td><td>Port (587 for STARTTLS, 465 for SSL)</td></tr>
+                                    <tr><td>Username</td><td><code class="help-code">user@gmail.com</code></td><td>Login name</td></tr>
+                                    <tr><td>Password</td><td></td><td>Password or app password</td></tr>
+                                    <tr><td>Sender email</td><td><code class="help-code">user@gmail.com</code></td><td>From address</td></tr>
+                                    <tr><td>Recipient email</td><td><code class="help-code">notify@example.com</code></td><td>Destination address</td></tr>
+                                    <tr><td>Use TLS</td><td>Yes</td><td>Enable STARTTLS</td></tr>
+                                </tbody>
+                            </table>
+                            <div class="help-note">
+                                <strong>Gmail:</strong> You must use an <strong>App Password</strong> (not your regular password). Create one at: Google Account &gt; Security &gt; App Passwords.
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Pushover</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                                <tbody>
+                                    <tr><td>API Token</td><td>App token from pushover.net (under "Your Applications")</td></tr>
+                                    <tr><td>User Key</td><td>User/Group Key (visible on the Pushover homepage)</td></tr>
+                                    <tr><td>Priority</td><td>-2 (quiet) to 2 (emergency), default: 0</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Telegram</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Bot Token</td><td>Token from BotFather (complete string including numbers and letters)</td></tr>
+                                    <tr><td>Chat ID</td><td>Numeric ID of the target chat</td></tr>
+                                </tbody>
+                            </table>
+                            <h4>Step-by-step setup:</h4>
+                            <ol class="help-steps">
+                                <li>Open Telegram and search for <strong>@BotFather</strong></li>
+                                <li>Send <code class="help-code">/newbot</code> and choose a name and username (must end with <code class="help-code">bot</code>)</li>
+                                <li>BotFather returns an <strong>HTTP API Token</strong> in this format:<br><code class="help-code">1234567890:AABBccDDeeFFggHHiiJJkkLLmmNNooPPqq</code><br>Enter the complete token (both sides of the colon) in Grocylink.</li>
+                                <li>Open your new bot in Telegram and click <strong>Start</strong> or send a message</li>
+                                <li>Open this URL in your browser (insert your token):<br><code class="help-code">https://api.telegram.org/bot&lt;YOUR_TOKEN&gt;/getUpdates</code></li>
+                                <li>In the JSON response, find the <strong>Chat ID</strong> as a number after <code class="help-code">"id":</code> in the <code class="help-code">"chat"</code> object</li>
+                                <li>Enter the Chat ID in Grocylink and click <strong>Test</strong></li>
+                            </ol>
+                            <div class="help-note">
+                                <strong>Empty response?</strong> If <code class="help-code">getUpdates</code> shows an empty <code class="help-code">"result": []</code>, you haven't sent a message to the bot yet. Send a message first, then try again.
+                            </div>
+                            <div class="help-note">
+                                <strong>Groups:</strong> To send messages to a Telegram group, add the bot to the group, send a message there, and then use <code class="help-code">getUpdates</code>. Group IDs are negative (e.g. <code class="help-code">-100123456789</code>).
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Slack</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Webhook URL</td><td>Incoming Webhook URL from Slack App configuration</td></tr>
+                                </tbody>
+                            </table>
+                            <div class="help-note">
+                                Create webhook: Slack App &gt; Incoming Webhooks &gt; Add New Webhook to Workspace
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Discord</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Webhook URL</td><td>Discord Channel Webhook URL</td></tr>
+                                </tbody>
+                            </table>
+                            <div class="help-note">
+                                Create webhook: Channel Settings &gt; Integrations &gt; Webhooks &gt; New Webhook
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Gotify</h3>
+                            <table class="help-table">
+                                <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Server URL</td><td>Gotify server address (e.g. <code class="help-code">https://gotify.example.com</code>)</td></tr>
+                                    <tr><td>App Token</td><td>App token from Gotify (create under Apps)</td></tr>
+                                    <tr><td>Priority</td><td>Numeric, default: 5</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Products & Warning Days</h2>
+                        <div class="help-card">
+                            <p>Under <strong>Products</strong>, you can set an individual warning period for each product.</p>
+                            <ul>
+                                <li><strong>Default:</strong> Uses the value from settings (e.g. 5 days)</li>
+                                <li><strong>Custom:</strong> Adjustable per product (e.g. Milk = 2 days, Canned goods = 30 days)</li>
+                            </ul>
+                            <p>Simply enter the desired value in the "Warning days" field. <strong>Reset</strong> restores the default value.</p>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>CalDAV Synchronization</h2>
+                        <div class="help-card">
+                            <p>Grocylink synchronizes tasks and chores from Grocy bidirectionally with a CalDAV server. Each task and chore is created as a <strong>VTODO entry</strong> in the calendar.</p>
+                            <h4>Setup:</h4>
+                            <ol class="help-steps">
+                                <li>Navigate to <strong>CalDAV</strong> in the sidebar</li>
+                                <li>Enter <strong>Server URL</strong>, <strong>Username</strong> and <strong>Password</strong></li>
+                                <li>Click <strong>Test connection</strong></li>
+                                <li>Click <strong>Load</strong> and select the desired calendar</li>
+                                <li>Set the <strong>Sync interval</strong> (default: 30 minutes)</li>
+                                <li>Enable <strong>Automatic synchronization</strong></li>
+                                <li>Click <strong>Save CalDAV settings</strong></li>
+                            </ol>
+                            <h4>Compatible CalDAV servers:</h4>
+                            <table class="help-table">
+                                <thead><tr><th>Server</th><th>URL Format</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Nextcloud</td><td><code class="help-code">https://server.example.com/remote.php/dav</code></td></tr>
+                                    <tr><td>Radicale</td><td><code class="help-code">https://server.example.com/radicale/</code></td></tr>
+                                    <tr><td>Baikal</td><td><code class="help-code">https://server.example.com/baikal/html/dav.php</code></td></tr>
+                                    <tr><td>iCloud</td><td><code class="help-code">https://caldav.icloud.com</code></td></tr>
+                                </tbody>
+                            </table>
+                            <h4>Sync behavior:</h4>
+                            <ul>
+                                <li><strong>Grocy &rarr; CalDAV:</strong> Tasks/Chores are created as VTODO entries. Completed tasks are set to COMPLETED.</li>
+                                <li><strong>CalDAV &rarr; Grocy:</strong> When a VTODO is completed in the CalDAV client, the task is also marked as completed in Grocy (and vice versa).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>HTTPS / SSL</h2>
+                        <div class="help-card">
+                            <h4>SSL Certificate Chain</h4>
+                            <p>When using a custom certificate (e.g. Let's Encrypt), the <strong>full certificate chain</strong> (fullchain) must be configured - not just the leaf certificate. Otherwise, clients cannot verify the connection.</p>
+                            <p>A <code class="help-code">fullchain.pem</code> consists of the leaf certificate followed by the intermediate certificate:</p>
+                            <pre class="help-code-block">cat cert.pem &gt; fullchain.pem
+curl -s https://letsencrypt.org/certs/2024/e7.pem &gt;&gt; fullchain.pem</pre>
+                            <p>Check if the chain is correct:</p>
+                            <pre class="help-code-block">grep -c "BEGIN CERTIFICATE" fullchain.pem    # should show 2
+openssl s_client -connect domain:443 2&gt;&amp;1 | grep "depth="    # depth=0 + depth=1</pre>
+                        </div>
+                        <div class="help-card">
+                            <h4>SSL Verification for Grocy Connection</h4>
+                            <p>Grocylink verifies the SSL certificate of the Grocy instance by default. If there are problems, verification can be temporarily disabled under <strong>Settings</strong>.</p>
+                            <div class="help-warning">
+                                SSL verification should only be disabled temporarily. It is better to fix the SSL issue on the Grocy server.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Troubleshooting</h2>
+                        <div class="help-card">
+                            <h4>Connection test fails</h4>
+                            <ul>
+                                <li>Is the Grocy URL correct (including <code class="help-code">https://</code>)?</li>
+                                <li>Is the API key valid? (Check in Grocy)</li>
+                                <li>Is Grocy reachable from the server?</li>
+                                <li>Does the Grocy server provide the full certificate chain?</li>
+                            </ul>
+                        </div>
+                        <div class="help-card">
+                            <h4>Notifications not arriving</h4>
+                            <ul>
+                                <li>Use the channel test function ("Test" button)</li>
+                                <li>Check the log (page "Log") - errors are shown with details</li>
+                                <li>For Email: Use an app password instead of a regular password</li>
+                                <li>For Telegram: Chat ID must be numeric</li>
+                                <li>DNS issue: Container cannot resolve hostnames &rarr; configure <code class="help-code">dns:</code> in compose.yaml</li>
+                            </ul>
+                        </div>
+                        <div class="help-card">
+                            <h4>Data lost after redeploy</h4>
+                            <ul>
+                                <li>Check if Docker volumes are correctly mounted</li>
+                                <li>Never use <code class="help-code">docker compose down -v</code> (deletes volumes!)</li>
+                                <li>If the encryption key was lost, all credentials must be re-entered</li>
+                                <li>Create regular backups of the database and encryption key</li>
+                            </ul>
+                        </div>
+                        <div class="help-card">
+                            <h4>CalDAV sync not working</h4>
+                            <ul>
+                                <li>Test connection on the CalDAV page</li>
+                                <li>URL must include the full DAV path (e.g. <code class="help-code">/remote.php/dav</code> for Nextcloud)</li>
+                                <li>A calendar must be selected and saved</li>
+                                <li>For Nextcloud, consider using an app password</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Report Bugs &amp; Request Features</h2>
+                        <div class="help-card">
+                            <p>Found a bug or have an idea for a new feature? Report it via GitHub Issues:</p>
+                            <div class="feedback-buttons">
+                                <a href="https://github.com/c42u/grocylink/issues/new?labels=bug&template=bug_report.md" target="_blank" rel="noopener" class="btn btn-danger feedback-btn">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    Report Bug
+                                </a>
+                                <a href="https://github.com/c42u/grocylink/issues/new?labels=enhancement&template=feature_request.md" target="_blank" rel="noopener" class="btn btn-primary feedback-btn">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                    Request Feature
+                                </a>
+                                <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="btn btn-secondary feedback-btn">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                                    View All Issues
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unterstützung -->
+            <div class="page" id="page-support">
+                <div class="page-header">
+                    <div></div>
+                </div>
+
+                <div class="support-logo">
+                    <img src="/static/logo-c42u.png" alt="c42u Logo">
+                </div>
+
+                <!-- Deutsch -->
+                <div class="support-content" id="supportDe">
+                    <div class="support-hero">
+                        <h2>Support Independent Infrastructure Software</h2>
+                        <p>Ich entwickle moderne, praxisnahe Softwareloesungen fuer reale IT-Umgebungen &ndash; mit Fokus auf Transparenz, Automatisierung, Offline-Faehigkeit und sauberer Architektur.</p>
+                        <p>Meine Projekte entstehen aus echten Anforderungen in Homelab-, Enterprise- und Self-Hosting-Umgebungen. Sie sollen nicht nur &quot;funktionieren&quot;, sondern nachvollziehbar, dokumentiert und langfristig wartbar sein.</p>
+                    </div>
+
+                    <div class="support-features">
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f512;</span> sicherheitsorientiert</div>
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f310;</span> self-hosted &amp; offline-faehig</div>
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f9e9;</span> modular und erweiterbar</div>
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f4e6;</span> reproduzierbar deploybar</div>
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f4da;</span> sauber dokumentiert</div>
+                    </div>
+
+                    <p class="support-text">Ich investiere viel Zeit in Entwicklung, Testing, Dokumentation, Packaging und Support &ndash; oft weit ueber das hinaus, was man auf den ersten Blick sieht.</p>
+
+                    <div class="help-section">
+                        <h2>Warum Unterstuetzung?</h2>
+                        <div class="help-card">
+                            <p>Open-Source- und Community-Projekte leben von Menschen, die sie aktiv nutzen &ndash; und von denen, die bereit sind, ihre Weiterentwicklung zu ermoeglichen.</p>
+                            <p><strong>Deine Unterstuetzung hilft dabei:</strong></p>
+                            <ul>
+                                <li>neue Features umzusetzen</li>
+                                <li>Bugs schneller zu beheben</li>
+                                <li>Dokumentation &amp; Handbuecher auszubauen</li>
+                                <li>langfristige Wartung sicherzustellen</li>
+                                <li>Projekte unabhaengig und werbefrei zu halten</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Transparenz &amp; Qualitaet</h2>
+                        <div class="help-card">
+                            <p>Ich arbeite strukturiert, versioniert und nachvollziehbar. Jede Unterstuetzung fliesst direkt in:</p>
+                            <ul>
+                                <li>Entwicklungszeit</li>
+                                <li>Infrastruktur</li>
+                                <li>Testumgebungen</li>
+                                <li>Dokumentation &amp; Packaging</li>
+                                <li>Community-Support</li>
+                            </ul>
+                            <p>Keine Marketing-Maschinerie. Kein Venture-Capital-Druck.<br>Nur solide Software fuer Menschen, die saubere Loesungen schaetzen.</p>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Unterstuetzen statt konsumieren</h2>
+                        <div class="help-card">
+                            <p>Wenn dir meine Arbeit Zeit spart, dein Setup stabiler macht oder dir einfach Mehrwert bringt &ndash; dann kannst du sie hier unterstuetzen.</p>
+                            <p>Jeder Beitrag hilft. Regelmaessig oder einmalig.</p>
+                            <p>Und falls du nicht finanziell unterstuetzen moechtest:<br>Feedback, Issues, Feature-Ideen und konstruktive Kritik sind genauso willkommen &ndash; direkt ueber <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="support-inline-link">GitHub Issues</a>.</p>
+                        </div>
+                    </div>
+
+                    <p class="support-thanks"><strong>Danke, dass du unabhaengige Softwareentwicklung moeglich machst.</strong></p>
+                </div>
+
+                <!-- English -->
+                <div class="support-content" id="supportEn" style="display:none">
+                    <div class="support-hero">
+                        <h2>Support Independent Infrastructure Software</h2>
+                        <p>I build modern, practical software solutions for real-world IT environments &mdash; with a strong focus on transparency, automation, offline capability, and clean architecture.</p>
+                        <p>My projects grow out of real needs in homelab, enterprise, and self-hosted infrastructures. They are designed not just to &quot;work,&quot; but to be understandable, well-documented, and maintainable in the long term.</p>
+                    </div>
+
+                    <div class="support-features">
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f512;</span> security-focused</div>
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f310;</span> self-hosted &amp; offline-capable</div>
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f9e9;</span> modular and extensible</div>
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f4e6;</span> reproducibly deployable</div>
+                        <div class="support-feature"><span class="support-feature-icon">&#x1f4da;</span> thoroughly documented</div>
+                    </div>
+
+                    <p class="support-text">I invest significant time into development, testing, documentation, packaging, and support &mdash; often far beyond what is immediately visible.</p>
+
+                    <div class="help-section">
+                        <h2>Why Support?</h2>
+                        <div class="help-card">
+                            <p>Open-source and community-driven software thrives when users choose to actively sustain its development.</p>
+                            <p><strong>Your support helps to:</strong></p>
+                            <ul>
+                                <li>implement new features</li>
+                                <li>fix bugs faster</li>
+                                <li>expand documentation and manuals</li>
+                                <li>ensure long-term maintenance</li>
+                                <li>keep projects independent and ad-free</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Transparency &amp; Quality</h2>
+                        <div class="help-card">
+                            <p>I work in a structured, versioned, and traceable way. Every contribution directly supports:</p>
+                            <ul>
+                                <li>development time</li>
+                                <li>infrastructure costs</li>
+                                <li>testing environments</li>
+                                <li>documentation and packaging</li>
+                                <li>community support</li>
+                            </ul>
+                            <p>No marketing machinery. No venture capital pressure.<br>Just solid software for people who value clean and reliable solutions.</p>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>Support Instead of Just Consuming</h2>
+                        <div class="help-card">
+                            <p>If my work saves you time, stabilizes your setup, or simply delivers real value &mdash; you can support it here.</p>
+                            <p>Every contribution matters. Recurring or one-time.</p>
+                            <p>And if financial support isn&rsquo;t an option:<br>Constructive feedback, issues, feature ideas, and thoughtful discussions are always welcome &ndash; directly via <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="support-inline-link">GitHub Issues</a>.</p>
+                        </div>
+                    </div>
+
+                    <p class="support-thanks"><strong>Thank you for helping make independent software development sustainable.</strong></p>
+                </div>
+
+                <!-- Spenden-Buttons -->
+                <div class="support-buttons">
+                    <a href="https://www.buymeacoffee.com/c42u" target="_blank" rel="noopener" class="support-btn support-btn-coffee">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zm4-5c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1zm4 0c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1zm4 0c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1z"/></svg>
+                        Buy me a Coffee
+                    </a>
+                    <a href="https://liberapay.com/c42u" target="_blank" rel="noopener" class="support-btn support-btn-liberapay">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        Liberapay
+                    </a>
+                    <a href="https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00" target="_blank" rel="noopener" class="support-btn support-btn-stripe">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+                        Stripe
+                    </a>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                <div class="footer-left">
+                    <a href="https://github.com/c42u" target="_blank" rel="noopener" title="c42u auf GitHub">
+                        <img src="/static/logo-c42u.png" alt="c42u" class="footer-logo">
+                    </a>
+                </div>
+                <div class="footer-center">
+                    <span>&copy; 2026 c42u &middot; GPLv3</span>
+                    <span class="footer-disclaimer lang-de">KI-gestuetzt entwickelt &middot; Nutzung auf eigene Gefahr</span>
+                    <span class="footer-disclaimer lang-en">AI-assisted development &middot; Use at your own risk</span>
+                    <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="footer-feedback-link">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span class="lang-de">Bugs &amp; Feature Requests</span>
+                        <span class="lang-en">Bugs &amp; Feature Requests</span>
+                    </a>
+                </div>
+                <div class="footer-right">
+                    <a href="https://liberapay.com/c42u" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="vertical-align:middle;margin-right:4px"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        Liberapay
+                    </a>
+                    <a href="https://www.buymeacoffee.com/c42u" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="vertical-align:middle;margin-right:4px"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zm4-5c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1zm4 0c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1zm4 0c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1z"/></svg>
+                        Buy me a Coffee
+                    </a>
+                    <a href="https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="vertical-align:middle;margin-right:4px"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+                        Stripe
+                    </a>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/static/i18n.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

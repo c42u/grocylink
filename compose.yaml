@@ -1,0 +1,30 @@
+services:
+  grocylink:
+    image: grocylink:latest
+    pull_policy: never
+    container_name: grocylink
+    restart: unless-stopped
+    user: ${UID}:${GID}
+    cpus: "1.0"
+    pids_limit: 200
+    mem_limit: 2G
+    memswap_limit: 3G
+    oom_kill_disable: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS}
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${PATH_TO}/grocylink/data:/app/data
+    ports:
+      - "5000:5000"
+    networks:
+      DockerNetwork:
+        ipv4_address: ${GROCYLINK_IP}
+
+networks:
+  DockerNetwork:
+    external: true
