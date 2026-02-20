@@ -196,9 +196,22 @@ class CalDAVSync:
         cal.add_component(todo)
         return cal.to_ical().decode('utf-8')
 
+    def _due_str(self, vtodo_component):
+        """Extrahiert das Faelligkeitsdatum als YYYY-MM-DD aus einem VTODO-Component."""
+        due = vtodo_component.get('due')
+        if not due:
+            return ''
+        dt = due.dt
+        if hasattr(dt, 'strftime'):
+            date_str = dt.strftime('%Y-%m-%d')
+            return '' if date_str.startswith('2999') else date_str
+        return ''
+
     def _find_vtodo_by_uid(self, uid):
         try:
-            results = self.calendar.search(todo=True)
+            # include_completed=True ist noetig, da manche Server (z.B. PrivateEmail/Dovecot)
+            # abgeschlossene Todos aus normalen Suchergebnissen ausschliessen
+            results = self.calendar.todos(include_completed=True)
             for item in results:
                 try:
                     ical = Calendar.from_ical(item.data)
@@ -269,11 +282,14 @@ class CalDAVSync:
 
                 if existing_item:
                     existing_summary = str(existing_vtodo.get('summary', ''))
-                    if existing_summary != summary:
+                    existing_due = self._due_str(existing_vtodo)
+                    next_exec_date = str(next_exec)[:10] if next_exec and not str(next_exec).startswith('2999') else ''
+                    needs_update = (existing_summary != summary or existing_due != next_exec_date)
+                    if needs_update:
                         vtodo_data = self._chore_to_vtodo(chore)
                         existing_item.data = vtodo_data
                         existing_item.save()
-                        logger.debug(f"Chore {chore_id} aktualisiert auf CalDAV")
+                        logger.debug(f"Chore {chore_id} aktualisiert auf CalDAV (summary={summary!r}, due={next_exec_date!r})")
                 else:
                     vtodo_data = self._chore_to_vtodo(chore)
                     self.calendar.save_todo(vtodo_data)
@@ -287,7 +303,9 @@ class CalDAVSync:
 
     def _sync_caldav_to_grocy(self, stats):
         try:
-            results = self.calendar.search(todo=True)
+            # include_completed=True ist noetig, damit abgeschlossene Todos erkannt werden
+            # (manche Server wie PrivateEmail/Dovecot schliessen COMPLETED aus normalen Suchen aus)
+            results = self.calendar.todos(include_completed=True)
         except Exception as e:
             logger.error(f"Fehler beim Abrufen der VTODOs: {e}")
             return
