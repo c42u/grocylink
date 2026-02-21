@@ -54,6 +54,16 @@ def init_db():
             success INTEGER NOT NULL DEFAULT 1
         );
 
+        CREATE TABLE IF NOT EXISTS notification_tracker (
+            product_id TEXT NOT NULL,
+            notification_type TEXT NOT NULL,
+            best_before_date TEXT NOT NULL DEFAULT '',
+            sent_count INTEGER NOT NULL DEFAULT 0,
+            first_sent TEXT NOT NULL DEFAULT (datetime('now')),
+            last_sent TEXT NOT NULL DEFAULT (datetime('now')),
+            PRIMARY KEY (product_id, notification_type)
+        );
+
         CREATE TABLE IF NOT EXISTS caldav_sync_map (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             grocy_type TEXT NOT NULL,
@@ -88,6 +98,7 @@ def init_db():
         'caldav_path': '',
         'caldav_calendar': '',
         'caldav_verify_ssl': '1',
+        'notification_repeat_limit': '0',
         'caldav_sync_enabled': '0',
         'caldav_sync_interval_minutes': '30',
         'language': 'de',
@@ -323,4 +334,59 @@ def delete_sync_entry(grocy_type, grocy_id):
         (grocy_type, grocy_id)
     )
     conn.commit()
+    conn.close()
+
+
+def get_tracker_entry(product_id, notification_type):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM notification_tracker WHERE product_id = ? AND notification_type = ?",
+        (str(product_id), notification_type)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def upsert_tracker_entry(product_id, notification_type, best_before_date):
+    conn = get_db()
+    existing = conn.execute(
+        "SELECT best_before_date, sent_count FROM notification_tracker WHERE product_id = ? AND notification_type = ?",
+        (str(product_id), notification_type)
+    ).fetchone()
+    if existing and existing['best_before_date'] == best_before_date:
+        conn.execute(
+            "UPDATE notification_tracker SET sent_count = sent_count + 1, last_sent = datetime('now') "
+            "WHERE product_id = ? AND notification_type = ?",
+            (str(product_id), notification_type)
+        )
+    else:
+        conn.execute(
+            "INSERT OR REPLACE INTO notification_tracker "
+            "(product_id, notification_type, best_before_date, sent_count, first_sent, last_sent) "
+            "VALUES (?, ?, ?, 1, datetime('now'), datetime('now'))",
+            (str(product_id), notification_type, best_before_date)
+        )
+    conn.commit()
+    conn.close()
+
+
+def cleanup_tracker(active_keys):
+    """Entfernt Tracker-Eintraege fuer Produkte, die nicht mehr im Alert-Zustand sind."""
+    if not active_keys:
+        conn = get_db()
+        conn.execute("DELETE FROM notification_tracker")
+        conn.commit()
+        conn.close()
+        return
+    conn = get_db()
+    rows = conn.execute("SELECT product_id, notification_type FROM notification_tracker").fetchall()
+    to_delete = [(r['product_id'], r['notification_type']) for r in rows
+                 if (r['product_id'], r['notification_type']) not in active_keys]
+    for pid, ntype in to_delete:
+        conn.execute(
+            "DELETE FROM notification_tracker WHERE product_id = ? AND notification_type = ?",
+            (pid, ntype)
+        )
+    if to_delete:
+        conn.commit()
     conn.close()
