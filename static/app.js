@@ -518,6 +518,7 @@ async function loadSettings() {
     document.getElementById('setNotifyExpired').checked = s.notify_expired !== '0';
     document.getElementById('setNotifyMissing').checked = s.notify_missing !== '0';
     document.getElementById('setVerifySsl').checked = s.grocy_verify_ssl !== '0';
+    document.getElementById('setRepeatLimit').value = s.notification_repeat_limit || '0';
     // Set language selector to current language
     const langSel = document.getElementById('langSelect');
     if (langSel) langSel.value = currentLang;
@@ -534,6 +535,7 @@ async function saveSettings(e) {
         notify_expired: document.getElementById('setNotifyExpired').checked ? '1' : '0',
         notify_missing: document.getElementById('setNotifyMissing').checked ? '1' : '0',
         grocy_verify_ssl: document.getElementById('setVerifySsl').checked ? '1' : '0',
+        notification_repeat_limit: document.getElementById('setRepeatLimit').value,
     });
     toast(t('set.saved'), 'success');
 }

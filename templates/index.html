@@ -347,6 +347,16 @@
                             <input type="number" id="setInterval" min="1" max="168" value="6">
                         </div>
                         <div class="form-group">
+                            <label data-i18n="set.repeat_limit">Benachrichtigungswiederholung</label>
+                            <select id="setRepeatLimit">
+                                <option value="0" data-i18n="set.repeat_unlimited">Immer (bei jedem Check)</option>
+                                <option value="1" data-i18n="set.repeat_once">Einmalig</option>
+                                <option value="2">2×</option>
+                                <option value="3">3×</option>
+                                <option value="5">5×</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label class="checkbox-label"><input type="checkbox" id="setNotifyExpiring" checked> <span data-i18n="set.notify_expiring">Benachrichtigung bei bald ablaufenden Produkten</span></label>
                         </div>
                         <div class="form-group">
@@ -1064,7 +1074,7 @@ openssl s_client -connect domain:443 2&gt;&amp;1 | grep "depth="    # depth=0 + 
                     </a>
                 </div>
                 <div class="footer-center">
-                    <span>&copy; 2026 c42u &middot; GPLv3</span>
+                    <span>&copy; 2026 c42u &middot; GPLv3 &middot; Version {{ version }}</span>
                     <span class="footer-disclaimer lang-de">KI-gestuetzt entwickelt &middot; Nutzung auf eigene Gefahr</span>
                     <span class="footer-disclaimer lang-en">AI-assisted development &middot; Use at your own risk</span>
                     <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="footer-feedback-link">

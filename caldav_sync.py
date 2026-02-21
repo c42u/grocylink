@@ -112,6 +112,12 @@ class CalDAVSync:
         stats = {'tasks_synced': 0, 'chores_synced': 0, 'caldav_to_grocy': 0, 'errors': []}
 
         try:
+            self._sync_caldav_to_grocy(stats)
+        except Exception as e:
+            logger.error(f"Fehler bei CalDAV->Grocy Sync: {e}")
+            stats['errors'].append(f"CalDAV->Grocy: {e}")
+
+        try:
             self._sync_tasks_to_caldav(stats)
         except Exception as e:
             logger.error(f"Fehler bei Task-Sync zu CalDAV: {e}")
@@ -123,21 +129,16 @@ class CalDAVSync:
             logger.error(f"Fehler bei Chore-Sync zu CalDAV: {e}")
             stats['errors'].append(f"Chores->CalDAV: {e}")
 
-        try:
-            self._sync_caldav_to_grocy(stats)
-        except Exception as e:
-            logger.error(f"Fehler bei CalDAV->Grocy Sync: {e}")
-            stats['errors'].append(f"CalDAV->Grocy: {e}")
-
         return stats
 
-    def _task_to_vtodo(self, task):
+    def _task_to_vtodo(self, task, uid=None):
         cal = Calendar()
         cal.add('prodid', '-//Grocylink//CalDAV Sync//DE')
         cal.add('version', '2.0')
 
         todo = Todo()
-        uid = f"{UID_TASK_PREFIX}{task['id']}{UID_DOMAIN}"
+        if uid is None:
+            uid = f"{UID_TASK_PREFIX}{task['id']}{UID_DOMAIN}"
         todo.add('uid', uid)
         todo.add('summary', task.get('name', f"Task #{task['id']}"))
 
@@ -233,7 +234,10 @@ class CalDAVSync:
         for task in all_tasks:
             try:
                 task_id = task['id']
-                uid = f"{UID_TASK_PREFIX}{task_id}{UID_DOMAIN}"
+                # UID aus Sync-Map lesen: CalDAV-importierte Tasks behalten ihre Original-UID,
+                # Grocy-native Tasks bekommen die berechnete Grocylink-UID
+                sync_entry = get_sync_entry('task', task_id)
+                uid = sync_entry['caldav_uid'] if sync_entry else f"{UID_TASK_PREFIX}{task_id}{UID_DOMAIN}"
                 is_done = str(task.get('done', '0')) == '1'
                 status = 'COMPLETED' if is_done else 'NEEDS-ACTION'
                 summary = task.get('name', '')
@@ -252,12 +256,12 @@ class CalDAVSync:
                         existing_desc != grocy_desc
                     )
                     if needs_update:
-                        vtodo_data = self._task_to_vtodo(task)
+                        vtodo_data = self._task_to_vtodo(task, uid=uid)
                         existing_item.data = vtodo_data
                         existing_item.save()
                         logger.debug(f"Task {task_id} aktualisiert auf CalDAV")
                 else:
-                    vtodo_data = self._task_to_vtodo(task)
+                    vtodo_data = self._task_to_vtodo(task, uid=uid)
                     self.calendar.save_todo(vtodo_data)
                     logger.debug(f"Task {task_id} neu auf CalDAV angelegt")
 
@@ -437,33 +441,13 @@ class CalDAVSync:
                         result = self.grocy.create_task(task_data)
                         new_task_id = result.get('created_object_id')
                         if new_task_id:
-                            # Original-UID in Sync-Map speichern (verhindert Duplikate)
+                            # Original CalDAV-UID in Sync-Map speichern.
+                            # Kein UID-Update in CalDAV noetig: _sync_tasks_to_caldav liest
+                            # die gespeicherte UID aus der Sync-Map und findet das VTODO direkt.
                             upsert_sync_entry('task', new_task_id, uid,
                                               caldav_status, caldav_summary,
                                               task_data.get('due_date', ''),
                                               direction='caldav→grocy')
-
-                            # Zusaetzlich Grocylink-UID in Sync-Map speichern
-                            new_uid = f"{UID_TASK_PREFIX}{new_task_id}{UID_DOMAIN}"
-                            upsert_sync_entry('task', new_task_id, new_uid,
-                                              caldav_status, caldav_summary,
-                                              task_data.get('due_date', ''),
-                                              direction='caldav→grocy')
-
-                            # VTODO mit Grocylink-UID aktualisieren
-                            new_task = {
-                                'id': new_task_id,
-                                'name': caldav_summary,
-                                'description': caldav_desc,
-                                'due_date': task_data.get('due_date', ''),
-                                'done': '1' if caldav_status == 'COMPLETED' else '0'
-                            }
-                            vtodo_data = self._task_to_vtodo(new_task)
-                            try:
-                                item.data = vtodo_data
-                                item.save()
-                            except Exception as e:
-                                logger.warning(f"Konnte CalDAV-UID nicht aktualisieren: {e}")
 
                             if caldav_status == 'COMPLETED':
                                 self.grocy.complete_task(new_task_id)

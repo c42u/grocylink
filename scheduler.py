@@ -5,7 +5,7 @@ from grocy_client import GrocyClient
 from notifiers import get_notifier
 from database import (
     get_all_settings, get_channels_decrypted, get_product_overrides,
-    add_log_entry
+    add_log_entry, get_tracker_entry, upsert_tracker_entry, cleanup_tracker
 )
 
 logger = logging.getLogger(__name__)
@@ -89,30 +89,59 @@ def run_check():
                 'type': 'expiring',
                 'name': product_name,
                 'detail': f"{_t(lang, 'expiry_date')}: {best_before}",
+                'product_id': str(product_id or ''),
+                'best_before': best_before,
             })
 
     if notify_expired:
         for item in volatile.get('overdue_products', []) + volatile.get('expired_products', []):
+            product_id = item.get('product_id') or item.get('product', {}).get('id')
             product_name = item.get('product', {}).get('name', _t(lang, 'unknown'))
             best_before = item.get('best_before_date', '')
             alerts.append({
                 'type': 'expired',
                 'name': product_name,
                 'detail': f"{_t(lang, 'expired_since')}: {best_before}",
+                'product_id': str(product_id or ''),
+                'best_before': best_before,
             })
 
     if notify_missing:
         for item in volatile.get('missing_products', []):
+            product_id = item.get('id') or item.get('product_id') or item.get('product', {}).get('id')
             product_name = item.get('product', {}).get('name', item.get('name', _t(lang, 'unknown')))
             amount_missing = item.get('amount_missing', '?')
             alerts.append({
                 'type': 'missing',
                 'name': product_name,
                 'detail': f"{_t(lang, 'missing_amount')}: {amount_missing}",
+                'product_id': str(product_id or ''),
+                'best_before': '',
             })
 
     if not alerts:
         logger.info("Keine Warnungen gefunden.")
+        return
+
+    repeat_limit = int(settings.get('notification_repeat_limit', '0'))
+
+    # Tracker bereinigen: Eintraege fuer Produkte, die nicht mehr im Alert-Zustand sind, loeschen
+    active_keys = {(a['product_id'], a['type']) for a in alerts}
+    cleanup_tracker(active_keys)
+
+    # Alerts nach Wiederholungslimit filtern (0 = unbegrenzt)
+    if repeat_limit > 0:
+        filtered = []
+        for alert in alerts:
+            entry = get_tracker_entry(alert['product_id'], alert['type'])
+            if entry and entry['best_before_date'] == alert['best_before'] and entry['sent_count'] >= repeat_limit:
+                logger.debug(f"Wiederholungslimit ({repeat_limit}) erreicht fuer {alert['name']} ({alert['type']}), uebersprungen")
+                continue
+            filtered.append(alert)
+        alerts = filtered
+
+    if not alerts:
+        logger.info("Keine neuen Warnungen (Wiederholungslimit fuer alle Produkte erreicht).")
         return
 
     type_labels = {
@@ -143,3 +172,7 @@ def run_check():
             error_detail = traceback.format_exc()
             logger.error(f"Fehler bei Kanal {ch['name']}: {error_detail}")
             add_log_entry(None, 'error', ch['name'], str(e), success=False)
+
+    # Tracker aktualisieren: gesendete Alerts zaehlen
+    for alert in alerts:
+        upsert_tracker_entry(alert['product_id'], alert['type'], alert['best_before'])

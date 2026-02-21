@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.4] - 2026-02-21
+
+### Added
+
+- **Notification repeat limit** (Settings → Notifications → "Notification repeat"):
+  Configurable how often Grocylink sends a notification per product and alert state.
+  Options: Always (default, previous behavior), Once, 2×, 3×, 5×.
+  Grocylink tracks sent notifications in a new `notification_tracker` table. The counter
+  resets automatically when a product's best-before date changes (e.g. after restocking)
+  or when the product leaves the alert state (consumed, restocked above minimum).
+- **Version number in footer**: The current version is now displayed in the app footer
+  (`© 2026 c42u · GPLv3 · Version x.x`).
+
+### Fixed
+
+- **CalDAV bidirectional task sync**:
+  - **Completions from CalDAV were ignored**: `_sync_tasks_to_caldav` ran before
+    `_sync_caldav_to_grocy` and overwrote CalDAV status changes (COMPLETED → NEEDS-ACTION)
+    before they could be applied to Grocy. Sync order is now CalDAV→Grocy first, then
+    Grocy→CalDAV — changes from both sides are correctly detected and propagated.
+  - **Duplicate tasks (clone effect)** on CalDAV import: Creating a task in CalDAV and
+    then completing it in Grocy produced a second open entry in CalDAV. The original
+    CalDAV VTODO UID was overwritten in the sync map by a Grocylink UID, causing
+    `_sync_tasks_to_caldav` to lose track of the VTODO and create a new one. The original
+    UID is now permanently retained in the sync map; `_sync_tasks_to_caldav` reads it
+    directly — no UID update in CalDAV, no duplicates.
+
+---
+
 ## [1.0.3] - 2026-02-20
 
 ### Fixed
