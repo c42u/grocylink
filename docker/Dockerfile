@@ -21,11 +21,11 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY Code/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
-RUN rm -rf docker doku data/__pycache__
+# Nur Applikations-Code kopieren (kein docker/, Dokumentation/ etc.)
+COPY Code/ .
 
 COPY --chmod=755 docker/entrypoint.sh /entrypoint.sh
 

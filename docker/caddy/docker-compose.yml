@@ -1,0 +1,20 @@
+services:
+  grocylink:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: grocylink
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - grocylink-data:/app/data
+      - grocylink-caddy:/data/caddy
+    environment:
+      - GUNICORN_WORKERS=2
+      - TZ=Europe/Berlin
+
+volumes:
+  grocylink-data:
+  grocylink-caddy:

@@ -1,0 +1,22 @@
+{
+	admin off
+}
+
+:80 {
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	handle /static/* {
+		root * /app
+		file_server
+		header Cache-Control "public, max-age=86400, immutable"
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:5000
+	}
+}
