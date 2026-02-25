@@ -13,8 +13,10 @@ logger = logging.getLogger(__name__)
 
 TRANSLATIONS = {
     'de': {
-        'expiry_date': 'Ablaufdatum',
-        'expired_since': 'Abgelaufen seit',
+        'expiry_date': 'Ablaufdatum (MHD)',
+        'use_by_date': 'Verbrauchsdatum',
+        'expired_since': 'Abgelaufen seit (MHD)',
+        'use_by_since': 'Verbrauchsdatum überschritten seit',
         'missing_amount': 'Fehlmenge',
         'unknown': 'Unbekannt',
         'product_nr': 'Produkt',
@@ -24,8 +26,10 @@ TRANSLATIONS = {
         'title': 'Grocy Warnung: {count} Produkt(e) erfordern Aufmerksamkeit',
     },
     'en': {
-        'expiry_date': 'Expiry date',
-        'expired_since': 'Expired since',
+        'expiry_date': 'Best before date',
+        'use_by_date': 'Use by date',
+        'expired_since': 'Best before exceeded since',
+        'use_by_since': 'Use by date exceeded since',
         'missing_amount': 'Missing amount',
         'unknown': 'Unknown',
         'product_nr': 'Product',
@@ -67,16 +71,41 @@ def run_check():
 
     overrides = {o['product_id']: o['custom_days_before_expiry'] for o in get_product_overrides()}
 
+    # Kategorie- und Lagerort-Filter (leer = alle)
+    allowed_groups_raw = settings.get('notify_product_groups', '')
+    allowed_locations_raw = settings.get('notify_locations', '')
+    allowed_groups = [int(x) for x in allowed_groups_raw.split(',') if x.strip().lstrip('-').isdigit()]
+    allowed_locations = [int(x) for x in allowed_locations_raw.split(',') if x.strip().lstrip('-').isdigit()]
+
+    def _is_filtered(item):
+        """Gibt True zurück wenn das Produkt durch Kategorie/Lagerort-Filter ausgeschlossen wird."""
+        product = item.get('product', item)
+        if allowed_groups:
+            pg = product.get('product_group_id')
+            if pg is not None and int(pg) not in allowed_groups:
+                return True
+        if allowed_locations:
+            loc = product.get('location_id')
+            if loc is not None and int(loc) not in allowed_locations:
+                return True
+        return False
+
     alerts = []
 
     if notify_expiring:
         for item in volatile.get('due_products', []):
             product_id = item.get('product_id') or item.get('product', {}).get('id')
-            product_name = item.get('product', {}).get('name', f'{_t(lang, "product_nr")} #{product_id}')
+            product = item.get('product', {})
+            product_name = product.get('name', f'{_t(lang, "product_nr")} #{product_id}')
             best_before = item.get('best_before_date', '')
+
+            if _is_filtered(item):
+                continue
 
             if product_id in overrides:
                 custom_days = overrides[product_id]
+                if custom_days == 0:
+                    continue  # Benachrichtigungen fuer dieses Produkt deaktiviert
                 if best_before:
                     try:
                         exp_date = datetime.strptime(best_before, '%Y-%m-%d')
@@ -85,10 +114,12 @@ def run_check():
                     except ValueError:
                         pass
 
+            due_type = product.get('due_type', 1)
+            date_label = _t(lang, 'use_by_date') if due_type == 2 else _t(lang, 'expiry_date')
             alerts.append({
                 'type': 'expiring',
                 'name': product_name,
-                'detail': f"{_t(lang, 'expiry_date')}: {best_before}",
+                'detail': f"{date_label}: {best_before}",
                 'product_id': str(product_id or ''),
                 'best_before': best_before,
             })
@@ -96,12 +127,22 @@ def run_check():
     if notify_expired:
         for item in volatile.get('overdue_products', []) + volatile.get('expired_products', []):
             product_id = item.get('product_id') or item.get('product', {}).get('id')
-            product_name = item.get('product', {}).get('name', _t(lang, 'unknown'))
+            product = item.get('product', {})
+            product_name = product.get('name', _t(lang, 'unknown'))
             best_before = item.get('best_before_date', '')
+
+            if _is_filtered(item):
+                continue
+
+            if product_id in overrides and overrides[product_id] == 0:
+                continue  # Benachrichtigungen fuer dieses Produkt deaktiviert
+
+            due_type = product.get('due_type', 1)
+            date_label = _t(lang, 'use_by_since') if due_type == 2 else _t(lang, 'expired_since')
             alerts.append({
                 'type': 'expired',
                 'name': product_name,
-                'detail': f"{_t(lang, 'expired_since')}: {best_before}",
+                'detail': f"{date_label}: {best_before}",
                 'product_id': str(product_id or ''),
                 'best_before': best_before,
             })
@@ -111,6 +152,13 @@ def run_check():
             product_id = item.get('id') or item.get('product_id') or item.get('product', {}).get('id')
             product_name = item.get('product', {}).get('name', item.get('name', _t(lang, 'unknown')))
             amount_missing = item.get('amount_missing', '?')
+
+            if _is_filtered(item):
+                continue
+
+            if product_id in overrides and overrides[product_id] == 0:
+                continue  # Benachrichtigungen fuer dieses Produkt deaktiviert
+
             alerts.append({
                 'type': 'missing',
                 'name': product_name,

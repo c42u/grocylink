@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.5] - 2026-02-21
+
+### Added
+
+- **"Keine Warnung" per Produkt**: Warntage auf `0` setzen deaktiviert Benachrichtigungen
+  für dieses Produkt vollständig (gilt für alle Alert-Typen: ablaufend, abgelaufen, Mindestbestand).
+- **Verbrauchsdatum vs. MHD**: Benachrichtigungen unterscheiden jetzt zwischen
+  Mindesthaltbarkeitsdatum (MHD) und Verbrauchsdatum (`due_type` aus Grocy).
+- **Bestand direkt aus dem Dashboard hinzufügen**: In der "Unter Mindestbestand"-Liste
+  gibt es pro Produkt einen "Hinzufügen"-Button. Ein Modal erlaubt das direkte Nachbuchen
+  (Menge, optionales MHD/Verbrauchsdatum, optionaler Preis). Die Dashboard-Ansicht
+  aktualisiert sich nach dem Buchen automatisch.
+- **Kategorie- und Lagerort-Filter** (Einstellungen → Benachrichtigungen):
+  Benachrichtigungen können auf bestimmte Grocy-Produktkategorien und/oder Lagerorte
+  eingeschränkt werden. Ohne Auswahl werden alle berücksichtigt.
+- **KI-Transparenz im README**: Abschnitt zur KI-gestützten Entwicklung (DE + EN) ergänzt.
+
+---
+
 ## [1.0.4] - 2026-02-21
 
 ### Added

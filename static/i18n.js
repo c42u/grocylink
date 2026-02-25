@@ -80,7 +80,7 @@ const I18N = {
 
     // Products
     'prod.title': 'Produkte & Ablaufeinstellungen',
-    'prod.hint': 'Hier können Sie individuelle Ablauf-Warntage pro Produkt festlegen. Ohne Override gilt der Standardwert aus den Einstellungen.',
+    'prod.hint': 'Individuelle Ablauf-Warntage pro Produkt. 0 = keine Benachrichtigungen für dieses Produkt. Leer = Standardwert aus den Einstellungen.',
     'prod.th_product': 'Produkt',
     'prod.th_stock': 'Bestand',
     'prod.th_expiry': 'Ablaufdatum',
@@ -91,6 +91,17 @@ const I18N = {
     'prod.no_products': 'Keine Produkte gefunden. Bitte Grocy konfigurieren.',
     'prod.saved': 'Warntage gespeichert.',
     'prod.override_removed': 'Override entfernt.',
+
+    // Dashboard: Bestand hinzufügen
+    'dash.th_action': 'Aktion',
+    'dash.add_stock': 'Bestand hinzufügen',
+    'dash.add_amount': 'Menge',
+    'dash.add_best_before': 'MHD / Verbrauchsdatum (optional)',
+    'dash.add_price': 'Preis (optional)',
+    'dash.add_confirm': 'Hinzufügen',
+    'dash.add_cancel': 'Abbrechen',
+    'dash.stock_added': 'Bestand erfolgreich hinzugefügt!',
+    'dash.stock_error': 'Fehler beim Hinzufügen des Bestands',
 
     // Log
     'log.title': 'Benachrichtigungsprotokoll',
@@ -186,6 +197,10 @@ const I18N = {
     'set.repeat_limit': 'Benachrichtigungswiederholung',
     'set.repeat_unlimited': 'Immer (bei jedem Check)',
     'set.repeat_once': 'Einmalig',
+    'set.filter_groups': 'Kategorien benachrichtigen (leer = alle)',
+    'set.filter_locations': 'Lagerorte benachrichtigen (leer = alle)',
+    'set.filter_loading': 'Laden...',
+    'set.filter_error': 'Fehler beim Laden',
     'set.save': 'Einstellungen speichern',
     'set.saved': 'Einstellungen gespeichert!',
     'set.language': 'Sprache',
@@ -276,7 +291,7 @@ const I18N = {
 
     // Products
     'prod.title': 'Products & expiry settings',
-    'prod.hint': 'Here you can set individual expiry warning days per product. Without an override, the default value from settings applies.',
+    'prod.hint': 'Individual expiry warning days per product. 0 = no notifications for this product. Empty = default from settings.',
     'prod.th_product': 'Product',
     'prod.th_stock': 'Stock',
     'prod.th_expiry': 'Expiry date',
@@ -287,6 +302,17 @@ const I18N = {
     'prod.no_products': 'No products found. Please configure Grocy.',
     'prod.saved': 'Warning days saved.',
     'prod.override_removed': 'Override removed.',
+
+    // Dashboard: add stock
+    'dash.th_action': 'Action',
+    'dash.add_stock': 'Add stock',
+    'dash.add_amount': 'Amount',
+    'dash.add_best_before': 'Best before / use by date (optional)',
+    'dash.add_price': 'Price (optional)',
+    'dash.add_confirm': 'Add',
+    'dash.add_cancel': 'Cancel',
+    'dash.stock_added': 'Stock added successfully!',
+    'dash.stock_error': 'Error adding stock',
 
     // Log
     'log.title': 'Notification log',
@@ -382,6 +408,10 @@ const I18N = {
     'set.repeat_limit': 'Notification repeat',
     'set.repeat_unlimited': 'Always (on every check)',
     'set.repeat_once': 'Once',
+    'set.filter_groups': 'Notify categories (empty = all)',
+    'set.filter_locations': 'Notify locations (empty = all)',
+    'set.filter_loading': 'Loading...',
+    'set.filter_error': 'Error loading',
     'set.save': 'Save settings',
     'set.saved': 'Settings saved!',
     'set.language': 'Language',

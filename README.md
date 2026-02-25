@@ -157,6 +157,12 @@ All data is stored in `/app/data` inside the container:
 
 ---
 
+## AI Disclosure
+
+Grocylink is developed with the assistance of AI tools (Claude by Anthropic). All code is reviewed, tested, and maintained by a human developer. AI assistance is used for code generation, bug analysis, and documentation — the design decisions and overall responsibility remain with the developer.
+
+The software is provided "as is" without warranty. Use at your own risk.
+
 ## Links
 
 - [GitHub](https://github.com/c42u/grocylink)
@@ -317,6 +323,12 @@ Alle Daten werden in `/app/data` im Container gespeichert:
 - Ressourcenlimits fuer CPU, RAM und Prozesse
 
 ---
+
+## KI-Transparenz
+
+Grocylink wird unter Einsatz von KI-Tools (Claude von Anthropic) entwickelt. Der gesamte Code wird vom Entwickler geprueft, getestet und gepflegt. KI-Unterstuetzung wird fuer Code-Generierung, Fehleranalyse und Dokumentation eingesetzt — Designentscheidungen und Gesamtverantwortung liegen beim Entwickler.
+
+Die Software wird "wie besehen" ohne jegliche Gewaehrleistung bereitgestellt. Nutzung auf eigene Gefahr.
 
 ## Links
 

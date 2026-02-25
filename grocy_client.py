@@ -102,3 +102,17 @@ class GrocyClient:
             'tracked_time': '',
             'done_by': 0
         })
+
+    def add_stock(self, product_id, amount, best_before_date=None, price=None):
+        data = {'amount': float(amount), 'transaction_type': 'purchase'}
+        if best_before_date:
+            data['best_before_date'] = best_before_date
+        if price is not None:
+            data['price'] = float(price)
+        return self._post(f'/stock/products/{product_id}/add', data)
+
+    def get_product_groups(self):
+        return self._get('/objects/product_groups')
+
+    def get_locations(self):
+        return self._get('/objects/locations')

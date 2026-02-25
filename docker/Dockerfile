@@ -1,7 +1,19 @@
 FROM python:3.12-slim
 
-LABEL maintainer="Grocylink"
-LABEL description="Grocylink - Grocy Monitoring, Notifications & CalDAV Sync"
+# OCI-Standard-Labels – werden vom GitHub Actions Workflow (metadata-action)
+# automatisch mit Version, Build-Datum und Git-Revision befüllt
+ARG BUILD_DATE
+ARG VERSION
+ARG REVISION
+
+LABEL org.opencontainers.image.title="Grocylink" \
+      org.opencontainers.image.description="Grocy Monitoring, Notifications & CalDAV Sync" \
+      org.opencontainers.image.authors="c42u" \
+      org.opencontainers.image.licenses="GPL-3.0" \
+      org.opencontainers.image.source="https://github.com/c42u/grocylink-test" \
+      org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.version=$VERSION \
+      org.opencontainers.image.revision=$REVISION
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates iputils-ping && \

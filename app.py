@@ -17,7 +17,7 @@ from caldav_sync import CalDAVSync, run_caldav_sync
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-APP_VERSION = '1.0.4'
+APP_VERSION = '1.0.5'
 
 app = Flask(__name__)
 
@@ -160,6 +160,45 @@ def api_save_override():
     else:
         save_product_override(data['product_id'], data['product_name'], data['days'])
     return jsonify({'ok': True})
+
+
+@app.route('/api/grocy/stock/add', methods=['POST'])
+def api_grocy_stock_add():
+    data = request.get_json()
+    product_id = data.get('product_id')
+    amount = data.get('amount')
+    if not product_id or not amount:
+        return jsonify({'error': 'product_id and amount required'}), 400
+    try:
+        client = GrocyClient()
+        result = client.add_stock(
+            product_id, amount,
+            best_before_date=data.get('best_before_date') or None,
+            price=data.get('price') or None,
+        )
+        return jsonify({'ok': True, 'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/grocy/product-groups', methods=['GET'])
+def api_grocy_product_groups():
+    try:
+        client = GrocyClient()
+        groups = client.get_product_groups()
+        return jsonify(groups)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/grocy/locations', methods=['GET'])
+def api_grocy_locations():
+    try:
+        client = GrocyClient()
+        locations = client.get_locations()
+        return jsonify(locations)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/log', methods=['GET'])

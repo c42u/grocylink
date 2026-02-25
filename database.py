@@ -99,6 +99,8 @@ def init_db():
         'caldav_calendar': '',
         'caldav_verify_ssl': '1',
         'notification_repeat_limit': '0',
+        'notify_product_groups': '',
+        'notify_locations': '',
         'caldav_sync_enabled': '0',
         'caldav_sync_interval_minutes': '30',
         'language': 'de',
