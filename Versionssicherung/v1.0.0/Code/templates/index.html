@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocy Notify</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app">
+        <nav class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span>Grocy Notify</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active" data-page="dashboard">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="channels">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                    Kanäle
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="products">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                    Produkte
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="log">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Log
+                </a></li>
+                <li><a href="#" class="nav-link" data-page="settings">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                    Einstellungen
+                </a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="theme-toggle" id="themeToggle" title="Design wechseln">
+                    <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                </button>
+            </div>
+        </nav>
+
+        <main class="content">
+            <!-- Dashboard -->
+            <div class="page active" id="page-dashboard">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <button class="btn btn-primary" onclick="checkNow()">Jetzt prüfen</button>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card stat-warning">
+                        <div class="stat-number" id="statExpiring">-</div>
+                        <div class="stat-label">Bald ablaufend</div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-number" id="statExpired">-</div>
+                        <div class="stat-label">Abgelaufen</div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-number" id="statMissing">-</div>
+                        <div class="stat-label">Unter Mindestbestand</div>
+                    </div>
+                    <div class="stat-card stat-ok">
+                        <div class="stat-number" id="statTotal">-</div>
+                        <div class="stat-label">Produkte gesamt</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Bald ablaufende Produkte</h2>
+                    <div class="table-wrap">
+                        <table id="tableDue">
+                            <thead><tr><th>Produkt</th><th>Menge</th><th>Ablaufdatum</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="section">
+                    <h2>Abgelaufene Produkte</h2>
+                    <div class="table-wrap">
+                        <table id="tableExpired">
+                            <thead><tr><th>Produkt</th><th>Menge</th><th>Ablaufdatum</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="section">
+                    <h2>Unter Mindestbestand</h2>
+                    <div class="table-wrap">
+                        <table id="tableMissing">
+                            <thead><tr><th>Produkt</th><th>Fehlmenge</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Channels -->
+            <div class="page" id="page-channels">
+                <div class="page-header">
+                    <h1>Benachrichtigungskanäle</h1>
+                    <button class="btn btn-primary" onclick="showAddChannel()">+ Kanal hinzufügen</button>
+                </div>
+                <div id="channelsList"></div>
+
+                <div class="modal-overlay" id="channelModal">
+                    <div class="modal">
+                        <h2 id="channelModalTitle">Kanal hinzufügen</h2>
+                        <form id="channelForm" onsubmit="saveChannel(event)">
+                            <input type="hidden" id="channelId">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" id="channelName" required placeholder="z.B. Meine Email">
+                            </div>
+                            <div class="form-group">
+                                <label>Typ</label>
+                                <select id="channelType" onchange="updateChannelFields()">
+                                    <option value="email">Email (SMTP)</option>
+                                    <option value="pushover">Pushover</option>
+                                    <option value="telegram">Telegram</option>
+                                    <option value="slack">Slack (Webhook)</option>
+                                    <option value="discord">Discord (Webhook)</option>
+                                    <option value="gotify">Gotify</option>
+                                </select>
+                            </div>
+                            <div id="channelConfigFields"></div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="channelEnabled" checked>
+                                    Aktiviert
+                                </label>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeModal('channelModal')">Abbrechen</button>
+                                <button type="submit" class="btn btn-primary">Speichern</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div class="page" id="page-products">
+                <div class="page-header">
+                    <h1>Produkte & Ablaufeinstellungen</h1>
+                </div>
+                <p class="hint">Hier können Sie individuelle Ablauf-Warntage pro Produkt festlegen. Ohne Override gilt der Standardwert aus den Einstellungen.</p>
+                <div class="table-wrap">
+                    <table id="tableProducts">
+                        <thead><tr><th>Produkt</th><th>Bestand</th><th>Ablaufdatum</th><th>Warntage</th><th>Aktion</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Log -->
+            <div class="page" id="page-log">
+                <div class="page-header">
+                    <h1>Benachrichtigungsprotokoll</h1>
+                    <button class="btn btn-secondary" onclick="clearLog()">Log leeren</button>
+                </div>
+                <div class="table-wrap">
+                    <table id="tableLog">
+                        <thead><tr><th>Zeitpunkt</th><th>Produkt</th><th>Typ</th><th>Kanal</th><th>Nachricht</th><th>Status</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="page" id="page-settings">
+                <div class="page-header">
+                    <h1>Einstellungen</h1>
+                </div>
+                <form id="settingsForm" onsubmit="saveSettings(event)">
+                    <div class="card">
+                        <h3>Grocy-Verbindung</h3>
+                        <div class="form-group">
+                            <label>Grocy URL</label>
+                            <input type="url" id="setGrocyUrl" placeholder="https://grocy.example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>API-Key</label>
+                            <input type="password" id="setApiKey" placeholder="Dein Grocy API Key">
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="testConnection()">Verbindung testen</button>
+                        <span id="connectionStatus"></span>
+                    </div>
+                    <div class="card">
+                        <h3>Benachrichtigungen</h3>
+                        <div class="form-group">
+                            <label>Standard-Warntage vor Ablauf</label>
+                            <input type="number" id="setDefaultDays" min="1" max="365" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label>Check-Intervall (Stunden)</label>
+                            <input type="number" id="setInterval" min="1" max="168" value="6">
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label"><input type="checkbox" id="setNotifyExpiring" checked> Benachrichtigung bei bald ablaufenden Produkten</label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label"><input type="checkbox" id="setNotifyExpired" checked> Benachrichtigung bei abgelaufenen Produkten</label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label"><input type="checkbox" id="setNotifyMissing" checked> Benachrichtigung bei Mindestbestand-Unterschreitung</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Einstellungen speichern</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/static/app.js"></script>
+</body>
+</html>

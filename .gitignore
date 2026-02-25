@@ -6,3 +6,16 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Synology NAS Metadaten
+@eaDir/
+Thumbs.db
+
+# Altlasten (Inhalt ist in Versionssicherung/ und Dokumentation/ überführt)
+v1/
+v2/
+doku/
+logo/
+marketing/
+test/
+dockerhub/
