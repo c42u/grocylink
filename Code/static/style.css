@@ -941,8 +941,3 @@ code.help-code {
     .page-header { flex-direction: column; gap: 12px; align-items: flex-start; }
     .stats-grid { grid-template-columns: 1fr 1fr; }
 }
-
-/* Wiederholung-Spinner: nur bei Hover/Focus sichtbar (wie nativer type=number) */
-.repeat-step-wrap .repeat-spin-btns { display: none; }
-.repeat-step-wrap:hover .repeat-spin-btns,
-.repeat-step-wrap:focus-within .repeat-spin-btns { display: flex; flex-direction: column; }
