@@ -41,7 +41,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS product_overrides (
             product_id INTEGER PRIMARY KEY,
             product_name TEXT NOT NULL,
-            custom_days_before_expiry INTEGER NOT NULL
+            custom_days_before_expiry INTEGER NOT NULL,
+            custom_repeat_limit INTEGER
         );
 
         CREATE TABLE IF NOT EXISTS notification_log (
@@ -77,12 +78,16 @@ def init_db():
             UNIQUE(grocy_type, grocy_id)
         );
     """)
-    # Migration: sync_direction Spalte hinzufügen falls nicht vorhanden
-    try:
-        conn.execute("ALTER TABLE caldav_sync_map ADD COLUMN sync_direction TEXT NOT NULL DEFAULT ''")
-        conn.commit()
-    except Exception:
-        pass
+    # Migrationen: fehlende Spalten nachträglich hinzufügen
+    for migration in [
+        "ALTER TABLE caldav_sync_map ADD COLUMN sync_direction TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE product_overrides ADD COLUMN custom_repeat_limit INTEGER",
+    ]:
+        try:
+            conn.execute(migration)
+            conn.commit()
+        except Exception:
+            pass
     defaults = {
         'grocy_url': '',
         'grocy_api_key': '',
@@ -98,7 +103,7 @@ def init_db():
         'caldav_path': '',
         'caldav_calendar': '',
         'caldav_verify_ssl': '1',
-        'notification_repeat_limit': '0',
+        'notification_repeat_limit': '1',
         'notify_product_groups': '',
         'notify_locations': '',
         'caldav_sync_enabled': '0',
@@ -228,11 +233,14 @@ def get_product_overrides():
     return [dict(r) for r in rows]
 
 
-def save_product_override(product_id, product_name, days):
+def save_product_override(product_id, product_name, days, repeat_limit=None):
+    """Speichert ein Produkt-Override. days=-1 bedeutet 'globalen Standard verwenden'.
+    repeat_limit=None bedeutet 'globales Wiederholungslimit verwenden'."""
     conn = get_db()
     conn.execute(
-        "INSERT OR REPLACE INTO product_overrides (product_id, product_name, custom_days_before_expiry) VALUES (?, ?, ?)",
-        (product_id, product_name, days)
+        "INSERT OR REPLACE INTO product_overrides "
+        "(product_id, product_name, custom_days_before_expiry, custom_repeat_limit) VALUES (?, ?, ?, ?)",
+        (product_id, product_name, days, repeat_limit)
     )
     conn.commit()
     conn.close()

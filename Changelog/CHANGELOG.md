@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.6] - 2026-02-26
+
+### Added
+
+- **Flexibles Wiederholungslimit**: Das Dropdown (Immer / Einmalig / 2× / 3× / 5×) wurde durch
+  ein freies Zahlenfeld ersetzt. Jeder Wert ≥ 1 ist gültig; `0` bedeutet "immer benachrichtigen".
+  Standard bleibt `1` (einmalig pro Produkt und Alarmzustand).
+- **Wiederholungslimit pro Produkt**: Jedes Produkt hat auf der Produktseite ein eigenes
+  "Wiederholung"-Feld. `0` = immer, Zahl = N-mal, leer = globalen Standard verwenden.
+- **Per-Produkt-Einstellungen haben Vorrang vor Kategorie/Lagerort-Filter**: Ist für ein Produkt
+  ein individuelles Wiederholungslimit gesetzt, wird es unabhängig vom Filter immer berücksichtigt.
+- **Alle Grocy-Produkte auf der Produktseite**: Die Produktseite zeigt jetzt alle in Grocy
+  definierten Produkte – nicht nur solche mit Bestand. Per-Produkt-Einstellungen sind jederzeit
+  konfigurierbar.
+
+### Changed
+
+- **Kategorie/Lagerort-Filter-Layout**: Checkboxen werden jetzt im 3-Spalten-Raster alphabetisch
+  sortiert angezeigt.
+
+---
+
 ## [1.0.5] - 2026-02-21
 
 ### Added

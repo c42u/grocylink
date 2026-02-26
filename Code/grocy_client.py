@@ -111,6 +111,10 @@ class GrocyClient:
             data['price'] = float(price)
         return self._post(f'/stock/products/{product_id}/add', data)
 
+    def get_all_products(self):
+        """Liefert alle in Grocy definierten Produkte (unabhaengig vom Bestand)."""
+        return self._get('/objects/products')
+
     def get_product_groups(self):
         return self._get('/objects/product_groups')
 
