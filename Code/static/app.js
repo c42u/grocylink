@@ -368,7 +368,7 @@ async function loadProducts() {
                             style="width:120px;padding-right:18px;box-sizing:border-box" placeholder="${esc(t('prod.repeat_ph'))}"
                             data-pid="${p.product_id}" data-pname="${esc(p.name)}"
                             onchange="saveProductOverride(this)">
-                        <div style="position:absolute;right:1px;top:1px;bottom:1px;width:16px;display:flex;flex-direction:column">
+                        <div class="repeat-spin-btns" style="position:absolute;right:1px;top:1px;bottom:1px;width:16px;display:flex;flex-direction:column">
                             <button type="button" tabindex="-1"
                                 style="flex:1;padding:0;border:none;border-left:1px solid var(--border);background:var(--bg-secondary);cursor:pointer;font-size:.55em;color:var(--text-primary)"
                                 onclick="repeatStep(this,1)">&#9650;</button>
