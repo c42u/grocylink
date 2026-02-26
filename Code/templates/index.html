@@ -372,9 +372,9 @@
                         </div>
                         <div class="form-group">
                             <label data-i18n="set.repeat_limit">Benachrichtigungswiederholung pro Produkt</label>
-                            <div style="display:flex;align-items:center;gap:.6rem">
-                                <input type="number" id="setRepeatLimit" min="0" max="999" value="1" style="width:90px">
-                                <span class="hint" data-i18n="set.repeat_hint" style="color:var(--text-secondary);font-size:.88em">× pro Produkt (0 = immer, Standard: 1)</span>
+                            <div style="display:flex;flex-direction:row;align-items:center;gap:.6rem">
+                                <input type="number" id="setRepeatLimit" min="0" max="999" value="1" style="width:90px;flex-shrink:0">
+                                <span data-i18n="set.repeat_hint" style="color:var(--text-secondary);font-size:.88em;line-height:1.4;align-self:center;margin:0">× pro Produkt (0 = immer, Standard: 1)</span>
                             </div>
                         </div>
                         <div class="form-group">
@@ -564,14 +564,23 @@
                     </div>
 
                     <div class="help-section">
-                        <h2>Produkte & Warntage</h2>
+                        <h2>Produkte & Einstellungen</h2>
                         <div class="help-card">
-                            <p>Unter <strong>Produkte</strong> kann fuer jedes Produkt ein individueller Warnzeitraum festgelegt werden.</p>
+                            <p>Unter <strong>Produkte</strong> koennen fuer jedes Grocy-Produkt individuelle Einstellungen festgelegt werden – unabhaengig davon, ob das Produkt aktuell auf Lager ist.</p>
+                            <h4>Warntage:</h4>
                             <ul>
-                                <li><strong>Standard:</strong> Gilt der Wert aus den Einstellungen (z.B. 5 Tage)</li>
-                                <li><strong>Individuell:</strong> Pro Produkt anpassbar (z.B. Milch = 2 Tage, Konserven = 30 Tage)</li>
+                                <li><strong>Leer:</strong> Globaler Standardwert aus den Einstellungen (z.B. 5 Tage)</li>
+                                <li><strong>Zahl &ge; 1:</strong> Individueller Warnzeitraum (z.B. Milch = 2 Tage)</li>
+                                <li><strong>0:</strong> Keine Benachrichtigungen fuer dieses Produkt</li>
                             </ul>
-                            <p>Einfach im Feld &quot;Warntage&quot; den gewuenschten Wert eingeben. <strong>Reset</strong> setzt auf den Standardwert zurueck.</p>
+                            <h4>Wiederholung:</h4>
+                            <ul>
+                                <li><strong>Leer:</strong> Globales Wiederholungslimit aus den Einstellungen</li>
+                                <li><strong>Zahl &ge; 1:</strong> Genau N-mal benachrichtigen pro Alarmzustand</li>
+                                <li><strong>immer:</strong> Bei jedem Check benachrichtigen (unbegrenzt)</li>
+                            </ul>
+                            <p><strong>Vorrang:</strong> Per-Produkt-Einstellungen haben Vorrang vor Kategorie- und Lagerort-Filtern. Ein Produkt mit gesetztem Wiederholungslimit wird immer beruecksichtigt, unabhaengig vom Filter.</p>
+                            <p><strong>Reset</strong> entfernt alle individuellen Einstellungen fuer dieses Produkt.</p>
                         </div>
                     </div>
 
@@ -821,14 +830,23 @@ openssl s_client -connect domain:443 2&gt;&amp;1 | grep "depth="    # depth=0 + 
                     </div>
 
                     <div class="help-section">
-                        <h2>Products & Warning Days</h2>
+                        <h2>Products & Settings</h2>
                         <div class="help-card">
-                            <p>Under <strong>Products</strong>, you can set an individual warning period for each product.</p>
+                            <p>Under <strong>Products</strong>, individual settings can be configured for each Grocy product — regardless of whether the product is currently in stock.</p>
+                            <h4>Warning days:</h4>
                             <ul>
-                                <li><strong>Default:</strong> Uses the value from settings (e.g. 5 days)</li>
-                                <li><strong>Custom:</strong> Adjustable per product (e.g. Milk = 2 days, Canned goods = 30 days)</li>
+                                <li><strong>Empty:</strong> Global default from settings (e.g. 5 days)</li>
+                                <li><strong>Number &ge; 1:</strong> Custom warning period (e.g. Milk = 2 days)</li>
+                                <li><strong>0:</strong> No notifications for this product</li>
                             </ul>
-                            <p>Simply enter the desired value in the "Warning days" field. <strong>Reset</strong> restores the default value.</p>
+                            <h4>Repeat:</h4>
+                            <ul>
+                                <li><strong>Empty:</strong> Global repeat limit from settings</li>
+                                <li><strong>Number &ge; 1:</strong> Notify exactly N times per alert state</li>
+                                <li><strong>always:</strong> Notify on every check (unlimited)</li>
+                            </ul>
+                            <p><strong>Priority:</strong> Per-product settings override category and location filters. A product with a repeat limit set will always be evaluated, regardless of filter configuration.</p>
+                            <p><strong>Reset</strong> removes all individual settings for that product.</p>
                         </div>
                     </div>
 
