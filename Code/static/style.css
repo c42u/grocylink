@@ -306,6 +306,24 @@ input:focus, select:focus, textarea:focus {
     cursor: pointer;
 }
 
+/* Kategorie- und Lagerort-Filter: 3 Spalten, alphabetisch sortiert */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .45rem .75rem;
+}
+
+.filter-grid label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: .92em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .checkbox-label input[type="checkbox"] {
     width: 18px;
     height: 18px;

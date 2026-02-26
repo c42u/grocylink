@@ -197,7 +197,7 @@
                 <p class="hint" data-i18n="prod.hint">Hier können Sie individuelle Ablauf-Warntage pro Produkt festlegen. Ohne Override gilt der Standardwert aus den Einstellungen.</p>
                 <div class="table-wrap">
                     <table id="tableProducts">
-                        <thead><tr><th data-i18n="prod.th_product">Produkt</th><th data-i18n="prod.th_stock">Bestand</th><th data-i18n="prod.th_expiry">Ablaufdatum</th><th data-i18n="prod.th_warn_days">Warntage</th><th data-i18n="prod.th_action">Aktion</th></tr></thead>
+                        <thead><tr><th data-i18n="prod.th_product">Produkt</th><th data-i18n="prod.th_stock">Bestand</th><th data-i18n="prod.th_expiry">Ablaufdatum</th><th data-i18n="prod.th_warn_days">Warntage</th><th data-i18n="prod.th_repeat">Wiederholung</th><th data-i18n="prod.th_action">Aktion</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -371,14 +371,11 @@
                             <input type="number" id="setInterval" min="1" max="168" value="6">
                         </div>
                         <div class="form-group">
-                            <label data-i18n="set.repeat_limit">Benachrichtigungswiederholung</label>
-                            <select id="setRepeatLimit">
-                                <option value="0" data-i18n="set.repeat_unlimited">Immer (bei jedem Check)</option>
-                                <option value="1" data-i18n="set.repeat_once">Einmalig</option>
-                                <option value="2">2×</option>
-                                <option value="3">3×</option>
-                                <option value="5">5×</option>
-                            </select>
+                            <label data-i18n="set.repeat_limit">Benachrichtigungswiederholung pro Produkt</label>
+                            <div style="display:flex;align-items:center;gap:.6rem">
+                                <input type="number" id="setRepeatLimit" min="0" max="999" value="1" style="width:90px">
+                                <span class="hint" data-i18n="set.repeat_hint" style="color:var(--text-secondary);font-size:.88em">× pro Produkt (0 = immer, Standard: 1)</span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="checkbox-label"><input type="checkbox" id="setNotifyExpiring" checked> <span data-i18n="set.notify_expiring">Benachrichtigung bei bald ablaufenden Produkten</span></label>
@@ -391,11 +388,11 @@
                         </div>
                         <div class="form-group">
                             <label data-i18n="set.filter_groups">Kategorien benachrichtigen (leer = alle)</label>
-                            <div id="filterGroupsContainer" style="display:flex;flex-wrap:wrap;gap:.5rem .75rem;margin-top:.35rem"></div>
+                            <div id="filterGroupsContainer" class="filter-grid" style="margin-top:.35rem"></div>
                         </div>
                         <div class="form-group">
                             <label data-i18n="set.filter_locations">Lagerorte benachrichtigen (leer = alle)</label>
-                            <div id="filterLocationsContainer" style="display:flex;flex-wrap:wrap;gap:.5rem .75rem;margin-top:.35rem"></div>
+                            <div id="filterLocationsContainer" class="filter-grid" style="margin-top:.35rem"></div>
                         </div>
                     </div>
                     <div class="card">
