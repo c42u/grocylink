@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Kategorie/Lagerort-Filter-Layout**: Checkboxen werden jetzt im 3-Spalten-Raster alphabetisch
   sortiert angezeigt.
+- **Prüfintervall-Beschriftung**: Label verdeutlicht jetzt, dass alle X Stunden geprüft und
+  benachrichtigt wird (DE + EN).
+- **Wiederholung „immer" statt „0"**: Im Produktfeld wird `0` als lesbares `immer` (DE) bzw.
+  `always` (EN) angezeigt; Eingabe von `immer`/`always` wird als `0` interpretiert.
+- **Hinweistext vertikal zentriert**: Der Text `× pro Produkt und Alarmzustand` ist jetzt
+  mittig zur Höhe des Eingabefelds ausgerichtet.
 
 ---
 

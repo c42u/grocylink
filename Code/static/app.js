@@ -362,8 +362,8 @@ async function loadProducts() {
                         onchange="saveProductOverride(this)">
                 </td>
                 <td>
-                    <input type="number" class="repeat-override-input" min="0" max="999"
-                        value="${hasRepeat ? p.custom_repeat_limit : ''}"
+                    <input type="text" class="repeat-override-input"
+                        value="${hasRepeat ? (p.custom_repeat_limit === 0 ? t('prod.repeat_always') : p.custom_repeat_limit) : ''}"
                         style="width:90px" placeholder="${esc(t('prod.repeat_ph'))}"
                         data-pid="${p.product_id}" data-pname="${esc(p.name)}"
                         onchange="saveProductOverride(this)">
@@ -395,7 +395,12 @@ async function saveProductOverride(el) {
     } else {
         // -1 als Sentinel: "globalen Standard-Warntag verwenden"
         const daysInt = daysVal !== '' ? parseInt(daysVal) : -1;
-        const repeatInt = repeatVal !== '' ? parseInt(repeatVal) : null;
+        // "immer"/"always" oder "0" → 0 (unbegrenzt wiederholen)
+        const repeatAlways = t('prod.repeat_always').toLowerCase();
+        const repeatLower = repeatVal.toLowerCase();
+        const repeatInt = repeatVal === '' ? null :
+            (repeatLower === repeatAlways || repeatLower === '0') ? 0 :
+            parseInt(repeatVal);
         if (isNaN(daysInt) || (repeatInt !== null && isNaN(repeatInt))) return;
         await api('/api/products/override', 'POST', {
             product_id: pid,
