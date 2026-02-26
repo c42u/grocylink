@@ -357,16 +357,26 @@ async function loadProducts() {
                 <td>
                     <input type="number" class="days-override-input" min="0" max="365"
                         value="${hasDays ? p.custom_days : ''}"
-                        style="width:90px" placeholder="${esc(t('prod.placeholder'))}"
+                        style="width:120px" placeholder="${esc(t('prod.placeholder'))}"
                         data-pid="${p.product_id}" data-pname="${esc(p.name)}"
                         onchange="saveProductOverride(this)">
                 </td>
                 <td>
-                    <input type="text" class="repeat-override-input"
-                        value="${hasRepeat ? (p.custom_repeat_limit === 0 ? t('prod.repeat_always') : p.custom_repeat_limit) : ''}"
-                        style="width:90px" placeholder="${esc(t('prod.repeat_ph'))}"
-                        data-pid="${p.product_id}" data-pname="${esc(p.name)}"
-                        onchange="saveProductOverride(this)">
+                    <div style="display:inline-flex;align-items:center;gap:2px">
+                        <input type="text" class="repeat-override-input"
+                            value="${hasRepeat ? (p.custom_repeat_limit === 0 ? t('prod.repeat_always') : p.custom_repeat_limit) : ''}"
+                            style="width:120px" placeholder="${esc(t('prod.repeat_ph'))}"
+                            data-pid="${p.product_id}" data-pname="${esc(p.name)}"
+                            onchange="saveProductOverride(this)">
+                        <div style="display:flex;flex-direction:column">
+                            <button type="button" tabindex="-1"
+                                style="line-height:1;padding:1px 4px;font-size:.7em;border:1px solid var(--border);background:var(--bg-secondary);cursor:pointer;border-radius:2px 2px 0 0;color:var(--text-primary)"
+                                onclick="repeatStep(this,1)">&#9650;</button>
+                            <button type="button" tabindex="-1"
+                                style="line-height:1;padding:1px 4px;font-size:.7em;border:1px solid var(--border);border-top:none;background:var(--bg-secondary);cursor:pointer;border-radius:0 0 2px 2px;color:var(--text-primary)"
+                                onclick="repeatStep(this,-1)">&#9660;</button>
+                        </div>
+                    </div>
                 </td>
                 <td>
                     ${hasOverride ? '<button class="btn btn-sm btn-secondary" onclick="removeProductOverride(' + p.product_id + ')">' + esc(t('prod.reset')) + '</button>' : ''}
@@ -417,6 +427,22 @@ async function removeProductOverride(pid) {
     await api('/api/products/override', 'POST', { product_id: pid, delete: true });
     toast(t('prod.override_removed'), 'success');
     loadProducts();
+}
+
+function repeatStep(btn, delta) {
+    const input = btn.closest('div').querySelector('.repeat-override-input');
+    const alwaysText = t('prod.repeat_always').toLowerCase();
+    const val = input.value.trim().toLowerCase();
+    let num;
+    if (val === '' || val === alwaysText || val === '0') {
+        num = delta > 0 ? 1 : 0;
+    } else {
+        num = parseInt(val);
+        if (isNaN(num)) num = delta > 0 ? 1 : 0;
+        else num = Math.max(0, num + delta);
+    }
+    input.value = num === 0 ? t('prod.repeat_always') : String(num);
+    input.dispatchEvent(new Event('change'));
 }
 
 // Log
