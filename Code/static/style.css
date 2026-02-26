@@ -945,4 +945,4 @@ code.help-code {
 /* Wiederholung-Spinner: nur bei Hover/Focus sichtbar (wie nativer type=number) */
 .repeat-step-wrap .repeat-spin-btns { display: none; }
 .repeat-step-wrap:hover .repeat-spin-btns,
-.repeat-step-wrap:focus-within .repeat-spin-btns { display: flex; }
+.repeat-step-wrap:focus-within .repeat-spin-btns { display: flex; flex-direction: column; }
