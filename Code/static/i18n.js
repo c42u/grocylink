@@ -79,7 +79,7 @@ const I18N = {
     'ch.type_gotify': 'Gotify',
 
     // Products
-    'prod.title': 'Produkte & Einstellungen',
+    'prod.title': 'Produkte',
     'prod.hint': 'Individuelle Einstellungen pro Produkt. Warntage: 0 = keine Benachrichtigungen, leer = Standardwert. Wiederholung: "immer" = unbegrenzt, leer = globaler Standard. Per-Produkt-Einstellungen haben Vorrang vor Kategorie- und Lagerort-Filtern.',
     'prod.th_product': 'Produkt',
     'prod.th_stock': 'Bestand',
@@ -292,7 +292,7 @@ const I18N = {
     'ch.type_gotify': 'Gotify',
 
     // Products
-    'prod.title': 'Products & settings',
+    'prod.title': 'Products',
     'prod.hint': 'Individual settings per product. Warning days: 0 = no notifications, empty = global default. Repeat: "always" = unlimited, empty = global setting. Per-product settings override category and location filters.',
     'prod.th_product': 'Product',
     'prod.th_stock': 'Stock',
