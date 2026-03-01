@@ -18,13 +18,15 @@ LABEL org.opencontainers.image.title="Grocylink" \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl ca-certificates iputils-ping \
-        gcc libffi-dev python3-dev && \
+        gcc libffi-dev python3-dev \
+        libssl-dev pkg-config && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY Code/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# --prefer-binary: vorgefertigte Wheels bevorzugen (verhindert Rust/C-Kompilierung auf arm/v7)
+RUN pip install --no-cache-dir --prefer-binary -r requirements.txt
 
 # Nur Applikations-Code kopieren (kein docker/, Dokumentation/ etc.)
 COPY Code/ .
