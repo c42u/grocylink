@@ -11,7 +11,7 @@ __pycache__/
 @eaDir/
 Thumbs.db
 
-# Altlasten (Inhalt ist in Versionssicherung/ und Dokumentation/ überführt)
+# Lokale Arbeitsordner (nicht für Veröffentlichung)
 v1/
 v2/
 doku/
@@ -19,3 +19,11 @@ logo/
 marketing/
 test/
 dockerhub/
+
+# Nicht zu veröffentlichende Dokumentationsunterordner
+Dokumentation/marketing/
+Dokumentation/dockerhub/
+
+# PDF-Generierungsartefakte
+Dokumentation/*.pdf
+Dokumentation/pdf-style.css

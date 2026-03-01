@@ -1,1 +1,0 @@
-Grocylink erweitert Grocy um automatische Ablaufwarnungen via Telegram, Ntfy, E-Mail & Co. sowie bidirektionalen CalDAV-Sync fuer Aufgaben und Haushaltsarbeiten. Self-hosted, modular, mehrsprachig – als Docker-Container neben deiner Grocy-Instanz.
