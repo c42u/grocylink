@@ -7,16 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-03-01
+
+### Added
+
+- **"Keine Warnung" per Produkt**: Warntage auf `0` setzen deaktiviert Benachrichtigungen
+  für dieses Produkt vollständig (gilt für alle Alert-Typen: ablaufend, abgelaufen, Mindestbestand).
+- **Verbrauchsdatum vs. MHD**: Benachrichtigungen unterscheiden jetzt zwischen
+  Mindesthaltbarkeitsdatum (MHD) und Verbrauchsdatum (`due_type` aus Grocy).
+- **Bestand direkt aus dem Dashboard hinzufügen**: In der "Unter Mindestbestand"-Liste
+  gibt es pro Produkt einen "Hinzufügen"-Button. Ein Modal erlaubt das direkte Nachbuchen
+  (Menge, optionales MHD/Verbrauchsdatum, optionaler Preis). Die Dashboard-Ansicht
+  aktualisiert sich nach dem Buchen automatisch.
+- **Kategorie- und Lagerort-Filter** (Einstellungen → Benachrichtigungen):
+  Benachrichtigungen können auf bestimmte Grocy-Produktkategorien und/oder Lagerorte
+  eingeschränkt werden. Ohne Auswahl werden alle berücksichtigt. Checkboxen werden im
+  3-Spalten-Raster alphabetisch sortiert angezeigt.
+- **Flexibles Wiederholungslimit**: Freies Zahlenfeld statt Dropdown. Jeder Wert ≥ 1 ist
+  gültig; `0` bedeutet "immer benachrichtigen". Standard bleibt `1` (einmalig pro Produkt
+  und Alarmzustand). Im Eingabefeld wird `0` als lesbares `immer` (DE) bzw. `always` (EN)
+  angezeigt; Eingabe von `immer`/`always` wird als `0` interpretiert.
+- **Wiederholungslimit pro Produkt**: Jedes Produkt hat auf der Produktseite ein eigenes
+  "Wiederholung"-Feld. `0` = immer, Zahl = N-mal, leer = globalen Standard verwenden.
+- **Per-Produkt-Einstellungen haben Vorrang vor Kategorie/Lagerort-Filter**: Ist für ein
+  Produkt ein individuelles Wiederholungslimit gesetzt, wird es unabhängig vom Filter immer
+  berücksichtigt.
+- **Alle Grocy-Produkte auf der Produktseite**: Die Produktseite zeigt jetzt alle in Grocy
+  definierten Produkte – nicht nur solche mit Bestand. Per-Produkt-Einstellungen sind
+  jederzeit konfigurierbar.
+
+### Changed
+
+- **Prüfintervall-Beschriftung**: Label verdeutlicht jetzt, dass alle X Stunden geprüft und
+  benachrichtigt wird (DE + EN).
+
+---
+
 ## [1.0.4] - 2026-02-21
 
 ### Added
 
-- **Notification repeat limit** (Settings → Notifications → "Notification repeat"):
-  Configurable how often Grocylink sends a notification per product and alert state.
-  Options: Always (default, previous behavior), Once, 2×, 3×, 5×.
-  Grocylink tracks sent notifications in a new `notification_tracker` table. The counter
-  resets automatically when a product's best-before date changes (e.g. after restocking)
-  or when the product leaves the alert state (consumed, restocked above minimum).
 - **Version number in footer**: The current version is now displayed in the app footer
   (`© 2026 c42u · GPLv3 · Version x.x`).
 

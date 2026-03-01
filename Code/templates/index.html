@@ -110,9 +110,33 @@
                     <h2 data-i18n="dash.missing_title">Unter Mindestbestand</h2>
                     <div class="table-wrap">
                         <table id="tableMissing">
-                            <thead><tr><th data-i18n="dash.th_product">Produkt</th><th data-i18n="dash.th_missing_amount">Fehlmenge</th></tr></thead>
+                            <thead><tr><th data-i18n="dash.th_product">Produkt</th><th data-i18n="dash.th_missing_amount">Fehlmenge</th><th data-i18n="dash.th_action">Aktion</th></tr></thead>
                             <tbody></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal: Bestand hinzufügen -->
+            <div id="addStockModal" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:rgba(0,0,0,.45)">
+                <div class="card" style="min-width:320px;max-width:420px;width:100%;margin:1rem">
+                    <h3 id="addStockTitle" style="margin-top:0"></h3>
+                    <input type="hidden" id="addStockProductId">
+                    <div class="form-group">
+                        <label data-i18n="dash.add_amount">Menge</label>
+                        <input type="number" id="addStockAmount" min="0.001" step="any" style="width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="dash.add_best_before">MHD / Verbrauchsdatum (optional)</label>
+                        <input type="date" id="addStockBestBefore" style="width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="dash.add_price">Preis (optional)</label>
+                        <input type="number" id="addStockPrice" min="0" step="any" style="width:100%">
+                    </div>
+                    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem">
+                        <button class="btn btn-secondary" onclick="closeAddStockModal()" data-i18n="dash.add_cancel">Abbrechen</button>
+                        <button class="btn btn-primary" onclick="submitAddStock()" data-i18n="dash.add_confirm">Hinzufügen</button>
                     </div>
                 </div>
             </div>
@@ -173,7 +197,7 @@
                 <p class="hint" data-i18n="prod.hint">Hier können Sie individuelle Ablauf-Warntage pro Produkt festlegen. Ohne Override gilt der Standardwert aus den Einstellungen.</p>
                 <div class="table-wrap">
                     <table id="tableProducts">
-                        <thead><tr><th data-i18n="prod.th_product">Produkt</th><th data-i18n="prod.th_stock">Bestand</th><th data-i18n="prod.th_expiry">Ablaufdatum</th><th data-i18n="prod.th_warn_days">Warntage</th><th data-i18n="prod.th_action">Aktion</th></tr></thead>
+                        <thead><tr><th data-i18n="prod.th_product">Produkt</th><th data-i18n="prod.th_stock">Bestand</th><th data-i18n="prod.th_expiry">Ablaufdatum</th><th data-i18n="prod.th_warn_days">Warntage</th><th data-i18n="prod.th_repeat">Wiederholung</th><th data-i18n="prod.th_action">Aktion</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -347,14 +371,11 @@
                             <input type="number" id="setInterval" min="1" max="168" value="6">
                         </div>
                         <div class="form-group">
-                            <label data-i18n="set.repeat_limit">Benachrichtigungswiederholung</label>
-                            <select id="setRepeatLimit">
-                                <option value="0" data-i18n="set.repeat_unlimited">Immer (bei jedem Check)</option>
-                                <option value="1" data-i18n="set.repeat_once">Einmalig</option>
-                                <option value="2">2×</option>
-                                <option value="3">3×</option>
-                                <option value="5">5×</option>
-                            </select>
+                            <label data-i18n="set.repeat_limit">Benachrichtigungswiederholung pro Produkt</label>
+                            <div style="display:flex;flex-direction:row;align-items:center;gap:.6rem">
+                                <input type="number" id="setRepeatLimit" min="0" max="999" value="1" style="width:90px;flex-shrink:0">
+                                <span data-i18n="set.repeat_hint" style="color:var(--text-secondary);font-size:.88em;line-height:1.4;align-self:center;margin:0">× pro Produkt (0 = immer, Standard: 1)</span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="checkbox-label"><input type="checkbox" id="setNotifyExpiring" checked> <span data-i18n="set.notify_expiring">Benachrichtigung bei bald ablaufenden Produkten</span></label>
@@ -364,6 +385,14 @@
                         </div>
                         <div class="form-group">
                             <label class="checkbox-label"><input type="checkbox" id="setNotifyMissing" checked> <span data-i18n="set.notify_missing">Benachrichtigung bei Mindestbestand-Unterschreitung</span></label>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.filter_groups">Kategorien benachrichtigen (leer = alle)</label>
+                            <div id="filterGroupsContainer" class="filter-grid" style="margin-top:.35rem"></div>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.filter_locations">Lagerorte benachrichtigen (leer = alle)</label>
+                            <div id="filterLocationsContainer" class="filter-grid" style="margin-top:.35rem"></div>
                         </div>
                     </div>
                     <div class="card">
@@ -535,14 +564,23 @@
                     </div>
 
                     <div class="help-section">
-                        <h2>Produkte & Warntage</h2>
+                        <h2>Produkte</h2>
                         <div class="help-card">
-                            <p>Unter <strong>Produkte</strong> kann fuer jedes Produkt ein individueller Warnzeitraum festgelegt werden.</p>
+                            <p>Unter <strong>Produkte</strong> koennen fuer jedes Grocy-Produkt individuelle Einstellungen festgelegt werden – unabhaengig davon, ob das Produkt aktuell auf Lager ist.</p>
+                            <h4>Warntage:</h4>
                             <ul>
-                                <li><strong>Standard:</strong> Gilt der Wert aus den Einstellungen (z.B. 5 Tage)</li>
-                                <li><strong>Individuell:</strong> Pro Produkt anpassbar (z.B. Milch = 2 Tage, Konserven = 30 Tage)</li>
+                                <li><strong>Leer:</strong> Globaler Standardwert aus den Einstellungen (z.B. 5 Tage)</li>
+                                <li><strong>Zahl &ge; 1:</strong> Individueller Warnzeitraum (z.B. Milch = 2 Tage)</li>
+                                <li><strong>0:</strong> Keine Benachrichtigungen fuer dieses Produkt</li>
                             </ul>
-                            <p>Einfach im Feld &quot;Warntage&quot; den gewuenschten Wert eingeben. <strong>Reset</strong> setzt auf den Standardwert zurueck.</p>
+                            <h4>Wiederholung:</h4>
+                            <ul>
+                                <li><strong>Leer:</strong> Globales Wiederholungslimit aus den Einstellungen</li>
+                                <li><strong>Zahl &ge; 1:</strong> Genau N-mal benachrichtigen pro Alarmzustand</li>
+                                <li><strong>immer:</strong> Bei jedem Check benachrichtigen (unbegrenzt)</li>
+                            </ul>
+                            <p><strong>Vorrang:</strong> Per-Produkt-Einstellungen haben Vorrang vor Kategorie- und Lagerort-Filtern. Ein Produkt mit gesetztem Wiederholungslimit wird immer beruecksichtigt, unabhaengig vom Filter.</p>
+                            <p><strong>Reset</strong> entfernt alle individuellen Einstellungen fuer dieses Produkt.</p>
                         </div>
                     </div>
 
@@ -792,14 +830,23 @@ openssl s_client -connect domain:443 2&gt;&amp;1 | grep "depth="    # depth=0 + 
                     </div>
 
                     <div class="help-section">
-                        <h2>Products & Warning Days</h2>
+                        <h2>Products</h2>
                         <div class="help-card">
-                            <p>Under <strong>Products</strong>, you can set an individual warning period for each product.</p>
+                            <p>Under <strong>Products</strong>, individual settings can be configured for each Grocy product — regardless of whether the product is currently in stock.</p>
+                            <h4>Warning days:</h4>
                             <ul>
-                                <li><strong>Default:</strong> Uses the value from settings (e.g. 5 days)</li>
-                                <li><strong>Custom:</strong> Adjustable per product (e.g. Milk = 2 days, Canned goods = 30 days)</li>
+                                <li><strong>Empty:</strong> Global default from settings (e.g. 5 days)</li>
+                                <li><strong>Number &ge; 1:</strong> Custom warning period (e.g. Milk = 2 days)</li>
+                                <li><strong>0:</strong> No notifications for this product</li>
                             </ul>
-                            <p>Simply enter the desired value in the "Warning days" field. <strong>Reset</strong> restores the default value.</p>
+                            <h4>Repeat:</h4>
+                            <ul>
+                                <li><strong>Empty:</strong> Global repeat limit from settings</li>
+                                <li><strong>Number &ge; 1:</strong> Notify exactly N times per alert state</li>
+                                <li><strong>always:</strong> Notify on every check (unlimited)</li>
+                            </ul>
+                            <p><strong>Priority:</strong> Per-product settings override category and location filters. A product with a repeat limit set will always be evaluated, regardless of filter configuration.</p>
+                            <p><strong>Reset</strong> removes all individual settings for that product.</p>
                         </div>
                     </div>
 
@@ -1084,14 +1131,6 @@ openssl s_client -connect domain:443 2&gt;&amp;1 | grep "depth="    # depth=0 + 
                     </a>
                 </div>
                 <div class="footer-right">
-                    <a href="https://liberapay.com/c42u" target="_blank" rel="noopener">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="vertical-align:middle;margin-right:4px"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                        Liberapay
-                    </a>
-                    <a href="https://www.buymeacoffee.com/c42u" target="_blank" rel="noopener">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="vertical-align:middle;margin-right:4px"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zm4-5c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1zm4 0c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1zm4 0c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1z"/></svg>
-                        Buy me a Coffee
-                    </a>
                     <a href="https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00" target="_blank" rel="noopener">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="vertical-align:middle;margin-right:4px"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
                         Stripe

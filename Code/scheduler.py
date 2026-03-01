@@ -13,8 +13,10 @@ logger = logging.getLogger(__name__)
 
 TRANSLATIONS = {
     'de': {
-        'expiry_date': 'Ablaufdatum',
-        'expired_since': 'Abgelaufen seit',
+        'expiry_date': 'Ablaufdatum (MHD)',
+        'use_by_date': 'Verbrauchsdatum',
+        'expired_since': 'Abgelaufen seit (MHD)',
+        'use_by_since': 'Verbrauchsdatum überschritten seit',
         'missing_amount': 'Fehlmenge',
         'unknown': 'Unbekannt',
         'product_nr': 'Produkt',
@@ -24,8 +26,10 @@ TRANSLATIONS = {
         'title': 'Grocy Warnung: {count} Produkt(e) erfordern Aufmerksamkeit',
     },
     'en': {
-        'expiry_date': 'Expiry date',
-        'expired_since': 'Expired since',
+        'expiry_date': 'Best before date',
+        'use_by_date': 'Use by date',
+        'expired_since': 'Best before exceeded since',
+        'use_by_since': 'Use by date exceeded since',
         'missing_amount': 'Missing amount',
         'unknown': 'Unknown',
         'product_nr': 'Product',
@@ -65,30 +69,65 @@ def run_check():
         logger.error(f"Grocy API Fehler: {e}")
         return
 
-    overrides = {o['product_id']: o['custom_days_before_expiry'] for o in get_product_overrides()}
+    # Overrides als vollstaendige Dicts laden (inkl. custom_repeat_limit)
+    overrides = {o['product_id']: o for o in get_product_overrides()}
+
+    # Kategorie- und Lagerort-Filter (leer = alle)
+    allowed_groups_raw = settings.get('notify_product_groups', '')
+    allowed_locations_raw = settings.get('notify_locations', '')
+    allowed_groups = [int(x) for x in allowed_groups_raw.split(',') if x.strip().lstrip('-').isdigit()]
+    allowed_locations = [int(x) for x in allowed_locations_raw.split(',') if x.strip().lstrip('-').isdigit()]
+
+    def _is_filtered(item, product_id):
+        """Gibt True zurueck wenn das Produkt durch Kategorie/Lagerort-Filter ausgeschlossen wird.
+        Produkte mit explizitem Per-Produkt-Wiederholungslimit umgehen den Filter (Vorrang-Regel)."""
+        override = overrides.get(product_id)
+        # Wenn ein individuelles Wiederholungslimit gesetzt ist, Filter umgehen
+        if override is not None and override.get('custom_repeat_limit') is not None:
+            return False
+        product = item.get('product', item)
+        if allowed_groups:
+            pg = product.get('product_group_id')
+            if pg is not None and int(pg) not in allowed_groups:
+                return True
+        if allowed_locations:
+            loc = product.get('location_id')
+            if loc is not None and int(loc) not in allowed_locations:
+                return True
+        return False
 
     alerts = []
 
     if notify_expiring:
         for item in volatile.get('due_products', []):
             product_id = item.get('product_id') or item.get('product', {}).get('id')
-            product_name = item.get('product', {}).get('name', f'{_t(lang, "product_nr")} #{product_id}')
+            product = item.get('product', {})
+            product_name = product.get('name', f'{_t(lang, "product_nr")} #{product_id}')
             best_before = item.get('best_before_date', '')
 
+            if _is_filtered(item, product_id):
+                continue
+
             if product_id in overrides:
-                custom_days = overrides[product_id]
-                if best_before:
+                custom_days = overrides[product_id]['custom_days_before_expiry']
+                if custom_days == 0:
+                    continue  # Benachrichtigungen fuer dieses Produkt deaktiviert
+                if custom_days > 0 and best_before:
+                    # Positiver Wert: individuelle Wartschwelle pruefen
                     try:
                         exp_date = datetime.strptime(best_before, '%Y-%m-%d')
                         if exp_date > datetime.now() + timedelta(days=custom_days):
                             continue
                     except ValueError:
                         pass
+                # custom_days == -1: globalen Standard verwenden (kein zusaetzlicher Check)
 
+            due_type = product.get('due_type', 1)
+            date_label = _t(lang, 'use_by_date') if due_type == 2 else _t(lang, 'expiry_date')
             alerts.append({
                 'type': 'expiring',
                 'name': product_name,
-                'detail': f"{_t(lang, 'expiry_date')}: {best_before}",
+                'detail': f"{date_label}: {best_before}",
                 'product_id': str(product_id or ''),
                 'best_before': best_before,
             })
@@ -96,12 +135,22 @@ def run_check():
     if notify_expired:
         for item in volatile.get('overdue_products', []) + volatile.get('expired_products', []):
             product_id = item.get('product_id') or item.get('product', {}).get('id')
-            product_name = item.get('product', {}).get('name', _t(lang, 'unknown'))
+            product = item.get('product', {})
+            product_name = product.get('name', _t(lang, 'unknown'))
             best_before = item.get('best_before_date', '')
+
+            if _is_filtered(item, product_id):
+                continue
+
+            if product_id in overrides and overrides[product_id]['custom_days_before_expiry'] == 0:
+                continue  # Benachrichtigungen fuer dieses Produkt deaktiviert
+
+            due_type = product.get('due_type', 1)
+            date_label = _t(lang, 'use_by_since') if due_type == 2 else _t(lang, 'expired_since')
             alerts.append({
                 'type': 'expired',
                 'name': product_name,
-                'detail': f"{_t(lang, 'expired_since')}: {best_before}",
+                'detail': f"{date_label}: {best_before}",
                 'product_id': str(product_id or ''),
                 'best_before': best_before,
             })
@@ -111,6 +160,13 @@ def run_check():
             product_id = item.get('id') or item.get('product_id') or item.get('product', {}).get('id')
             product_name = item.get('product', {}).get('name', item.get('name', _t(lang, 'unknown')))
             amount_missing = item.get('amount_missing', '?')
+
+            if _is_filtered(item, product_id):
+                continue
+
+            if product_id in overrides and overrides[product_id]['custom_days_before_expiry'] == 0:
+                continue  # Benachrichtigungen fuer dieses Produkt deaktiviert
+
             alerts.append({
                 'type': 'missing',
                 'name': product_name,
@@ -123,22 +179,32 @@ def run_check():
         logger.info("Keine Warnungen gefunden.")
         return
 
-    repeat_limit = int(settings.get('notification_repeat_limit', '0'))
+    global_repeat_limit = int(settings.get('notification_repeat_limit', '1'))
 
     # Tracker bereinigen: Eintraege fuer Produkte, die nicht mehr im Alert-Zustand sind, loeschen
     active_keys = {(a['product_id'], a['type']) for a in alerts}
     cleanup_tracker(active_keys)
 
-    # Alerts nach Wiederholungslimit filtern (0 = unbegrenzt)
-    if repeat_limit > 0:
-        filtered = []
-        for alert in alerts:
+    # Alerts nach Wiederholungslimit filtern
+    # Prioritaet: Per-Produkt-Limit > Globales Limit (0 = unbegrenzt)
+    filtered = []
+    for alert in alerts:
+        override = overrides.get(alert['product_id'])
+        # Effektives Limit bestimmen: Per-Produkt hat Vorrang
+        if override is not None and override.get('custom_repeat_limit') is not None:
+            effective_limit = override['custom_repeat_limit']
+        else:
+            effective_limit = global_repeat_limit
+        if effective_limit > 0:
             entry = get_tracker_entry(alert['product_id'], alert['type'])
-            if entry and entry['best_before_date'] == alert['best_before'] and entry['sent_count'] >= repeat_limit:
-                logger.debug(f"Wiederholungslimit ({repeat_limit}) erreicht fuer {alert['name']} ({alert['type']}), uebersprungen")
+            if entry and entry['best_before_date'] == alert['best_before'] and entry['sent_count'] >= effective_limit:
+                logger.debug(
+                    f"Wiederholungslimit ({effective_limit}) erreicht fuer "
+                    f"{alert['name']} ({alert['type']}), uebersprungen"
+                )
                 continue
-            filtered.append(alert)
-        alerts = filtered
+        filtered.append(alert)
+    alerts = filtered
 
     if not alerts:
         logger.info("Keine neuen Warnungen (Wiederholungslimit fuer alle Produkte erreicht).")

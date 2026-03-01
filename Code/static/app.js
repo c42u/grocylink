@@ -118,16 +118,54 @@ function fillProductTable(tableId, items, fields) {
 function fillMissingTable(tableId, items) {
     const tbody = document.querySelector('#' + tableId + ' tbody');
     if (!items.length) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="2">' + esc(t('dash.no_entries')) + '</td></tr>';
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="3">' + esc(t('dash.no_entries')) + '</td></tr>';
         return;
     }
     tbody.innerHTML = items.map(item => {
         const p = item.product || item;
+        const pid = item.id || item.product_id || (item.product && item.product.id) || '';
+        const pname = p.name || item.name || t('dash.unknown');
         return `<tr>
-            <td>${esc(p.name || item.name || t('dash.unknown'))}</td>
+            <td>${esc(pname)}</td>
             <td>${item.amount_missing || '-'}</td>
+            <td><button class="btn btn-sm btn-primary" onclick="openAddStockModal(this)" data-pid="${esc(String(pid))}" data-pname="${esc(pname)}">${esc(t('dash.add_stock'))}</button></td>
         </tr>`;
     }).join('');
+}
+
+function openAddStockModal(btn) {
+    document.getElementById('addStockProductId').value = btn.dataset.pid;
+    document.getElementById('addStockTitle').textContent = t('dash.add_stock') + ': ' + btn.dataset.pname;
+    document.getElementById('addStockAmount').value = '';
+    document.getElementById('addStockBestBefore').value = '';
+    document.getElementById('addStockPrice').value = '';
+    document.getElementById('addStockModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('addStockAmount').focus(), 50);
+}
+
+function closeAddStockModal() {
+    document.getElementById('addStockModal').style.display = 'none';
+}
+
+async function submitAddStock() {
+    const productId = document.getElementById('addStockProductId').value;
+    const amount = parseFloat(document.getElementById('addStockAmount').value);
+    if (!productId || isNaN(amount) || amount <= 0) return;
+    const bestBefore = document.getElementById('addStockBestBefore').value || null;
+    const priceVal = document.getElementById('addStockPrice').value;
+    const price = priceVal ? parseFloat(priceVal) : null;
+    try {
+        await api('/api/grocy/stock/add', 'POST', {
+            product_id: productId, amount,
+            best_before_date: bestBefore,
+            price,
+        });
+        toast(t('dash.stock_added'), 'success');
+        closeAddStockModal();
+        loadDashboard();
+    } catch (e) {
+        toast(t('dash.stock_error') + ': ' + e.message, 'error');
+    }
 }
 
 async function checkNow() {
@@ -307,39 +345,70 @@ async function loadProducts() {
             tbody.innerHTML = '<tr class="empty-row"><td colspan="5">' + esc(t('prod.no_products')) + '</td></tr>';
             return;
         }
-        tbody.innerHTML = products.map(p => `
+        tbody.innerHTML = products.map(p => {
+            const hasDays = p.custom_days !== undefined && p.custom_days !== null;
+            const hasRepeat = p.custom_repeat_limit !== undefined && p.custom_repeat_limit !== null;
+            const hasOverride = hasDays || hasRepeat;
+            return `
             <tr>
                 <td>${esc(p.name)}</td>
-                <td>${p.amount}</td>
+                <td>${p.amount !== '-' && p.amount !== null ? p.amount : '-'}</td>
                 <td>${p.best_before_date || '-'}</td>
                 <td>
-                    <input type="number" min="1" max="365" value="${p.custom_days || ''}"
+                    <input type="number" class="days-override-input" min="0" max="365"
+                        value="${hasDays ? p.custom_days : ''}"
                         style="width:120px" placeholder="${esc(t('prod.placeholder'))}"
                         data-pid="${p.product_id}" data-pname="${esc(p.name)}"
-                        onchange="saveOverride(this)">
+                        onchange="saveProductOverride(this)">
                 </td>
                 <td>
-                    ${p.custom_days ? '<button class="btn btn-sm btn-secondary" onclick="removeOverride(' + p.product_id + ')">' + esc(t('prod.reset')) + '</button>' : ''}
+                    <input type="number" class="repeat-override-input" min="0" max="999"
+                        value="${hasRepeat ? p.custom_repeat_limit : ''}"
+                        style="width:120px" placeholder="${esc(t('prod.repeat_ph'))}"
+                        data-pid="${p.product_id}" data-pname="${esc(p.name)}"
+                        onchange="saveProductOverride(this)">
                 </td>
-            </tr>
-        `).join('');
+                <td>
+                    ${hasOverride ? '<button class="btn btn-sm btn-secondary" onclick="removeProductOverride(' + p.product_id + ')">' + esc(t('prod.reset')) + '</button>' : ''}
+                </td>
+            </tr>`;
+        }).join('');
     } catch (e) {
         toast(t('gen.error') + ': ' + e.message, 'error');
     }
 }
 
-async function saveOverride(el) {
-    const days = parseInt(el.value);
-    if (!days || days < 1) return;
-    await api('/api/products/override', 'POST', {
-        product_id: parseInt(el.dataset.pid),
-        product_name: el.dataset.pname,
-        days,
-    });
-    toast(t('prod.saved'), 'success');
+async function saveProductOverride(el) {
+    const row = el.closest('tr');
+    const daysInput = row.querySelector('.days-override-input');
+    const repeatInput = row.querySelector('.repeat-override-input');
+    const pid = parseInt(el.dataset.pid);
+    const pname = el.dataset.pname;
+
+    const daysVal = daysInput ? daysInput.value.trim() : '';
+    const repeatVal = repeatInput ? repeatInput.value.trim() : '';
+
+    if (daysVal === '' && repeatVal === '') {
+        // Beide leer → Override entfernen
+        await api('/api/products/override', 'POST', { product_id: pid, delete: true });
+        toast(t('prod.override_removed'), 'success');
+    } else {
+        // -1 als Sentinel: "globalen Standard-Warntag verwenden"
+        const daysInt = daysVal !== '' ? parseInt(daysVal) : -1;
+        const repeatInt = repeatVal !== '' ? parseInt(repeatVal) : null;
+        if (isNaN(daysInt) || (repeatInt !== null && isNaN(repeatInt))) return;
+        await api('/api/products/override', 'POST', {
+            product_id: pid,
+            product_name: pname,
+            days: daysInt,
+            repeat_limit: repeatInt,
+        });
+        toast(t('prod.saved'), 'success');
+    }
+    loadProducts();
 }
 
-async function removeOverride(pid) {
+async function removeProductOverride(pid) {
     await api('/api/products/override', 'POST', { product_id: pid, delete: true });
     toast(t('prod.override_removed'), 'success');
     loadProducts();
@@ -518,10 +587,59 @@ async function loadSettings() {
     document.getElementById('setNotifyExpired').checked = s.notify_expired !== '0';
     document.getElementById('setNotifyMissing').checked = s.notify_missing !== '0';
     document.getElementById('setVerifySsl').checked = s.grocy_verify_ssl !== '0';
-    document.getElementById('setRepeatLimit').value = s.notification_repeat_limit || '0';
-    // Set language selector to current language
+    document.getElementById('setRepeatLimit').value = s.notification_repeat_limit !== undefined ? s.notification_repeat_limit : '1';
     const langSel = document.getElementById('langSelect');
     if (langSel) langSel.value = currentLang;
+    const groupIds = (s.notify_product_groups || '').split(',').filter(x => x.trim());
+    const locationIds = (s.notify_locations || '').split(',').filter(x => x.trim());
+    loadFilterGroups(groupIds);
+    loadFilterLocations(locationIds);
+}
+
+async function loadFilterGroups(selectedIds) {
+    const container = document.getElementById('filterGroupsContainer');
+    if (!container) return;
+    container.innerHTML = '<span class="text-muted">' + t('set.filter_loading') + '</span>';
+    try {
+        const groups = await api('/api/grocy/product-groups');
+        if (!Array.isArray(groups) || !groups.length) {
+            container.innerHTML = '<span class="text-muted">-</span>';
+            return;
+        }
+        // Alphabetisch sortieren
+        groups.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        container.innerHTML = groups.map(g =>
+            `<label><input type="checkbox" value="${esc(String(g.id))}" ${selectedIds.includes(String(g.id)) ? 'checked' : ''}> ${esc(g.name)}</label>`
+        ).join('');
+    } catch (e) {
+        container.innerHTML = '<span class="text-muted">' + t('set.filter_error') + '</span>';
+    }
+}
+
+async function loadFilterLocations(selectedIds) {
+    const container = document.getElementById('filterLocationsContainer');
+    if (!container) return;
+    container.innerHTML = '<span class="text-muted">' + t('set.filter_loading') + '</span>';
+    try {
+        const locations = await api('/api/grocy/locations');
+        if (!Array.isArray(locations) || !locations.length) {
+            container.innerHTML = '<span class="text-muted">-</span>';
+            return;
+        }
+        // Alphabetisch sortieren
+        locations.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        container.innerHTML = locations.map(l =>
+            `<label><input type="checkbox" value="${esc(String(l.id))}" ${selectedIds.includes(String(l.id)) ? 'checked' : ''}> ${esc(l.name)}</label>`
+        ).join('');
+    } catch (e) {
+        container.innerHTML = '<span class="text-muted">' + t('set.filter_error') + '</span>';
+    }
+}
+
+function getSelectedFilterIds(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return '';
+    return Array.from(container.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value).join(',');
 }
 
 async function saveSettings(e) {
@@ -536,6 +654,8 @@ async function saveSettings(e) {
         notify_missing: document.getElementById('setNotifyMissing').checked ? '1' : '0',
         grocy_verify_ssl: document.getElementById('setVerifySsl').checked ? '1' : '0',
         notification_repeat_limit: document.getElementById('setRepeatLimit').value,
+        notify_product_groups: getSelectedFilterIds('filterGroupsContainer'),
+        notify_locations: getSelectedFilterIds('filterLocationsContainer'),
     });
     toast(t('set.saved'), 'success');
 }

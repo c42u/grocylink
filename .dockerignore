@@ -1,6 +1,5 @@
-data/
-certs/
-__pycache__/
-*.pyc
-*.pyo
-.git
+# Nur Applikationscode und Entrypoint im Build-Kontext
+*
+!Code/
+!Code/**
+!docker/entrypoint.sh

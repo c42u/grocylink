@@ -17,7 +17,7 @@ from caldav_sync import CalDAVSync, run_caldav_sync
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-APP_VERSION = '1.0.4'
+APP_VERSION = '1.1.0'
 
 app = Flask(__name__)
 
@@ -129,23 +129,41 @@ def api_test_channel(channel_id):
 
 @app.route('/api/products', methods=['GET'])
 def api_get_products():
+    """Liefert ALLE in Grocy definierten Produkte (nicht nur Produkte mit Bestand),
+    ergaenzt um Bestandsdaten und individuelle Override-Einstellungen."""
     settings = get_all_settings()
     overrides = {o['product_id']: o for o in get_product_overrides()}
     products = []
     if settings.get('grocy_url') and settings.get('grocy_api_key'):
         try:
             client = GrocyClient()
-            stock = client.get_all_stock()
-            for item in stock:
-                pid = item.get('product_id') or item.get('product', {}).get('id')
-                name = item.get('product', {}).get('name', f'Produkt #{pid}')
+            # Alle Produkte aus Grocy laden (unabhaengig vom Bestand)
+            all_prods = client.get_all_products()
+            # Bestandsdaten fuer Menge und MHD laden
+            stock_by_id = {}
+            try:
+                for item in client.get_all_stock():
+                    pid = item.get('product_id') or item.get('product', {}).get('id')
+                    if pid is not None:
+                        stock_by_id[pid] = item
+            except Exception:
+                pass
+            # Alphabetisch sortieren
+            all_prods.sort(key=lambda p: (p.get('name') or '').lower())
+            for prod in all_prods:
+                pid = prod.get('id')
+                name = prod.get('name', f'Produkt #{pid}')
+                stock_item = stock_by_id.get(pid)
                 override = overrides.get(pid)
+                # custom_days == -1 bedeutet "globalen Standard verwenden" (nur repeat gesetzt)
+                cdays = override['custom_days_before_expiry'] if override else None
                 products.append({
                     'product_id': pid,
                     'name': name,
-                    'amount': item.get('amount', 0),
-                    'best_before_date': item.get('best_before_date', ''),
-                    'custom_days': override['custom_days_before_expiry'] if override else None,
+                    'amount': stock_item.get('amount', '-') if stock_item else '-',
+                    'best_before_date': stock_item.get('best_before_date', '') if stock_item else '',
+                    'custom_days': cdays if cdays is not None and cdays >= 0 else None,
+                    'custom_repeat_limit': override.get('custom_repeat_limit') if override else None,
                 })
         except Exception as e:
             return jsonify({'error': str(e)}), 500
@@ -158,8 +176,54 @@ def api_save_override():
     if data.get('delete'):
         delete_product_override(data['product_id'])
     else:
-        save_product_override(data['product_id'], data['product_name'], data['days'])
+        # repeat_limit: None = globales Limit verwenden, 0 = immer, 1+ = N-mal
+        repeat_limit = data.get('repeat_limit')
+        if repeat_limit is not None:
+            repeat_limit = int(repeat_limit)
+        save_product_override(
+            data['product_id'], data['product_name'],
+            data['days'], repeat_limit=repeat_limit
+        )
     return jsonify({'ok': True})
+
+
+@app.route('/api/grocy/stock/add', methods=['POST'])
+def api_grocy_stock_add():
+    data = request.get_json()
+    product_id = data.get('product_id')
+    amount = data.get('amount')
+    if not product_id or not amount:
+        return jsonify({'error': 'product_id and amount required'}), 400
+    try:
+        client = GrocyClient()
+        result = client.add_stock(
+            product_id, amount,
+            best_before_date=data.get('best_before_date') or None,
+            price=data.get('price') or None,
+        )
+        return jsonify({'ok': True, 'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/grocy/product-groups', methods=['GET'])
+def api_grocy_product_groups():
+    try:
+        client = GrocyClient()
+        groups = client.get_product_groups()
+        return jsonify(groups)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/grocy/locations', methods=['GET'])
+def api_grocy_locations():
+    try:
+        client = GrocyClient()
+        locations = client.get_locations()
+        return jsonify(locations)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/log', methods=['GET'])

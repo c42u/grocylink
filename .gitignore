@@ -1,4 +1,4 @@
-# Laufzeit-Daten (Datenbank & Encryption Key)
+# Laufzeit-Daten
 data/
 
 # Python Cache
@@ -6,3 +6,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# OS-Metadaten
+@eaDir/
+.DS_Store
+Thumbs.db
