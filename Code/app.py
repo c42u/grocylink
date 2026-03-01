@@ -17,7 +17,7 @@ from caldav_sync import CalDAVSync, run_caldav_sync
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-APP_VERSION = '1.0.6'
+APP_VERSION = '1.1.0'
 
 app = Flask(__name__)
 
