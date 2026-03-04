@@ -210,6 +210,7 @@ The software is provided "as is" without warranty. Use at your own risk.
 
 - [GitHub](https://github.com/c42u/grocylink)
 - [Docker Hub](https://hub.docker.com/r/c42u/grocylink)
+- [Impressum / Legal Notice](IMPRESSUM.md)
 - [Support](https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00)
 
 ---
@@ -420,4 +421,5 @@ Die Software wird "wie besehen" ohne jegliche Gewaehrleistung bereitgestellt. Nu
 
 - [GitHub](https://github.com/c42u/grocylink)
 - [Docker Hub](https://hub.docker.com/r/c42u/grocylink)
+- [Impressum](IMPRESSUM.md)
 - [Unterstuetzung](https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00)
