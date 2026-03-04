@@ -1,7 +1,7 @@
 # Table of contents / Inhaltsverzeichnis
 1. [Grocylink - english](#english)
 2. [Grocylink - deutsch](#deutsch)
-
+3. [Impressum](IMPRESSUM.md)
 ---
 
 # Grocylink <a name="english"></a>
