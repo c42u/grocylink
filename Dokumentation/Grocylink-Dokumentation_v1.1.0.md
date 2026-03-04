@@ -134,8 +134,8 @@ Falls kein Macvlan gewuenscht ist, kann auch ein normales Bridge-Netzwerk mit fe
 
 ```bash
 docker network create \
-  --subnet=172.30.45.0/24 \
-  --gateway=172.30.45.1 \
+  --subnet=10.0.50.0/24 \
+  --gateway=10.0.50.1 \
   DockerNetwork
 ```
 
@@ -184,8 +184,8 @@ Die Datei `docker/.env` enthaelt alle konfigurierbaren Umgebungsvariablen:
 ```env
 GUNICORN_WORKERS=2
 TIMEZONE=Europe/Berlin
-GROCYLINK_IP=172.30.45.26
-PATH_TO=/var/container/ds06
+GROCYLINK_IP=10.0.50.26
+PATH_TO=/opt/docker-data
 UID=1000
 GID=1000
 ```
@@ -194,8 +194,8 @@ GID=1000
 |---|---|---|
 | `GUNICORN_WORKERS` | `2` | Anzahl der Gunicorn Worker-Prozesse |
 | `TIMEZONE` | `Europe/Berlin` | Zeitzone fuer Scheduler und Logs |
-| `GROCYLINK_IP` | `172.30.45.26` | Feste IP-Adresse im Docker-Netzwerk |
-| `PATH_TO` | `/var/container/ds06` | Basispfad fuer persistente Daten (Bind Mounts) |
+| `GROCYLINK_IP` | `10.0.50.26` | Feste IP-Adresse im Docker-Netzwerk |
+| `PATH_TO` | `/opt/docker-data` | Basispfad fuer persistente Daten (Bind Mounts) |
 | `UID` | `1000` | User-ID unter der der Container laeuft |
 | `GID` | `1000` | Group-ID unter der der Container laeuft |
 
@@ -219,8 +219,8 @@ pids_limit: 200                # Max 200 Prozesse
 
 > **Wichtig:** Das Datenverzeichnis `${PATH_TO}/grocylink/data/` muss fuer den konfigurierten User (UID/GID) schreibbar sein:
 > ```bash
-> mkdir -p /var/container/ds06/grocylink/data
-> chown 1000:1000 /var/container/ds06/grocylink/data
+> mkdir -p /opt/docker-data/grocylink/data
+> chown 1000:1000 /opt/docker-data/grocylink/data
 > ```
 
 ### Komodo
@@ -356,8 +356,8 @@ Unter **Environment** in Komodo die Umgebungsvariablen setzen:
 ```env
 GUNICORN_WORKERS=2
 TIMEZONE=Europe/Berlin
-GROCYLINK_IP=172.30.45.26
-PATH_TO=/var/container/ds06
+GROCYLINK_IP=10.0.50.26
+PATH_TO=/opt/docker-data
 UID=1000
 GID=1000
 ```
@@ -366,8 +366,8 @@ GID=1000
 |---|---|---|
 | `GUNICORN_WORKERS` | `2` | Anzahl Gunicorn Worker-Prozesse |
 | `TIMEZONE` | `Europe/Berlin` | Zeitzone fuer Scheduler und Logs |
-| `GROCYLINK_IP` | `172.30.45.26` | Feste IP-Adresse im Docker-Netzwerk. Muss eine freie Adresse im konfigurierten Subnetz sein. |
-| `PATH_TO` | `/var/container/ds06` | Basispfad fuer persistente Daten auf dem Host. |
+| `GROCYLINK_IP` | `10.0.50.26` | Feste IP-Adresse im Docker-Netzwerk. Muss eine freie Adresse im konfigurierten Subnetz sein. |
+| `PATH_TO` | `/opt/docker-data` | Basispfad fuer persistente Daten auf dem Host. |
 | `UID` | `1000` | User-ID unter der der Container laeuft |
 | `GID` | `1000` | Group-ID unter der der Container laeuft |
 
@@ -398,7 +398,7 @@ Grocylink stellt nur HTTP auf Port 5000 bereit. Fuer HTTPS wird ein externer Rev
 ```caddyfile
 grocylink.example.com {
     tls /certs/fullchain.pem /certs/key.pem
-    reverse_proxy http://172.30.45.26:5000
+    reverse_proxy http://10.0.50.26:5000
 }
 ```
 
@@ -625,7 +625,7 @@ Grocylink stellt nur **HTTP auf Port 5000** bereit. Fuer HTTPS wird ein externer
 ```caddyfile
 grocylink.example.com {
     tls /certs/fullchain.pem /certs/key.pem
-    reverse_proxy http://172.30.45.26:5000
+    reverse_proxy http://10.0.50.26:5000
 }
 ```
 
@@ -640,7 +640,7 @@ server {
     ssl_certificate_key /certs/key.pem;
 
     location / {
-        proxy_pass http://172.30.45.26:5000;
+        proxy_pass http://10.0.50.26:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -737,8 +737,8 @@ volumes:
   - ${PATH_TO}/grocylink/data:/app/data       # Datenbank + Encryption Key
 ```
 
-Bei der Standard-Konfiguration mit `PATH_TO=/var/container/ds06` liegen die Daten unter:
-- `/var/container/ds06/grocylink/data/` - Datenbank und Encryption Key
+Bei der Standard-Konfiguration mit `PATH_TO=/opt/docker-data` liegen die Daten unter:
+- `/opt/docker-data/grocylink/data/` - Datenbank und Encryption Key
 
 **Beim Redeploy beachten:**
 - Bind Mounts bleiben bei `docker compose down` **immer** erhalten (anders als Named Volumes)
@@ -853,7 +853,7 @@ Falls der Container mit Berechtigungsfehlern startet:
 
 ```bash
 # Datenverzeichnis fuer den Container-User schreibbar machen
-chown -R 1000:1000 /var/container/ds06/grocylink/data/
+chown -R 1000:1000 /opt/docker-data/grocylink/data/
 
 # Oder mit der konfigurierten UID/GID
 chown -R ${UID}:${GID} ${PATH_TO}/grocylink/data/
