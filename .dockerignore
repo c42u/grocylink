@@ -1,27 +1,5 @@
-# Laufzeit-Daten
-data/
-certs/
-
-# Python Cache
-__pycache__/
-*.pyc
-*.pyo
-
-# Git
-.git
-.github
-
-# Projektstruktur (nicht im Image)
-Dokumentation/
-Changelog/
-Reviewbericht/
-Versionssicherung/
-
-# Altlasten
-doku/
-logo/
-marketing/
-dockerhub/
-test/
-v1/
-v2/
+# Nur Applikationscode und Entrypoint im Build-Kontext
+*
+!Code/
+!Code/**
+!docker/entrypoint.sh

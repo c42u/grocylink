@@ -1,4 +1,4 @@
-# Laufzeit-Daten (Datenbank & Encryption Key)
+# Laufzeit-Daten
 data/
 
 # Python Cache
@@ -7,24 +7,7 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Synology NAS Metadaten
+# OS-Metadaten
 @eaDir/
+.DS_Store
 Thumbs.db
-
-# Lokale Arbeitsordner (nicht für Veröffentlichung)
-v1/
-v2/
-Versionssicherung/
-doku/
-logo/
-marketing/
-test/
-dockerhub/
-
-# Nicht zu veröffentlichende Dokumentationsunterordner
-Dokumentation/marketing/
-Dokumentation/dockerhub/
-
-# PDF-Generierungsartefakte
-Dokumentation/*.pdf
-Dokumentation/pdf-style.css
