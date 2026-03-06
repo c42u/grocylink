@@ -1,0 +1,59 @@
+# =============================================================================
+# .gitlab-ci.yml – Grocylink CI/CD Pipeline
+# Autor: c42u | Co-Autor: ClaudeCode | Lizenz: GPLv3
+#
+# Bei jedem Push auf main:
+#   1. Docker-Image bauen
+#   2. Image in registry.zucker.network pushen
+#   3. Container via Komodo API neu deployen
+# =============================================================================
+
+stages:
+  - build
+  - deploy
+
+variables:
+  REGISTRY: "registry.zucker.network"
+  IMAGE_NAME: "grocylink"
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
+
+build:
+  stage: build
+  image: docker:latest
+  tags:
+    - docker
+  services:
+    - docker:dind
+  script:
+    - docker build
+        --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        --build-arg VERSION=${CI_COMMIT_TAG:-dev}
+        --build-arg REVISION=${CI_COMMIT_SHORT_SHA}
+        -t ${REGISTRY}/${IMAGE_NAME}:latest
+        -t ${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+        -f docker/Dockerfile .
+    - docker push ${REGISTRY}/${IMAGE_NAME}:latest
+    - docker push ${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  tags:
+    - docker
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      echo "Deploying grocylink via Komodo API..."
+      RESPONSE=$(curl -sf -X POST \
+        -H "x-api-key: ${KOMODO_API_KEY}" \
+        -H "x-api-secret: ${KOMODO_API_SECRET}" \
+        -H "Content-Type: application/json" \
+        -d '{"type":"DeployStack","params":{"stack":"69937837828d03ff77e7376a"}}' \
+        "http://192.168.70.10:9120/execute")
+      echo "Komodo Response: ${RESPONSE}"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
