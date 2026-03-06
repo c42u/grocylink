@@ -1065,17 +1065,32 @@ async function openReceiptReview(receiptId) {
                     <td>${item.quantity}</td>
                     <td>${item.unit_price != null ? item.unit_price.toFixed(2) + ' €' : '-'}</td>
                     <td>
-                        <select class="receipt-match-select" data-item-id="${item.id}" onchange="onItemMatchChange(this, ${receiptId})" style="width:100%;max-width:250px">
+                        <select class="receipt-match-select" data-item-id="${item.id}" onchange="onItemMatchChange(this, ${receiptId})">
                             <option value="">-- ${esc(t('rcpt.search_product'))} --</option>
                             <option value="__NEW__"${isUnmatched ? ' selected' : ''}>${esc(t('rcpt.create_new'))}</option>
                             ${productOptions}
                         </select>
                         <div class="new-product-fields" data-item-id="${item.id}" style="${isUnmatched ? '' : 'display:none'}">
-                            <input type="text" class="np-name" value="${esc(item.raw_name)}" placeholder="${esc(t('rcpt.product_name'))}">
-                            <select class="np-group"><option value="">${esc(t('rcpt.select_default'))}</option>${groupOptions}</select>
-                            <select class="np-location"><option value="">${esc(t('rcpt.select_default'))}</option>${locOptions}</select>
-                            <select class="np-qu"><option value="">${esc(t('rcpt.select_default'))}</option>${quOptions}</select>
-                            <button type="button" class="btn btn-sm btn-secondary btn-suggest" onclick="suggestCategory(${item.id})">${esc(t('rcpt.suggest_category'))}</button>
+                            <div class="np-preview-row" data-item-id="${item.id}"></div>
+                            <div class="np-field-group">
+                                <span class="np-label">${esc(t('rcpt.product_name'))}</span>
+                                <input type="text" class="np-name" value="${esc(item.raw_name)}" placeholder="${esc(t('rcpt.product_name'))}">
+                            </div>
+                            <div class="np-field-group">
+                                <span class="np-label">${esc(t('rcpt.category'))}</span>
+                                <select class="np-group"><option value="">${esc(t('rcpt.select_default'))}</option>${groupOptions}</select>
+                            </div>
+                            <div class="np-field-group">
+                                <span class="np-label">${esc(t('rcpt.location'))}</span>
+                                <select class="np-location"><option value="">${esc(t('rcpt.select_default'))}</option>${locOptions}</select>
+                            </div>
+                            <div class="np-field-group">
+                                <span class="np-label">${esc(t('rcpt.quantity_unit'))}</span>
+                                <select class="np-qu"><option value="">${esc(t('rcpt.select_default'))}</option>${quOptions}</select>
+                            </div>
+                            <div class="np-actions">
+                                <button type="button" class="btn btn-sm btn-secondary btn-suggest" onclick="suggestCategory(${item.id})">${esc(t('rcpt.suggest_category'))}</button>
+                            </div>
                         </div>
                     </td>
                     <td><span class="match-score ${scoreClass}">${item.match_score > 0 ? Math.round(item.match_score) + '%' : '-'}</span></td>
@@ -1083,6 +1098,8 @@ async function openReceiptReview(receiptId) {
             }).join('');
         }
         openModal('receiptReviewModal');
+        // Automatische Vorauswahl via OpenFoodFacts fuer ungematchte Items
+        autoSuggestAll();
     } catch (e) {
         toast(t('gen.error') + ': ' + e.message, 'error');
     }
@@ -1133,6 +1150,7 @@ async function suggestCategory(itemId) {
     const nameInput = fields.querySelector('.np-name');
     const groupSelect = fields.querySelector('.np-group');
     const btn = fields.querySelector('.btn-suggest');
+    const previewRow = fields.querySelector('.np-preview-row');
     const name = nameInput.value.trim();
     if (!name) return;
     btn.textContent = t('rcpt.suggesting');
@@ -1145,11 +1163,37 @@ async function suggestCategory(itemId) {
         } else {
             btn.textContent = t('rcpt.no_suggestion');
         }
+        // Produktbild und Barcode anzeigen
+        if (previewRow && (data.image_url || data.barcode)) {
+            let html = '';
+            if (data.image_url) {
+                html += '<img class="np-preview-img" src="' + esc(data.image_url) + '" alt="">';
+            }
+            if (data.off_product_name) {
+                html += '<span>' + esc(data.off_product_name) + '</span>';
+            }
+            if (data.barcode) {
+                html += '<span class="np-barcode">EAN: ' + esc(data.barcode) + '</span>';
+            }
+            previewRow.innerHTML = html;
+        }
     } catch (e) {
         btn.textContent = t('rcpt.no_suggestion');
     }
     btn.disabled = false;
     setTimeout(() => { btn.textContent = t('rcpt.suggest_category'); }, 3000);
+}
+
+// Automatische Vorauswahl: fuer alle ungematchten Items den Suggest ausfuehren
+async function autoSuggestAll() {
+    const rows = document.querySelectorAll('#tableReviewItems tbody tr[data-item-id]');
+    for (const row of rows) {
+        const sel = row.querySelector('.receipt-match-select');
+        if (sel && sel.value === '__NEW__') {
+            const itemId = row.getAttribute('data-item-id');
+            await suggestCategory(parseInt(itemId));
+        }
+    }
 }
 
 async function confirmCurrentReceipt() {
