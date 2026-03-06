@@ -16,13 +16,14 @@ variables:
   REGISTRY: "registry.zucker.network"
   IMAGE_NAME: "grocylink"
   DOCKER_HOST: "tcp://172.30.45.107:2375"
-  DOCKER_TLS_CERTDIR: ""
 
 build:
   stage: build
-  image: docker:latest
+  image: alpine:latest
   tags:
     - docker
+  before_script:
+    - apk add --no-cache docker-cli
   script:
     - docker build
         --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
