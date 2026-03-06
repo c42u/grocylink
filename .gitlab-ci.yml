@@ -22,8 +22,6 @@ variables:
 build:
   stage: build
   image: alpine:latest
-  tags:
-    - docker
   before_script:
     - apk add --no-cache docker-cli
     - docker info
@@ -43,8 +41,6 @@ build:
 deploy:
   stage: deploy
   image: alpine:latest
-  tags:
-    - docker
   before_script:
     - apk add --no-cache curl
   script:
