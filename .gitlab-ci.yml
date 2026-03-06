@@ -3,7 +3,7 @@
 # Autor: c42u | Co-Autor: ClaudeCode | Lizenz: GPLv3
 #
 # Bei jedem Push auf main:
-#   1. Docker-Image bauen
+#   1. Docker-Image bauen (via externen DinD-Host)
 #   2. Image in registry.zucker.network pushen
 #   3. Container via Komodo API neu deployen
 # =============================================================================
@@ -15,7 +15,7 @@ stages:
 variables:
   REGISTRY: "registry.zucker.network"
   IMAGE_NAME: "grocylink"
-  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_HOST: "tcp://172.30.45.107:2375"
   DOCKER_TLS_CERTDIR: ""
 
 build:
@@ -23,8 +23,6 @@ build:
   image: docker:latest
   tags:
     - docker
-  services:
-    - docker:dind
   script:
     - docker build
         --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
