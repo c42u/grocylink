@@ -3,7 +3,7 @@
 # Autor: c42u | Co-Autor: ClaudeCode | Lizenz: GPLv3
 #
 # Bei jedem Push auf main:
-#   1. Docker-Image bauen (via DinD mit TLS)
+#   1. Docker-Image bauen (via DinD mit TLS, Host-Netzwerk)
 #   2. Image in registry.zucker.network pushen
 #   3. Container via Komodo API neu deployen
 # =============================================================================
@@ -15,7 +15,7 @@ stages:
 variables:
   REGISTRY: "registry.zucker.network"
   IMAGE_NAME: "grocylink"
-  DOCKER_HOST: "tcp://docker:2376"
+  DOCKER_HOST: "tcp://localhost:2376"
   DOCKER_TLS_VERIFY: "1"
   DOCKER_CERT_PATH: "/certs/client"
 
