@@ -4,7 +4,7 @@
 
 1. [Aufgabe 1](#aufgabe_1)  
 2. [Aufgabe 2](#aufgabe_2)  
-3. [Aufgabe x](#aufgabe_3)  
+3. [Aufgabe 3](#aufgabe_3)  
 ...
 
 ---
