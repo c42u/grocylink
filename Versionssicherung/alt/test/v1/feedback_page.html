@@ -1,0 +1,95 @@
+<!--
+    Feedback-Seite fuer Grocylink
+
+    Einbindung in templates/index.html:
+    1. Navigation: Neuen Link nach "Hilfe" einfuegen
+    2. Page-Content: Diesen Block in <main class="content"> einfuegen
+    3. JavaScript: feedback_app.js einbinden oder in app.js integrieren
+-->
+
+<!-- === NAV-LINK (einfuegen nach nav.help) === -->
+<li><a href="#" class="nav-link" data-page="feedback">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <span data-i18n="nav.feedback">Feedback</span>
+</a></li>
+
+
+<!-- === PAGE-CONTENT === -->
+<div class="page" id="page-feedback">
+    <div class="page-header">
+        <h1 data-i18n="fb.title">Feedback</h1>
+    </div>
+
+    <!-- Feedback-Formular -->
+    <div class="card">
+        <h2 data-i18n="fb.submit_title">Fehler melden oder Feature vorschlagen</h2>
+        <p class="text-muted" data-i18n="fb.submit_desc">Kein GitHub-Account noetig. Dein Feedback wird direkt an den Entwickler uebermittelt.</p>
+
+        <div class="form-group">
+            <label data-i18n="fb.type">Typ</label>
+            <select id="fbType">
+                <option value="bug" data-i18n="fb.type_bug">Bug / Fehler</option>
+                <option value="feature" data-i18n="fb.type_feature">Feature Request</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label data-i18n="fb.subject">Betreff</label>
+            <input type="text" id="fbSubject" data-i18n="fb.subject_ph" data-i18n-attr="placeholder" placeholder="Kurze Zusammenfassung...">
+        </div>
+
+        <div class="form-group">
+            <label data-i18n="fb.description">Beschreibung</label>
+            <textarea id="fbDescription" rows="6" data-i18n="fb.description_ph" data-i18n-attr="placeholder" placeholder="Beschreibe den Fehler oder das gewuenschte Feature moeglichst genau..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label data-i18n="fb.contact">Kontakt (optional)</label>
+            <input type="text" id="fbContact" data-i18n="fb.contact_ph" data-i18n-attr="placeholder" placeholder="Email-Adresse fuer Rueckfragen (optional)">
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" onclick="submitFeedback()" data-i18n="fb.submit_btn">Feedback absenden</button>
+        </div>
+    </div>
+
+    <!-- GitHub Issues Hinweis -->
+    <div class="card" style="margin-top: 20px;">
+        <div class="help-note">
+            <p class="lang-de">
+                <strong>GitHub-Nutzer?</strong> Du kannst Bugs und Feature Requests auch direkt ueber
+                <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="support-inline-link">GitHub Issues</a>
+                melden &ndash; dort ist die Nachverfolgung transparent und oeffentlich.
+            </p>
+            <p class="lang-en">
+                <strong>GitHub user?</strong> You can also report bugs and feature requests directly via
+                <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="support-inline-link">GitHub Issues</a>
+                &ndash; tracking is transparent and public there.
+            </p>
+        </div>
+    </div>
+
+    <!-- Admin: Eingegangenes Feedback -->
+    <div class="card" style="margin-top: 20px;" id="feedbackAdminSection">
+        <div class="section-header">
+            <h2 data-i18n="fb.admin_title">Eingegangenes Feedback</h2>
+            <button class="btn btn-secondary btn-sm" onclick="loadFeedbackList()" data-i18n="fb.refresh">Aktualisieren</button>
+        </div>
+        <div class="table-container">
+            <table class="data-table" id="feedbackTable">
+                <thead>
+                    <tr>
+                        <th data-i18n="fb.th_id">#</th>
+                        <th data-i18n="fb.th_type">Typ</th>
+                        <th data-i18n="fb.th_subject">Betreff</th>
+                        <th data-i18n="fb.th_status">Status</th>
+                        <th data-i18n="fb.th_contact">Kontakt</th>
+                        <th data-i18n="fb.th_date">Datum</th>
+                        <th data-i18n="fb.th_actions">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="feedbackBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
