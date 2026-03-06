@@ -2,9 +2,9 @@
 
 ## Inhaltsverzeichnis
 
-1. [Aufgabe 1](#aufgabe_1)
-2. [Aufgabe 2](#aufgabe_2)
-x. [Aufgabe x](#aufgabe_x)
+1. [Aufgabe 1](#aufgabe_1)  
+2. [Aufgabe 2](#aufgabe_2)  
+3. [Aufgabe x](#aufgabe_3)  
 ...
 
 ---
@@ -25,7 +25,7 @@ Frage kann hier auf eine extern Datenbank zugegriffen werden, um die Wahrscheinl
 
 ---
 
-### X.\ >>Aufgabe X<< <a name="aufgabe_x"></a>
+### 3.\ >>Aufgabe 3<< <a name="aufgabe_3"></a>
 #### Datum der Erstellung - 2026-03-06
 
 #### Aufgabenbeschreibung
