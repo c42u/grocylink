@@ -26,6 +26,10 @@
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                     <span data-i18n="nav.products">Produkte</span>
                 </a></li>
+                <li><a href="#" class="nav-link" data-page="receipts">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l4-2 4 2 4-2 4 2V2l-4 2-4-2-4 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+                    <span data-i18n="nav.receipts">Kassenbons</span>
+                </a></li>
                 <li><a href="#" class="nav-link" data-page="log">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     <span data-i18n="nav.log">Log</span>
@@ -328,6 +332,80 @@
                 </div>
             </div>
 
+            <!-- Kassenbons -->
+            <div class="page" id="page-receipts">
+                <div class="page-header">
+                    <h1 data-i18n="rcpt.title">Kassenbons</h1>
+                </div>
+
+                <div class="card" id="receiptUploadZone" style="margin-bottom:20px">
+                    <div class="upload-zone" id="uploadZone">
+                        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <p data-i18n="rcpt.upload_hint">PDF-Kassenbon hier ablegen oder klicken zum Hochladen</p>
+                        <input type="file" id="receiptFileInput" accept=".pdf" style="display:none">
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="table-wrap">
+                        <table id="tableReceipts">
+                            <thead><tr>
+                                <th data-i18n="rcpt.th_date">Datum</th>
+                                <th data-i18n="rcpt.th_file">Datei</th>
+                                <th data-i18n="rcpt.th_store">Markt</th>
+                                <th data-i18n="rcpt.th_items">Positionen</th>
+                                <th data-i18n="rcpt.th_total">Summe</th>
+                                <th data-i18n="rcpt.th_status">Status</th>
+                                <th data-i18n="rcpt.th_actions">Aktionen</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section" style="margin-top:28px">
+                    <details id="mappingsDetails">
+                        <summary style="cursor:pointer;font-weight:600;font-size:1.1em;margin-bottom:12px" data-i18n="rcpt.mappings">Gelernte Zuordnungen</summary>
+                        <div class="table-wrap">
+                            <table id="tableMappings">
+                                <thead><tr>
+                                    <th data-i18n="rcpt.mapping_receipt_name">Bon-Name</th>
+                                    <th data-i18n="rcpt.mapping_product">Grocy-Produkt</th>
+                                    <th data-i18n="rcpt.mapping_count">Verwendet</th>
+                                    <th data-i18n="rcpt.th_actions">Aktionen</th>
+                                </tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Kassenbon Review Modal -->
+            <div class="modal-overlay" id="receiptReviewModal">
+                <div class="modal" style="max-width:800px">
+                    <h2 data-i18n="rcpt.review_title">Kassenbon prüfen</h2>
+                    <div id="receiptReviewInfo" style="margin-bottom:16px;color:var(--text-muted);font-size:.9em"></div>
+                    <div class="table-wrap" style="margin-bottom:16px">
+                        <table id="tableReviewItems">
+                            <thead><tr>
+                                <th data-i18n="rcpt.th_product_raw">Bon-Name</th>
+                                <th data-i18n="rcpt.th_qty">Menge</th>
+                                <th data-i18n="rcpt.th_price">Preis</th>
+                                <th data-i18n="rcpt.th_match">Zuordnung</th>
+                                <th data-i18n="rcpt.th_score">Score</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('receiptReviewModal')" data-i18n="ch.cancel">Abbrechen</button>
+                        <button type="button" class="btn btn-danger" onclick="rejectCurrentReceipt()" data-i18n="rcpt.reject">Verwerfen</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmCurrentReceipt()" data-i18n="rcpt.confirm">Bestätigen & Buchen</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Settings -->
             <div class="page" id="page-settings">
                 <div class="page-header">
@@ -393,6 +471,40 @@
                         <div class="form-group">
                             <label data-i18n="set.filter_locations">Lagerorte benachrichtigen (leer = alle)</label>
                             <div id="filterLocationsContainer" class="filter-grid" style="margin-top:.35rem"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 data-i18n="set.receipt_title">Kassenbons</h3>
+                        <div class="form-group">
+                            <label data-i18n="set.receipt_folder">Überwachungsordner</label>
+                            <input type="text" id="setReceiptFolder" value="/app/receipts">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.receipt_interval">Scan-Intervall (Minuten)</label>
+                            <input type="number" id="setReceiptInterval" min="1" max="1440" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.receipt_threshold">Match-Schwellwert (%)</label>
+                            <input type="number" id="setReceiptThreshold" min="0" max="100" value="70">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.receipt_auto_threshold">Auto-Confirm Schwellwert (%)</label>
+                            <input type="number" id="setReceiptAutoThreshold" min="0" max="100" value="95">
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label"><input type="checkbox" id="setReceiptWatch"> <span data-i18n="set.receipt_watch">Ordnerüberwachung aktiviert</span></label>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.receipt_default_grp">Standard-Kategorie für neue Produkte</label>
+                            <select id="setReceiptDefaultGroup"><option value="">--</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.receipt_default_loc">Standard-Lagerort für neue Produkte</label>
+                            <select id="setReceiptDefaultLocation"><option value="">--</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="set.receipt_default_qu">Standard-Mengeneinheit für neue Produkte</label>
+                            <select id="setReceiptDefaultQu"><option value="">--</option></select>
                         </div>
                     </div>
                     <div class="card">

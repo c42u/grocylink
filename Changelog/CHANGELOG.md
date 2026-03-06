@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-03-05
+
+### Added
+
+- **Kassenbon-Scanner**: Neue Seite "Kassenbons" in der Navigation zum Verarbeiten von
+  PDF-Kassenbons als Grocy-Bestandsbuchungen.
+  - **PDF-Upload** per Drag & Drop oder Dateiauswahl direkt in der Web-UI
+  - **Automatische Ordnerueberwachung**: Konfigurierbarer Ordner (`/app/receipts`) wird
+    periodisch auf neue PDFs gescannt (Intervall einstellbar)
+  - **Duale Textextraktion**: Digitale PDFs werden direkt mit pdfplumber gelesen,
+    gescannte PDFs per Tesseract OCR (deutsch) verarbeitet
+  - **Intelligentes Bon-Parsing**: Regex-basierte Erkennung gaengiger deutscher
+    Kassenbon-Formate (Marktname, Datum, Produkte mit Menge/Preis, Gesamtsumme)
+  - **Fuzzy Product Matching**: Automatische Zuordnung von Bon-Produkten zu Grocy-Produkten
+    per rapidfuzz (token_sort_ratio) mit konfigurierbarem Schwellwert
+  - **Gelernte Zuordnungen**: Bestaetigte Zuordnungen werden gespeichert und bei
+    zukuenftigen Bons automatisch angewendet (exakter Match vor Fuzzy-Match)
+  - **Review-Workflow**: Items pruefen, Zuordnungen manuell korrigieren per Dropdown,
+    dann bestaetigen — Bestand wird per `add_stock()` in Grocy gebucht
+  - **Zuordnungsverwaltung**: Gelernte Zuordnungen einsehen und loeschen
+  - **Neue Einstellungen**: Ueberwachungsordner, Scan-Intervall, Match-Schwellwert,
+    Auto-Confirm-Schwellwert
+  - **10 neue API-Endpunkte**: CRUD fuer Kassenbons, Items, Mappings, Upload, Confirm,
+    Reject, Reprocess
+  - **Neue Docker-Abhaengigkeiten**: tesseract-ocr, tesseract-ocr-deu, poppler-utils,
+    pdfplumber, pdf2image, pytesseract, rapidfuzz
+  - **Neues Volume**: `/app/receipts` fuer Ordnerueberwachung
+
+---
+
 ## [1.1.0] - 2026-03-01
 
 ### Added

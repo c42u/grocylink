@@ -19,7 +19,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl ca-certificates iputils-ping \
         gcc libffi-dev python3-dev \
-        libssl-dev pkg-config && \
+        libssl-dev pkg-config \
+        tesseract-ocr tesseract-ocr-deu poppler-utils && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
