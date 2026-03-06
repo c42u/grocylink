@@ -24,6 +24,10 @@ else
     echo "[WARNUNG] /app/data ist KEIN gemountetes Volume! Daten gehen beim Redeploy verloren!"
 fi
 
+# Kassenbon-Verzeichnis sicherstellen
+mkdir -p /app/data/receipts
+mkdir -p /app/receipts 2>/dev/null || true
+
 # Gunicorn starten (Flask-App)
 echo "Starte Grocylink..."
 exec gunicorn \

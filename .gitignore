@@ -1,11 +1,20 @@
-# Laufzeit-Daten
-data/
+# .gitignore – grocylink
+# Autor: c42u | Co-Autor: ClaudeCode
 
 # Python Cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Claude Workspace
+.claude/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # OS-Metadaten
 @eaDir/

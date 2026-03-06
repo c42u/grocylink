@@ -19,6 +19,7 @@ services:
       TZ: ${TIMEZONE}
     volumes:
       - ${PATH_TO}/grocylink/data:/app/data
+      - ${PATH_TO}/grocylink/receipts:/app/receipts
     ports:
       - "5000:5000"
     networks:

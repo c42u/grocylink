@@ -120,3 +120,19 @@ class GrocyClient:
 
     def get_locations(self):
         return self._get('/objects/locations')
+
+    def get_quantity_units(self):
+        return self._get('/objects/quantity_units')
+
+    def create_product(self, name, location_id=None, product_group_id=None,
+                       qu_id_purchase=None, qu_id_stock=None):
+        data = {'name': name, 'active': 1}
+        if location_id:
+            data['location_id'] = int(location_id)
+        if product_group_id:
+            data['product_group_id'] = int(product_group_id)
+        if qu_id_purchase:
+            data['qu_id_purchase'] = int(qu_id_purchase)
+            data['qu_id_stock'] = int(qu_id_stock or qu_id_purchase)
+            data['qu_factor_purchase_to_stock'] = 1.0
+        return self._post('/objects/products', data)

@@ -48,6 +48,7 @@ function loadPageData(page) {
     if (page === 'dashboard') loadDashboard();
     else if (page === 'channels') loadChannels();
     else if (page === 'products') loadProducts();
+    else if (page === 'receipts') loadReceipts();
     else if (page === 'log') loadLog();
     else if (page === 'caldav') loadCaldav();
     else if (page === 'help') { /* static content, handled by CSS lang-de/lang-en */ }
@@ -590,10 +591,44 @@ async function loadSettings() {
     document.getElementById('setRepeatLimit').value = s.notification_repeat_limit !== undefined ? s.notification_repeat_limit : '1';
     const langSel = document.getElementById('langSelect');
     if (langSel) langSel.value = currentLang;
+    document.getElementById('setReceiptFolder').value = s.receipt_watch_folder || '/app/receipts';
+    document.getElementById('setReceiptInterval').value = s.receipt_watch_interval_minutes || 5;
+    document.getElementById('setReceiptThreshold').value = s.receipt_match_threshold || 70;
+    document.getElementById('setReceiptAutoThreshold').value = s.receipt_auto_confirm_threshold || 95;
+    document.getElementById('setReceiptWatch').checked = s.receipt_watch_enabled === '1';
     const groupIds = (s.notify_product_groups || '').split(',').filter(x => x.trim());
     const locationIds = (s.notify_locations || '').split(',').filter(x => x.trim());
     loadFilterGroups(groupIds);
     loadFilterLocations(locationIds);
+    loadReceiptDefaults(s);
+}
+
+async function loadReceiptDefaults(s) {
+    await loadGrocyMetadata();
+    // Kategorien
+    const grpSel = document.getElementById('setReceiptDefaultGroup');
+    if (grpSel) {
+        grpSel.innerHTML = '<option value="">--</option>' + (window._grocyProductGroups || [])
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            .map(g => '<option value="' + g.id + '"' + (String(g.id) === s.receipt_default_product_group ? ' selected' : '') + '>' + esc(g.name) + '</option>')
+            .join('');
+    }
+    // Lagerorte
+    const locSel = document.getElementById('setReceiptDefaultLocation');
+    if (locSel) {
+        locSel.innerHTML = '<option value="">--</option>' + (window._grocyLocations || [])
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            .map(l => '<option value="' + l.id + '"' + (String(l.id) === s.receipt_default_location ? ' selected' : '') + '>' + esc(l.name) + '</option>')
+            .join('');
+    }
+    // Mengeneinheiten
+    const quSel = document.getElementById('setReceiptDefaultQu');
+    if (quSel) {
+        quSel.innerHTML = '<option value="">--</option>' + (window._grocyQuantityUnits || [])
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            .map(u => '<option value="' + u.id + '"' + (String(u.id) === s.receipt_default_qu_id ? ' selected' : '') + '>' + esc(u.name) + '</option>')
+            .join('');
+    }
 }
 
 async function loadFilterGroups(selectedIds) {
@@ -656,6 +691,14 @@ async function saveSettings(e) {
         notification_repeat_limit: document.getElementById('setRepeatLimit').value,
         notify_product_groups: getSelectedFilterIds('filterGroupsContainer'),
         notify_locations: getSelectedFilterIds('filterLocationsContainer'),
+        receipt_watch_folder: document.getElementById('setReceiptFolder').value,
+        receipt_watch_interval_minutes: document.getElementById('setReceiptInterval').value,
+        receipt_match_threshold: document.getElementById('setReceiptThreshold').value,
+        receipt_auto_confirm_threshold: document.getElementById('setReceiptAutoThreshold').value,
+        receipt_watch_enabled: document.getElementById('setReceiptWatch').checked ? '1' : '0',
+        receipt_default_product_group: document.getElementById('setReceiptDefaultGroup')?.value || '',
+        receipt_default_location: document.getElementById('setReceiptDefaultLocation')?.value || '',
+        receipt_default_qu_id: document.getElementById('setReceiptDefaultQu')?.value || '',
     });
     toast(t('set.saved'), 'success');
 }
@@ -864,6 +907,346 @@ function esc(s) {
     const d = document.createElement('div');
     d.textContent = s;
     return d.innerHTML;
+}
+
+// ── Kassenbons ──────────────────────────────────────────────────────
+
+window._currentReceiptId = null;
+window._grocyProducts = [];
+
+const RECEIPT_STATUS_LABELS = {
+    'pending_review': 'rcpt.status_pending',
+    'confirmed': 'rcpt.status_confirmed',
+    'rejected': 'rcpt.status_rejected',
+    'error': 'rcpt.status_error',
+};
+const RECEIPT_STATUS_COLORS = {
+    'pending_review': 'var(--warning)',
+    'confirmed': 'var(--success)',
+    'rejected': 'var(--text-muted)',
+    'error': 'var(--danger)',
+};
+
+async function loadReceipts() {
+    try {
+        const receipts = await api('/api/receipts');
+        const tbody = document.querySelector('#tableReceipts tbody');
+        if (!receipts.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="7">' + esc(t('rcpt.no_receipts')) + '</td></tr>';
+        } else {
+            tbody.innerHTML = receipts.map(r => {
+                const statusKey = RECEIPT_STATUS_LABELS[r.status] || r.status;
+                const statusColor = RECEIPT_STATUS_COLORS[r.status] || 'var(--text-muted)';
+                return `<tr>
+                    <td>${esc(r.receipt_date || '-')}</td>
+                    <td>${esc(r.filename)}</td>
+                    <td>${esc(r.store_name || '-')}</td>
+                    <td>-</td>
+                    <td>${r.total_amount != null ? r.total_amount.toFixed(2) + ' €' : '-'}</td>
+                    <td><span class="receipt-status-badge" style="background:${statusColor}">${esc(t(statusKey))}</span></td>
+                    <td>
+                        ${r.status === 'pending_review' ? '<button class="btn btn-sm btn-primary" onclick="openReceiptReview(' + r.id + ')">' + esc(t('rcpt.review')) + '</button> ' : ''}
+                        <button class="btn btn-sm btn-secondary" onclick="reprocessReceipt(${r.id})">${esc(t('rcpt.reprocess'))}</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteReceipt(${r.id})">${esc(t('rcpt.delete'))}</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+        loadMappings();
+    } catch (e) {
+        toast(t('gen.error') + ': ' + e.message, 'error');
+    }
+}
+
+async function uploadReceipt(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    toast(t('rcpt.uploading'), 'info');
+    try {
+        const resp = await fetch('/api/receipts/upload', { method: 'POST', body: formData });
+        const data = await resp.json();
+        if (data.ok) {
+            toast(data.items_count + ' ' + t('rcpt.th_items'), 'success');
+            loadReceipts();
+        } else {
+            toast(data.error || t('gen.error'), 'error');
+        }
+    } catch (e) {
+        toast(t('gen.error') + ': ' + e.message, 'error');
+    }
+}
+
+// Upload-Zone Event-Handler
+(function() {
+    const zone = document.getElementById('uploadZone');
+    const input = document.getElementById('receiptFileInput');
+    if (!zone || !input) return;
+
+    zone.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => {
+        if (input.files.length) uploadReceipt(input.files[0]);
+        input.value = '';
+    });
+
+    zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const files = e.dataTransfer.files;
+        if (files.length && files[0].name.toLowerCase().endsWith('.pdf')) {
+            uploadReceipt(files[0]);
+        }
+    });
+})();
+
+async function openReceiptReview(receiptId) {
+    window._currentReceiptId = receiptId;
+    try {
+        const receipt = await api('/api/receipts/' + receiptId);
+        const info = document.getElementById('receiptReviewInfo');
+        info.innerHTML = [
+            receipt.store_name ? '<strong>' + esc(receipt.store_name) + '</strong>' : '',
+            receipt.receipt_date || '',
+            receipt.total_amount != null ? receipt.total_amount.toFixed(2) + ' €' : '',
+            receipt.extraction_method ? '(' + esc(receipt.extraction_method) + ')' : '',
+        ].filter(Boolean).join(' &mdash; ');
+
+        // Grocy-Produkte laden fuer Dropdown
+        if (!window._grocyProducts.length) {
+            try {
+                const pdata = await api('/api/products');
+                window._grocyProducts = (pdata.products || []).map(p => ({ id: p.product_id, name: p.name }));
+            } catch(e) { /* ignore */ }
+        }
+
+        // Grocy-Daten fuer neue Produkte vorladen
+        await loadGrocyMetadata();
+        const settings = await api('/api/settings');
+        const defaultGroupId = settings.receipt_default_product_group || '';
+        const defaultLocId = settings.receipt_default_location || '';
+        const defaultQuId = settings.receipt_default_qu_id || '';
+
+        const tbody = document.querySelector('#tableReviewItems tbody');
+        const items = receipt.items || [];
+        if (!items.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">' + esc(t('rcpt.no_receipts')) + '</td></tr>';
+        } else {
+            tbody.innerHTML = items.map(item => {
+                const scoreClass = item.match_score >= 90 ? 'score-high' :
+                                   item.match_score >= 70 ? 'score-mid' : 'score-low';
+
+                // Produkt-Dropdown mit __NEW__ Option
+                const productOptions = window._grocyProducts.map(p =>
+                    '<option value="' + p.id + '"' + (p.id === item.matched_product_id ? ' selected' : '') + '>' + esc(p.name) + '</option>'
+                ).join('');
+
+                const isUnmatched = !item.matched_product_id;
+                const selectValue = isUnmatched ? '__NEW__' : (item.matched_product_id || '');
+
+                // Kategorien-Dropdown
+                const groupOptions = (window._grocyProductGroups || []).map(g =>
+                    '<option value="' + g.id + '"' + (String(g.id) === defaultGroupId ? ' selected' : '') + '>' + esc(g.name) + '</option>'
+                ).join('');
+                // Lagerorte-Dropdown
+                const locOptions = (window._grocyLocations || []).map(l =>
+                    '<option value="' + l.id + '"' + (String(l.id) === defaultLocId ? ' selected' : '') + '>' + esc(l.name) + '</option>'
+                ).join('');
+                // Mengeneinheiten-Dropdown
+                const quOptions = (window._grocyQuantityUnits || []).map(u =>
+                    '<option value="' + u.id + '"' + (String(u.id) === defaultQuId ? ' selected' : '') + '>' + esc(u.name) + '</option>'
+                ).join('');
+
+                return `<tr data-item-id="${item.id}">
+                    <td>${esc(item.raw_name)}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.unit_price != null ? item.unit_price.toFixed(2) + ' €' : '-'}</td>
+                    <td>
+                        <select class="receipt-match-select" data-item-id="${item.id}" onchange="onItemMatchChange(this, ${receiptId})" style="width:100%;max-width:250px">
+                            <option value="">-- ${esc(t('rcpt.search_product'))} --</option>
+                            <option value="__NEW__"${isUnmatched ? ' selected' : ''}>${esc(t('rcpt.create_new'))}</option>
+                            ${productOptions}
+                        </select>
+                        <div class="new-product-fields" data-item-id="${item.id}" style="${isUnmatched ? '' : 'display:none'}">
+                            <input type="text" class="np-name" value="${esc(item.raw_name)}" placeholder="${esc(t('rcpt.product_name'))}">
+                            <select class="np-group"><option value="">${esc(t('rcpt.select_default'))}</option>${groupOptions}</select>
+                            <select class="np-location"><option value="">${esc(t('rcpt.select_default'))}</option>${locOptions}</select>
+                            <select class="np-qu"><option value="">${esc(t('rcpt.select_default'))}</option>${quOptions}</select>
+                            <button type="button" class="btn btn-sm btn-secondary btn-suggest" onclick="suggestCategory(${item.id})">${esc(t('rcpt.suggest_category'))}</button>
+                        </div>
+                    </td>
+                    <td><span class="match-score ${scoreClass}">${item.match_score > 0 ? Math.round(item.match_score) + '%' : '-'}</span></td>
+                </tr>`;
+            }).join('');
+        }
+        openModal('receiptReviewModal');
+    } catch (e) {
+        toast(t('gen.error') + ': ' + e.message, 'error');
+    }
+}
+
+function onItemMatchChange(sel, receiptId) {
+    const itemId = sel.dataset.itemId;
+    const fields = document.querySelector('.new-product-fields[data-item-id="' + itemId + '"]');
+    if (sel.value === '__NEW__') {
+        if (fields) fields.style.display = '';
+    } else {
+        if (fields) fields.style.display = 'none';
+        updateItemMatch(sel, receiptId);
+    }
+}
+
+async function updateItemMatch(sel, receiptId) {
+    const itemId = sel.dataset.itemId;
+    const productId = sel.value ? parseInt(sel.value) : null;
+    const productName = sel.options[sel.selectedIndex]?.text || '';
+    if (!productId) return;
+    try {
+        await api('/api/receipts/' + receiptId + '/items/' + itemId, 'PUT', {
+            matched_product_id: productId,
+            matched_product_name: productName,
+        });
+    } catch (e) {
+        toast(t('gen.error') + ': ' + e.message, 'error');
+    }
+}
+
+// Lazy-load Grocy metadata (product groups, locations, quantity units)
+async function loadGrocyMetadata() {
+    if (!window._grocyProductGroups) {
+        try { window._grocyProductGroups = await api('/api/grocy/product-groups'); } catch(e) { window._grocyProductGroups = []; }
+    }
+    if (!window._grocyLocations) {
+        try { window._grocyLocations = await api('/api/grocy/locations'); } catch(e) { window._grocyLocations = []; }
+    }
+    if (!window._grocyQuantityUnits) {
+        try { window._grocyQuantityUnits = await api('/api/grocy/quantity-units'); } catch(e) { window._grocyQuantityUnits = []; }
+    }
+}
+
+async function suggestCategory(itemId) {
+    const fields = document.querySelector('.new-product-fields[data-item-id="' + itemId + '"]');
+    if (!fields) return;
+    const nameInput = fields.querySelector('.np-name');
+    const groupSelect = fields.querySelector('.np-group');
+    const btn = fields.querySelector('.btn-suggest');
+    const name = nameInput.value.trim();
+    if (!name) return;
+    btn.textContent = t('rcpt.suggesting');
+    btn.disabled = true;
+    try {
+        const data = await api('/api/openfoodfacts/suggest', 'POST', { name });
+        if (data.product_group_id) {
+            groupSelect.value = String(data.product_group_id);
+            btn.textContent = data.category || t('rcpt.suggest_category');
+        } else {
+            btn.textContent = t('rcpt.no_suggestion');
+        }
+    } catch (e) {
+        btn.textContent = t('rcpt.no_suggestion');
+    }
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = t('rcpt.suggest_category'); }, 3000);
+}
+
+async function confirmCurrentReceipt() {
+    if (!window._currentReceiptId) return;
+    try {
+        // Neue Produkte sammeln
+        const newProducts = {};
+        document.querySelectorAll('#tableReviewItems tbody tr[data-item-id]').forEach(row => {
+            const itemId = row.getAttribute('data-item-id');
+            const sel = row.querySelector('.receipt-match-select');
+            if (sel && sel.value === '__NEW__') {
+                const fields = row.querySelector('.new-product-fields');
+                if (fields) {
+                    newProducts[itemId] = {
+                        name: (fields.querySelector('.np-name')?.value || '').trim(),
+                        product_group_id: fields.querySelector('.np-group')?.value || null,
+                        location_id: fields.querySelector('.np-location')?.value || null,
+                        qu_id: fields.querySelector('.np-qu')?.value || null,
+                    };
+                }
+            }
+        });
+        const body = Object.keys(newProducts).length ? { new_products: newProducts } : {};
+        const data = await api('/api/receipts/' + window._currentReceiptId + '/confirm', 'POST', body);
+        if (data.ok) {
+            let msg = data.added + ' ' + t('rcpt.confirmed_count');
+            if (data.created > 0) {
+                msg += ', ' + data.created + ' ' + t('rcpt.created_count');
+            }
+            toast(msg, 'success');
+            if (data.errors && data.errors.length) {
+                data.errors.forEach(e => toast(e, 'error'));
+            }
+            closeModal('receiptReviewModal');
+            loadReceipts();
+            // Produkt-Cache invalidieren
+            window._grocyProducts = [];
+        } else {
+            toast(data.error || t('rcpt.confirm_error'), 'error');
+        }
+    } catch (e) {
+        toast(t('rcpt.confirm_error') + ': ' + e.message, 'error');
+    }
+}
+
+async function rejectCurrentReceipt() {
+    if (!window._currentReceiptId) return;
+    await api('/api/receipts/' + window._currentReceiptId + '/reject', 'POST');
+    toast(t('rcpt.rejected'), 'success');
+    closeModal('receiptReviewModal');
+    loadReceipts();
+}
+
+async function deleteReceipt(id) {
+    if (!confirm(t('rcpt.confirm_delete'))) return;
+    await api('/api/receipts/' + id, 'DELETE');
+    toast(t('rcpt.deleted'), 'success');
+    loadReceipts();
+}
+
+async function reprocessReceipt(id) {
+    try {
+        const data = await api('/api/receipts/reprocess/' + id, 'POST');
+        if (data.ok) {
+            toast(t('rcpt.reprocessed'), 'success');
+            loadReceipts();
+        } else {
+            toast(data.error || t('gen.error'), 'error');
+        }
+    } catch (e) {
+        toast(t('gen.error') + ': ' + e.message, 'error');
+    }
+}
+
+async function loadMappings() {
+    try {
+        const mappings = await api('/api/receipts/mappings');
+        const tbody = document.querySelector('#tableMappings tbody');
+        if (!mappings.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="4">' + esc(t('rcpt.no_mappings')) + '</td></tr>';
+            return;
+        }
+        tbody.innerHTML = mappings.map(m => `<tr>
+            <td>${esc(m.receipt_name)}</td>
+            <td>${esc(m.grocy_product_name)}</td>
+            <td>${m.use_count}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteMapping(${m.id})">${esc(t('rcpt.delete'))}</button></td>
+        </tr>`).join('');
+    } catch (e) {
+        /* silent */
+    }
+}
+
+async function deleteMapping(id) {
+    await api('/api/receipts/mappings/' + id, 'DELETE');
+    toast(t('rcpt.mapping_deleted'), 'success');
+    loadMappings();
 }
 
 // Init

@@ -77,6 +77,48 @@ def init_db():
             sync_direction TEXT NOT NULL DEFAULT '',
             UNIQUE(grocy_type, grocy_id)
         );
+
+        CREATE TABLE IF NOT EXISTS receipts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            filename TEXT NOT NULL,
+            filepath TEXT UNIQUE NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending_review',
+            extraction_method TEXT,
+            store_name TEXT,
+            receipt_date TEXT,
+            total_amount REAL,
+            raw_text TEXT,
+            error_message TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            confirmed_at TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS receipt_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            receipt_id INTEGER NOT NULL,
+            raw_name TEXT NOT NULL,
+            quantity REAL NOT NULL DEFAULT 1,
+            unit_price REAL,
+            total_price REAL,
+            tax_category TEXT,
+            matched_product_id INTEGER,
+            matched_product_name TEXT,
+            match_score REAL,
+            match_source TEXT,
+            confirmed INTEGER NOT NULL DEFAULT 0,
+            added_to_grocy INTEGER NOT NULL DEFAULT 0,
+            FOREIGN KEY (receipt_id) REFERENCES receipts(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS receipt_product_mappings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            receipt_name TEXT UNIQUE NOT NULL,
+            grocy_product_id INTEGER NOT NULL,
+            grocy_product_name TEXT NOT NULL,
+            use_count INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            last_used TEXT NOT NULL DEFAULT (datetime('now'))
+        );
     """)
     # Migrationen: fehlende Spalten nachträglich hinzufügen
     for migration in [
@@ -109,6 +151,14 @@ def init_db():
         'caldav_sync_enabled': '0',
         'caldav_sync_interval_minutes': '30',
         'language': 'de',
+        'receipt_watch_folder': '/app/receipts',
+        'receipt_watch_enabled': '0',
+        'receipt_watch_interval_minutes': '5',
+        'receipt_match_threshold': '70',
+        'receipt_auto_confirm_threshold': '95',
+        'receipt_default_location': '',
+        'receipt_default_product_group': '',
+        'receipt_default_qu_id': '',
     }
     for key, value in defaults.items():
         conn.execute(
@@ -400,3 +450,160 @@ def cleanup_tracker(active_keys):
     if to_delete:
         conn.commit()
     conn.close()
+
+
+# ── Kassenbon-Funktionen ──────────────────────────────────────────────
+
+def save_receipt(filename, filepath, status='pending_review', extraction_method=None,
+                 store_name=None, receipt_date=None, total_amount=None, raw_text=None,
+                 error_message=None):
+    conn = get_db()
+    cursor = conn.execute(
+        """INSERT INTO receipts (filename, filepath, status, extraction_method,
+           store_name, receipt_date, total_amount, raw_text, error_message)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (filename, filepath, status, extraction_method, store_name, receipt_date,
+         total_amount, raw_text, error_message)
+    )
+    receipt_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return receipt_id
+
+
+def get_receipts():
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM receipts ORDER BY created_at DESC"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_receipt(receipt_id):
+    conn = get_db()
+    row = conn.execute("SELECT * FROM receipts WHERE id = ?", (receipt_id,)).fetchone()
+    if not row:
+        conn.close()
+        return None
+    receipt = dict(row)
+    items = conn.execute(
+        "SELECT * FROM receipt_items WHERE receipt_id = ? ORDER BY id", (receipt_id,)
+    ).fetchall()
+    receipt['items'] = [dict(i) for i in items]
+    conn.close()
+    return receipt
+
+
+def update_receipt_status(receipt_id, status, error_message=None):
+    conn = get_db()
+    if status == 'confirmed':
+        conn.execute(
+            "UPDATE receipts SET status = ?, confirmed_at = datetime('now') WHERE id = ?",
+            (status, receipt_id)
+        )
+    elif error_message:
+        conn.execute(
+            "UPDATE receipts SET status = ?, error_message = ? WHERE id = ?",
+            (status, error_message, receipt_id)
+        )
+    else:
+        conn.execute(
+            "UPDATE receipts SET status = ? WHERE id = ?",
+            (status, receipt_id)
+        )
+    conn.commit()
+    conn.close()
+
+
+def delete_receipt(receipt_id):
+    conn = get_db()
+    conn.execute("DELETE FROM receipt_items WHERE receipt_id = ?", (receipt_id,))
+    conn.execute("DELETE FROM receipts WHERE id = ?", (receipt_id,))
+    conn.commit()
+    conn.close()
+
+
+def save_receipt_items(receipt_id, items):
+    conn = get_db()
+    conn.execute("DELETE FROM receipt_items WHERE receipt_id = ?", (receipt_id,))
+    for item in items:
+        conn.execute(
+            """INSERT INTO receipt_items (receipt_id, raw_name, quantity, unit_price,
+               total_price, tax_category, matched_product_id, matched_product_name,
+               match_score, match_source)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (receipt_id, item.get('raw_name', ''), item.get('quantity', 1),
+             item.get('unit_price'), item.get('total_price'), item.get('tax_category'),
+             item.get('matched_product_id'), item.get('matched_product_name'),
+             item.get('match_score'), item.get('match_source'))
+        )
+    conn.commit()
+    conn.close()
+
+
+def update_receipt_item(item_id, matched_product_id, matched_product_name,
+                        match_score=100, match_source='manual'):
+    conn = get_db()
+    conn.execute(
+        """UPDATE receipt_items SET matched_product_id = ?, matched_product_name = ?,
+           match_score = ?, match_source = ?, confirmed = 1 WHERE id = ?""",
+        (matched_product_id, matched_product_name, match_score, match_source, item_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_receipt_item(item_id):
+    conn = get_db()
+    row = conn.execute("SELECT * FROM receipt_items WHERE id = ?", (item_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_product_mappings_dict():
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM receipt_product_mappings").fetchall()
+    conn.close()
+    return {r['receipt_name']: dict(r) for r in rows}
+
+
+def get_product_mappings():
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM receipt_product_mappings ORDER BY use_count DESC"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def save_product_mapping(receipt_name, grocy_product_id, grocy_product_name):
+    conn = get_db()
+    conn.execute(
+        """INSERT INTO receipt_product_mappings (receipt_name, grocy_product_id, grocy_product_name)
+           VALUES (?, ?, ?)
+           ON CONFLICT(receipt_name) DO UPDATE SET
+             grocy_product_id = excluded.grocy_product_id,
+             grocy_product_name = excluded.grocy_product_name,
+             use_count = use_count + 1,
+             last_used = datetime('now')""",
+        (receipt_name, grocy_product_id, grocy_product_name)
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_product_mapping(mapping_id):
+    conn = get_db()
+    conn.execute("DELETE FROM receipt_product_mappings WHERE id = ?", (mapping_id,))
+    conn.commit()
+    conn.close()
+
+
+def receipt_filepath_exists(filepath):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT id FROM receipts WHERE filepath = ?", (filepath,)
+    ).fetchone()
+    conn.close()
+    return row is not None
