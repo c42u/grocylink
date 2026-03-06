@@ -22,17 +22,17 @@ _Keine offenen Aufgaben._
 
 #### Aufgabenübersicht
 
-- [ ] Aufgabe 1 - Kassenbon-Review UI: Dropdown-Breiten, Labels, automatische Vorauswahl
-- [ ] Aufgabe 2 - Externe Datenbank fuer automatisierte Vorauswahl (OpenFoodFacts)
-- [ ] Aufgabe 3 - Vorauswahl mit Produktbildern und Barcodes
+_Keine Aufgaben in Bearbeitung._
 
 ---
 
 ### 3. >>Erledigte Aufgaben<< <a name="finished"></a>
-#### Letzte Änderung - YYYY-mm-dd
+#### Letzte Änderung - 2026-03-06
 
 #### Aufgabenübersicht
 
-_Keine erledigten Aufgaben._
+- [x] Aufgabe 1 - Kassenbon-Review UI: Dropdown-Breiten, Labels, automatische Vorauswahl
+- [x] Aufgabe 2 - Externe Datenbank fuer automatisierte Vorauswahl (OpenFoodFacts)
+- [x] Aufgabe 3 - Vorauswahl mit Produktbildern und Barcodes
 
 ---
