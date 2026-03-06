@@ -249,17 +249,28 @@ def api_openfoodfacts_suggest():
     name = (data.get('name') or '').strip()
     if not name:
         return jsonify({'category': None, 'product_group_id': None, 'raw_categories': []})
+    empty = {'category': None, 'product_group_id': None, 'raw_categories': [],
+             'image_url': None, 'barcode': None, 'off_product_name': None}
     try:
         import requests as req
         from rapidfuzz import fuzz
         resp = req.get(
             'https://de.openfoodfacts.org/cgi/search.pl',
-            params={'search_terms': name, 'search_simple': 1, 'action': 'process', 'json': 1, 'page_size': 3},
+            params={'search_terms': name, 'search_simple': 1, 'action': 'process', 'json': 1, 'page_size': 5},
             headers={'User-Agent': 'Grocylink/1.2.0 (grocylink@c42u.de)'},
             timeout=10,
         )
         resp.raise_for_status()
         products = resp.json().get('products', [])
+        if not products:
+            return jsonify(empty)
+
+        # Bestes Produkt fuer Bild, Barcode und Name
+        best_product = products[0]
+        image_url = best_product.get('image_front_small_url') or best_product.get('image_front_url') or None
+        barcode = best_product.get('code') or None
+        off_name = best_product.get('product_name_de') or best_product.get('product_name') or None
+
         raw_categories = []
         for p in products:
             cats = p.get('categories_tags_de') or p.get('categories_tags') or []
@@ -267,8 +278,18 @@ def api_openfoodfacts_suggest():
                 cats = [c.strip() for c in cats.split(',')]
             raw_categories.extend(cats)
         raw_categories = list(dict.fromkeys(raw_categories))
+
+        result = {
+            'raw_categories': raw_categories,
+            'image_url': image_url,
+            'barcode': barcode,
+            'off_product_name': off_name,
+        }
+
         if not raw_categories:
-            return jsonify({'category': None, 'product_group_id': None, 'raw_categories': []})
+            result.update({'category': None, 'product_group_id': None})
+            return jsonify(result)
+
         # Fuzzy-Match gegen Grocy-Produktgruppen
         client = GrocyClient()
         groups = client.get_product_groups()
@@ -284,11 +305,14 @@ def api_openfoodfacts_suggest():
                     best_match = g['name']
                     best_group_id = g['id']
         if best_score < 40:
-            return jsonify({'category': None, 'product_group_id': None, 'raw_categories': raw_categories})
-        return jsonify({'category': best_match, 'product_group_id': best_group_id, 'raw_categories': raw_categories})
+            result.update({'category': None, 'product_group_id': None})
+        else:
+            result.update({'category': best_match, 'product_group_id': best_group_id})
+        return jsonify(result)
     except Exception as e:
         logger.error(f"OpenFoodFacts Fehler: {e}")
-        return jsonify({'category': None, 'product_group_id': None, 'error': str(e)})
+        empty['error'] = str(e)
+        return jsonify(empty)
 
 
 @app.route('/api/log', methods=['GET'])
