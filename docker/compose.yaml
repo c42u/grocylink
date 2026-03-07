@@ -1,6 +1,6 @@
 services:
   grocylink:
-    image: grocylink:latest
+    image: registry.zucker.network/grocylink:latest
     pull_policy: never
     container_name: grocylink
     restart: unless-stopped
