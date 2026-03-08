@@ -72,6 +72,11 @@ PATTERN_SUBLINE_QTY = re.compile(
     r'^\s*(\d+)\s+(?:Stk|Stck|Stueck|St\.?)\s*[xX×]\s*(\d+[,.]\d{2})\s*$', re.I
 )
 
+# Netto-Format: Mengenzeile ÜBER dem Produktnamen (alleinstehende Zahl, z.B. "2")
+PATTERN_PRELINE_QTY = re.compile(
+    r'^\s*(\d+)\s*$'
+)
+
 # Datum-Patterns
 DATE_PATTERNS = [
     re.compile(r'(?:Datum|Date)\s*[:.]?\s*(\d{2})[./](\d{2})[./](\d{4})', re.I),
@@ -184,9 +189,11 @@ def parse_receipt_text(text):
                 break
 
     # Produkte extrahieren
+    pending_qty = None  # Netto-Format: Mengenzeile VOR dem Produkt
     for line in lines:
         line = line.strip()
         if not line or _should_skip_line(line):
+            pending_qty = None
             continue
 
         item = None
@@ -198,6 +205,13 @@ def parse_receipt_text(text):
             unit_price = _parse_price(m.group(2))
             items[-1]['quantity'] = qty
             items[-1]['unit_price'] = unit_price
+            pending_qty = None
+            continue
+
+        # Netto-Format: alleinstehende Zahl = Menge fuer das naechste Produkt
+        m = PATTERN_PRELINE_QTY.match(line)
+        if m:
+            pending_qty = int(m.group(1))
             continue
 
         # Format 3: "2 PRODUKT  0,99  1,98 A"
@@ -256,7 +270,15 @@ def parse_receipt_text(text):
                     }
 
         if item:
+            # Netto-Format: Menge aus vorheriger Zeile anwenden
+            if pending_qty and pending_qty > 1 and item['quantity'] == 1:
+                item['quantity'] = pending_qty
+                item['unit_price'] = round(item['total_price'] / pending_qty, 2)
+            pending_qty = None
             items.append(item)
+
+    # Duplikate zusammenfuehren (Aldi-Format: gleiche Produkte einzeln)
+    items = merge_duplicates(items)
 
     return {
         'store_name': store_name,
@@ -264,6 +286,27 @@ def parse_receipt_text(text):
         'total_amount': total_amount,
         'items': items,
     }
+
+
+def merge_duplicates(items):
+    """Fuehrt Duplikate zusammen (Aldi-Format: gleiche Produkte einzeln aufgelistet).
+
+    Items mit identischem raw_name (case-insensitive) werden zusammengefasst:
+    Mengen addiert, Einzelpreis beibehalten, Gesamtpreis summiert.
+    """
+    merged = {}
+    order = []
+    for item in items:
+        key = item['raw_name'].upper().strip()
+        if key in merged:
+            merged[key]['quantity'] += item['quantity']
+            merged[key]['total_price'] = round(
+                merged[key]['total_price'] + item['total_price'], 2
+            )
+        else:
+            merged[key] = dict(item)
+            order.append(key)
+    return [merged[k] for k in order]
 
 
 def match_products(items, grocy_products, mappings_dict, threshold=70):
