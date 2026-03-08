@@ -313,16 +313,23 @@ def match_products(items, grocy_products, mappings_dict, threshold=70):
     """Matcht Bon-Produkte mit Grocy-Produkten.
 
     1. Gelernte Zuordnungen (exakter Name-Match)
-    2. Fuzzy-Match mit rapidfuzz (token_sort_ratio)
+    2. Fuzzy-Match gegen alle gelernten Bon-Namen (Signatur-Erkennung)
+    3. Fuzzy-Match gegen Grocy-Produktnamen
     """
     from rapidfuzz import fuzz
 
     grocy_names = [(p['id'], p['name']) for p in grocy_products]
 
+    # Gelernte Bon-Namen als Signaturen: (receipt_name, grocy_product_id, grocy_product_name)
+    learned_signatures = [
+        (m['receipt_name'], m['grocy_product_id'], m['grocy_product_name'])
+        for m in mappings_dict.values()
+    ]
+
     for item in items:
         raw = item['raw_name'].upper().strip()
 
-        # 1. Gelernte Zuordnung (exakt)
+        # 1. Gelernte Zuordnung (exakter Name-Match)
         mapping = mappings_dict.get(raw)
         if mapping:
             item['matched_product_id'] = mapping['grocy_product_id']
@@ -331,7 +338,20 @@ def match_products(items, grocy_products, mappings_dict, threshold=70):
             item['match_source'] = 'learned'
             continue
 
-        # 2. Fuzzy-Match
+        # 2. Fuzzy-Match gegen gelernte Bon-Namen (Signatur-Erkennung)
+        # Wenn der Bon-Name aehnlich zu einem bereits gelernten Bon-Namen ist,
+        # wird das zugehoerige Grocy-Produkt vorgeschlagen
+        sig_best_score = 0
+        sig_best_id = None
+        sig_best_name = None
+        for sig_name, sig_pid, sig_pname in learned_signatures:
+            score = fuzz.token_sort_ratio(raw, sig_name.upper())
+            if score > sig_best_score:
+                sig_best_score = score
+                sig_best_id = sig_pid
+                sig_best_name = sig_pname
+
+        # 3. Fuzzy-Match gegen Grocy-Produktnamen
         best_score = 0
         best_id = None
         best_name = None
@@ -342,7 +362,13 @@ def match_products(items, grocy_products, mappings_dict, threshold=70):
                 best_id = pid
                 best_name = pname
 
-        if best_score >= threshold:
+        # Signatur-Match bevorzugen (hoehere Konfidenz weil bereits bestaetigt)
+        if sig_best_score >= threshold and sig_best_score >= best_score:
+            item['matched_product_id'] = sig_best_id
+            item['matched_product_name'] = sig_best_name
+            item['match_score'] = round(sig_best_score, 1)
+            item['match_source'] = 'learned_fuzzy'
+        elif best_score >= threshold:
             item['matched_product_id'] = best_id
             item['matched_product_name'] = best_name
             item['match_score'] = round(best_score, 1)
@@ -350,7 +376,7 @@ def match_products(items, grocy_products, mappings_dict, threshold=70):
         else:
             item['matched_product_id'] = None
             item['matched_product_name'] = None
-            item['match_score'] = round(best_score, 1) if best_score > 0 else 0
+            item['match_score'] = round(max(best_score, sig_best_score), 1) if max(best_score, sig_best_score) > 0 else 0
             item['match_source'] = 'none'
 
     return items

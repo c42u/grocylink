@@ -275,6 +275,12 @@ const I18N = {
     'rcpt.barcode_searching': 'Barcodes suchen...',
     'rcpt.barcode_none': 'Kein Barcode',
     'rcpt.barcode_select': '-- Barcode wählen --',
+    'rcpt.off_suggestions': 'Produktvorschläge',
+    'rcpt.nutr_energy': 'Energie',
+    'rcpt.nutr_fat': 'Fett',
+    'rcpt.nutr_carbs': 'Kohlenhydrate',
+    'rcpt.nutr_protein': 'Eiweiß',
+    'rcpt.nutr_salt': 'Salz',
 
     // General
     'gen.error': 'Fehler',
@@ -556,6 +562,12 @@ const I18N = {
     'rcpt.barcode_searching': 'Searching barcodes...',
     'rcpt.barcode_none': 'No barcode',
     'rcpt.barcode_select': '-- Select barcode --',
+    'rcpt.off_suggestions': 'Product suggestions',
+    'rcpt.nutr_energy': 'Energy',
+    'rcpt.nutr_fat': 'Fat',
+    'rcpt.nutr_carbs': 'Carbs',
+    'rcpt.nutr_protein': 'Protein',
+    'rcpt.nutr_salt': 'Salt',
 
     // General
     'gen.error': 'Error',

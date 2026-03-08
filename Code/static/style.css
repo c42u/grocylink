@@ -1033,6 +1033,46 @@ code.help-code {
 .np-barcode { font-family: monospace; font-size: .8em; color: var(--text-muted); }
 .np-barcode-select { font-family: monospace; font-size: .85em; }
 
+/* Produktvorschlaege-Dropdown und Detail */
+.np-suggestions { margin-top: 6px; }
+.np-suggestion-select { width: 100%; font-size: .85em; margin-bottom: 6px; }
+.np-suggestion-detail {
+    display: flex;
+    gap: 10px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    margin-top: 4px;
+}
+.np-suggestion-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: .85em;
+    min-width: 0;
+    flex: 1;
+}
+.np-suggestion-info strong { font-size: .95em; }
+.np-nutrition-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .8em;
+    margin-top: 4px;
+}
+.np-nutrition-table th,
+.np-nutrition-table td {
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    text-align: center;
+    white-space: nowrap;
+}
+.np-nutrition-table th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+    font-size: .75em;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar {

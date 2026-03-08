@@ -245,18 +245,26 @@ def api_grocy_quantity_units():
 
 @app.route('/api/openfoodfacts/suggest', methods=['POST'])
 def api_openfoodfacts_suggest():
+    """Sucht bei OpenFoodFacts und liefert mehrere Produktvorschlaege
+    mit Bild, Barcode, Naehrwerten und Kategorie-Match zurueck.
+
+    Antwort: {suggestions: [...], category, product_group_id, raw_categories}
+    Jeder Suggestion-Eintrag: {product_name, image_url, barcode, score,
+      nutrition: {energy_kcal, fat, saturated_fat, carbs, sugars, protein, salt, fiber}}
+    """
     data = request.get_json()
     name = (data.get('name') or '').strip()
+    receipt_price = data.get('price')  # Preis vom Kassenbon fuer Score-Berechnung
     if not name:
-        return jsonify({'category': None, 'product_group_id': None, 'raw_categories': []})
-    empty = {'category': None, 'product_group_id': None, 'raw_categories': [],
+        return jsonify({'suggestions': [], 'category': None, 'product_group_id': None, 'raw_categories': []})
+    empty = {'suggestions': [], 'category': None, 'product_group_id': None, 'raw_categories': [],
              'image_url': None, 'barcode': None, 'off_product_name': None}
     try:
         import requests as req
         from rapidfuzz import fuzz
         resp = req.get(
             'https://de.openfoodfacts.org/cgi/search.pl',
-            params={'search_terms': name, 'search_simple': 1, 'action': 'process', 'json': 1, 'page_size': 5},
+            params={'search_terms': name, 'search_simple': 1, 'action': 'process', 'json': 1, 'page_size': 8},
             headers={'User-Agent': 'Grocylink/1.2.0 (grocylink@c42u.de)'},
             timeout=10,
         )
@@ -265,11 +273,55 @@ def api_openfoodfacts_suggest():
         if not products:
             return jsonify(empty)
 
-        # Bestes Produkt fuer Bild, Barcode und Name
-        best_product = products[0]
-        image_url = best_product.get('image_front_small_url') or best_product.get('image_front_url') or None
-        barcode = best_product.get('code') or None
-        off_name = best_product.get('product_name_de') or best_product.get('product_name') or None
+        # Alle Produkte als Vorschlaege aufbereiten
+        suggestions = []
+        for p in products:
+            p_name = (p.get('product_name_de') or p.get('product_name') or '').strip()
+            if not p_name:
+                continue
+            barcode = p.get('code') or None
+            image_url = p.get('image_front_small_url') or p.get('image_front_url') or None
+
+            # Naehrwerte extrahieren
+            nutriments = p.get('nutriments', {})
+            nutrition = {
+                'energy_kcal': nutriments.get('energy-kcal_100g'),
+                'fat': nutriments.get('fat_100g'),
+                'saturated_fat': nutriments.get('saturated-fat_100g'),
+                'carbs': nutriments.get('carbohydrates_100g'),
+                'sugars': nutriments.get('sugars_100g'),
+                'protein': nutriments.get('proteins_100g'),
+                'salt': nutriments.get('salt_100g'),
+                'fiber': nutriments.get('fiber_100g'),
+            }
+
+            # Namens-Score berechnen (wie gut passt der OFF-Name zum Bon-Namen)
+            name_score = round(fuzz.token_sort_ratio(name.upper(), p_name.upper()), 1)
+
+            # Preis-Score: wenn Bon-Preis vorhanden und OFF hat Preisvergleich
+            price_score = None
+            if receipt_price:
+                # Kein Preis in OFF vorhanden, daher nur Name-Score
+                price_score = None
+
+            suggestions.append({
+                'product_name': p_name,
+                'brand': (p.get('brands') or '').strip(),
+                'image_url': image_url,
+                'barcode': barcode,
+                'name_score': name_score,
+                'nutrition': nutrition,
+                'quantity_text': p.get('quantity') or '',
+            })
+
+        # Nach Score sortieren (beste Uebereinstimmung zuerst)
+        suggestions.sort(key=lambda s: s['name_score'], reverse=True)
+
+        # Bestes Produkt fuer Rueckwaertskompatibilitaet
+        best = suggestions[0] if suggestions else {}
+        image_url = best.get('image_url')
+        barcode = best.get('barcode')
+        off_name = best.get('product_name')
 
         raw_categories = []
         for p in products:
@@ -280,6 +332,7 @@ def api_openfoodfacts_suggest():
         raw_categories = list(dict.fromkeys(raw_categories))
 
         result = {
+            'suggestions': suggestions,
             'raw_categories': raw_categories,
             'image_url': image_url,
             'barcode': barcode,
@@ -313,6 +366,29 @@ def api_openfoodfacts_suggest():
         logger.error(f"OpenFoodFacts Fehler: {e}")
         empty['error'] = str(e)
         return jsonify(empty)
+
+
+@app.route('/api/grocy/userfields', methods=['GET'])
+def api_grocy_userfields():
+    """Liefert alle Benutzerfelder fuer Produkte."""
+    try:
+        client = GrocyClient()
+        fields = client.get_userfields('products')
+        return jsonify(fields)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/grocy/products/<int:product_id>/userfields', methods=['PUT'])
+def api_set_product_userfields(product_id):
+    """Setzt Benutzerfelder (z.B. Naehrwerte) fuer ein Produkt."""
+    data = request.get_json()
+    try:
+        client = GrocyClient()
+        client.set_product_userfields(product_id, data)
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/barcode/search', methods=['POST'])
@@ -583,6 +659,29 @@ def api_confirm_receipt(receipt_id):
                         client.add_product_barcode(new_pid, barcode)
                     except Exception as bc_err:
                         logger.warning(f"Barcode {barcode} fuer {np['name']}: {bc_err}")
+                # Naehrwerte als Userfields speichern (falls vorhanden)
+                nutrition = np.get('nutrition')
+                if nutrition and isinstance(nutrition, dict):
+                    userfields = {}
+                    field_map = {
+                        'energy_kcal': 'nutrition_energy_kcal',
+                        'fat': 'nutrition_fat',
+                        'saturated_fat': 'nutrition_saturated_fat',
+                        'carbs': 'nutrition_carbohydrates',
+                        'sugars': 'nutrition_sugars',
+                        'protein': 'nutrition_protein',
+                        'salt': 'nutrition_salt',
+                        'fiber': 'nutrition_fiber',
+                    }
+                    for src_key, uf_key in field_map.items():
+                        val = nutrition.get(src_key)
+                        if val is not None:
+                            userfields[uf_key] = str(val)
+                    if userfields:
+                        try:
+                            client.set_product_userfields(new_pid, userfields)
+                        except Exception as uf_err:
+                            logger.warning(f"Userfields fuer {np['name']}: {uf_err}")
                 client.add_stock(
                     new_pid,
                     item.get('quantity', 1),

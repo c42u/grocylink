@@ -148,3 +148,15 @@ class GrocyClient:
         """Liefert alle Barcodes eines Produkts."""
         barcodes = self._get('/objects/product_barcodes')
         return [b for b in barcodes if b.get('product_id') == int(product_id)]
+
+    def get_userfields(self, entity='products'):
+        """Liefert alle Benutzerfelder fuer eine Entity (z.B. products)."""
+        return self._get(f'/userfields/{entity}')
+
+    def set_product_userfields(self, product_id, userfields):
+        """Setzt Benutzerfelder fuer ein Produkt.
+
+        userfields: dict mit Feldname -> Wert, z.B.
+        {'nutrition_energy_kcal': '250', 'nutrition_fat': '12.5'}
+        """
+        return self._put(f'/userfields/products/{product_id}', userfields)
