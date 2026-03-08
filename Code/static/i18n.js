@@ -271,6 +271,10 @@ const I18N = {
     'rcpt.no_suggestion': 'Kein Vorschlag',
     'rcpt.created_count': 'Produkte erstellt',
     'rcpt.select_default': '-- Auswählen --',
+    'rcpt.barcode': 'Barcode (EAN)',
+    'rcpt.barcode_searching': 'Barcodes suchen...',
+    'rcpt.barcode_none': 'Kein Barcode',
+    'rcpt.barcode_select': '-- Barcode wählen --',
 
     // General
     'gen.error': 'Fehler',
@@ -548,6 +552,10 @@ const I18N = {
     'rcpt.no_suggestion': 'No suggestion',
     'rcpt.created_count': 'products created',
     'rcpt.select_default': '-- Select --',
+    'rcpt.barcode': 'Barcode (EAN)',
+    'rcpt.barcode_searching': 'Searching barcodes...',
+    'rcpt.barcode_none': 'No barcode',
+    'rcpt.barcode_select': '-- Select barcode --',
 
     // General
     'gen.error': 'Error',

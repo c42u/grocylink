@@ -1031,6 +1031,7 @@ code.help-code {
     color: var(--text-muted);
 }
 .np-barcode { font-family: monospace; font-size: .8em; color: var(--text-muted); }
+.np-barcode-select { font-family: monospace; font-size: .85em; }
 
 /* Responsive */
 @media (max-width: 768px) {

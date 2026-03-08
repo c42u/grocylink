@@ -1088,6 +1088,12 @@ async function openReceiptReview(receiptId) {
                                 <span class="np-label">${esc(t('rcpt.quantity_unit'))}</span>
                                 <select class="np-qu"><option value="">${esc(t('rcpt.select_default'))}</option>${quOptions}</select>
                             </div>
+                            <div class="np-field-group">
+                                <span class="np-label">${esc(t('rcpt.barcode'))}</span>
+                                <select class="np-barcode-select" data-item-id="${item.id}">
+                                    <option value="">${esc(t('rcpt.barcode_select'))}</option>
+                                </select>
+                            </div>
                             <div class="np-actions">
                                 <button type="button" class="btn btn-sm btn-secondary btn-suggest" onclick="suggestCategory(${item.id})">${esc(t('rcpt.suggest_category'))}</button>
                             </div>
@@ -1177,11 +1183,42 @@ async function suggestCategory(itemId) {
             }
             previewRow.innerHTML = html;
         }
+        // Barcode-Dropdown befuellen via separate Suche
+        searchBarcodes(itemId, name);
     } catch (e) {
         btn.textContent = t('rcpt.no_suggestion');
     }
     btn.disabled = false;
     setTimeout(() => { btn.textContent = t('rcpt.suggest_category'); }, 3000);
+}
+
+// Barcode-Suche: Dropdown mit Vorschlaegen befuellen
+async function searchBarcodes(itemId, productName) {
+    const fields = document.querySelector('.new-product-fields[data-item-id="' + itemId + '"]');
+    if (!fields) return;
+    const barcodeSelect = fields.querySelector('.np-barcode-select');
+    if (!barcodeSelect) return;
+    // Lade-Zustand
+    barcodeSelect.innerHTML = '<option value="">' + esc(t('rcpt.barcode_searching')) + '</option>';
+    try {
+        const data = await api('/api/barcode/search', 'POST', { name: productName });
+        const suggestions = data.suggestions || [];
+        let html = '<option value="">' + esc(t('rcpt.barcode_select')) + '</option>';
+        if (suggestions.length === 0) {
+            html += '<option value="" disabled>' + esc(t('rcpt.barcode_none')) + '</option>';
+        }
+        for (const s of suggestions) {
+            const label = s.barcode + ' – ' + s.product_name + ' (' + s.source + ')';
+            html += '<option value="' + esc(s.barcode) + '">' + esc(label) + '</option>';
+        }
+        barcodeSelect.innerHTML = html;
+        // Ersten Barcode automatisch vorauswaehlen wenn vorhanden
+        if (suggestions.length > 0) {
+            barcodeSelect.value = suggestions[0].barcode;
+        }
+    } catch (e) {
+        barcodeSelect.innerHTML = '<option value="">' + esc(t('rcpt.barcode_none')) + '</option>';
+    }
 }
 
 // Automatische Vorauswahl: fuer alle ungematchten Items den Suggest ausfuehren
@@ -1212,6 +1249,7 @@ async function confirmCurrentReceipt() {
                         product_group_id: fields.querySelector('.np-group')?.value || null,
                         location_id: fields.querySelector('.np-location')?.value || null,
                         qu_id: fields.querySelector('.np-qu')?.value || null,
+                        barcode: fields.querySelector('.np-barcode-select')?.value || null,
                     };
                 }
             }
