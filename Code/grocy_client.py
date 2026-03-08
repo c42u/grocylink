@@ -136,3 +136,15 @@ class GrocyClient:
             data['qu_id_stock'] = int(qu_id_stock or qu_id_purchase)
             data['qu_factor_purchase_to_stock'] = 1.0
         return self._post('/objects/products', data)
+
+    def add_product_barcode(self, product_id, barcode):
+        """Fuegt einen EAN-Barcode zu einem Produkt in Grocy hinzu."""
+        return self._post('/objects/product_barcodes', {
+            'product_id': int(product_id),
+            'barcode': str(barcode),
+        })
+
+    def get_product_barcodes(self, product_id):
+        """Liefert alle Barcodes eines Produkts."""
+        barcodes = self._get('/objects/product_barcodes')
+        return [b for b in barcodes if b.get('product_id') == int(product_id)]
