@@ -315,6 +315,49 @@ def api_openfoodfacts_suggest():
         return jsonify(empty)
 
 
+@app.route('/api/barcode/search', methods=['POST'])
+def api_barcode_search():
+    """Sucht Barcodes fuer ein Produkt ueber externe Datenbanken (OpenFoodFacts).
+
+    Gibt eine Liste von Barcode-Vorschlaegen zurueck, jeweils mit EAN,
+    Produktname, Bild-URL und Quelle.
+    """
+    data = request.get_json()
+    name = (data.get('name') or '').strip()
+    if not name:
+        return jsonify({'suggestions': []})
+    suggestions = []
+    try:
+        import requests as req
+        resp = req.get(
+            'https://de.openfoodfacts.org/cgi/search.pl',
+            params={'search_terms': name, 'search_simple': 1,
+                    'action': 'process', 'json': 1, 'page_size': 8},
+            headers={'User-Agent': 'Grocylink/1.2.0 (grocylink@c42u.de)'},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        products = resp.json().get('products', [])
+        seen_barcodes = set()
+        for p in products:
+            barcode = p.get('code') or ''
+            if not barcode or barcode in seen_barcodes:
+                continue
+            seen_barcodes.add(barcode)
+            p_name = (p.get('product_name_de') or p.get('product_name') or '').strip()
+            if not p_name:
+                continue
+            suggestions.append({
+                'barcode': barcode,
+                'product_name': p_name,
+                'image_url': p.get('image_front_small_url') or p.get('image_front_url') or None,
+                'source': 'OpenFoodFacts',
+            })
+    except Exception as e:
+        logger.error(f"Barcode-Suche Fehler: {e}")
+    return jsonify({'suggestions': suggestions})
+
+
 @app.route('/api/log', methods=['GET'])
 def api_get_log():
     return jsonify(get_log(limit=200))
@@ -533,6 +576,13 @@ def api_confirm_receipt(receipt_id):
                 if not new_pid:
                     errors.append(f"{np['name']}: Keine product_id in Antwort")
                     continue
+                # Barcode zum Produkt hinzufuegen (falls ausgewaehlt)
+                barcode = (np.get('barcode') or '').strip()
+                if barcode:
+                    try:
+                        client.add_product_barcode(new_pid, barcode)
+                    except Exception as bc_err:
+                        logger.warning(f"Barcode {barcode} fuer {np['name']}: {bc_err}")
                 client.add_stock(
                     new_pid,
                     item.get('quantity', 1),
