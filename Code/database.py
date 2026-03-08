@@ -562,10 +562,29 @@ def get_receipt_item(item_id):
 
 
 def get_product_mappings_dict():
+    """Liefert alle Mappings als Dict: receipt_name -> mapping-Daten."""
     conn = get_db()
     rows = conn.execute("SELECT * FROM receipt_product_mappings").fetchall()
     conn.close()
     return {r['receipt_name']: dict(r) for r in rows}
+
+
+def get_mappings_by_product():
+    """Liefert alle Mappings gruppiert nach grocy_product_id.
+
+    Ergebnis: {grocy_product_id: [receipt_name1, receipt_name2, ...]}
+    Damit koennen alle bekannten Bon-Namens-Varianten eines Produkts abgefragt werden.
+    """
+    conn = get_db()
+    rows = conn.execute("SELECT grocy_product_id, receipt_name FROM receipt_product_mappings").fetchall()
+    conn.close()
+    result = {}
+    for r in rows:
+        pid = r['grocy_product_id']
+        if pid not in result:
+            result[pid] = []
+        result[pid].append(r['receipt_name'])
+    return result
 
 
 def get_product_mappings():

@@ -261,8 +261,6 @@ function editChannel(id) {
 
 function updateChannelFields(existingConfig = {}) {
     const type = document.getElementById('channelType').value;
-    const untested = document.getElementById('channelUntested');
-    if (untested) untested.style.display = type === 'gotify' ? '' : 'none';
     const fields = CHANNEL_FIELDS[type] || [];
     const container = document.getElementById('channelConfigFields');
     container.innerHTML = fields.map(f => {
@@ -1159,30 +1157,49 @@ async function suggestCategory(itemId) {
     const previewRow = fields.querySelector('.np-preview-row');
     const name = nameInput.value.trim();
     if (!name) return;
+
+    // Preis vom Kassenbon holen
+    const row = fields.closest('tr[data-item-id]');
+    const priceCell = row ? row.querySelector('td:nth-child(3)') : null;
+    const priceText = priceCell ? priceCell.textContent.replace('€', '').trim() : null;
+    const price = priceText ? parseFloat(priceText.replace(',', '.')) : null;
+
     btn.textContent = t('rcpt.suggesting');
     btn.disabled = true;
     try {
-        const data = await api('/api/openfoodfacts/suggest', 'POST', { name });
+        const data = await api('/api/openfoodfacts/suggest', 'POST', { name, price });
         if (data.product_group_id) {
             groupSelect.value = String(data.product_group_id);
             btn.textContent = data.category || t('rcpt.suggest_category');
         } else {
             btn.textContent = t('rcpt.no_suggestion');
         }
-        // Produktbild und Barcode anzeigen
-        if (previewRow && (data.image_url || data.barcode)) {
-            let html = '';
-            if (data.image_url) {
-                html += '<img class="np-preview-img" src="' + esc(data.image_url) + '" alt="">';
-            }
-            if (data.off_product_name) {
-                html += '<span>' + esc(data.off_product_name) + '</span>';
-            }
-            if (data.barcode) {
-                html += '<span class="np-barcode">EAN: ' + esc(data.barcode) + '</span>';
-            }
+
+        // Produkt-Vorschlaege als Dropdown mit Bild + Naehrwerten anzeigen
+        const suggestions = data.suggestions || [];
+        if (previewRow && suggestions.length > 0) {
+            let html = '<div class="np-suggestions">';
+            html += '<span class="np-label">' + esc(t('rcpt.off_suggestions')) + '</span>';
+            html += '<select class="np-suggestion-select" data-item-id="' + itemId + '" onchange="onSuggestionSelect(this, ' + itemId + ')">';
+            html += '<option value="">' + esc(t('rcpt.select_default')) + '</option>';
+            suggestions.forEach((s, idx) => {
+                const label = s.product_name + (s.brand ? ' (' + s.brand + ')' : '') + ' – ' + s.name_score + '%';
+                html += '<option value="' + idx + '"' + (idx === 0 ? ' selected' : '') + '>' + esc(label) + '</option>';
+            });
+            html += '</select>';
+
+            // Details des besten Vorschlags anzeigen
+            const best = suggestions[0];
+            html += renderSuggestionDetail(best);
+            html += '</div>';
             previewRow.innerHTML = html;
+
+            // Vorschlagsdaten am Element speichern fuer spaetere Auswahl
+            previewRow._suggestions = suggestions;
+        } else if (previewRow) {
+            previewRow.innerHTML = '<span class="text-muted">' + esc(t('rcpt.no_suggestion')) + '</span>';
         }
+
         // Barcode-Dropdown befuellen via separate Suche
         searchBarcodes(itemId, name);
     } catch (e) {
@@ -1190,6 +1207,77 @@ async function suggestCategory(itemId) {
     }
     btn.disabled = false;
     setTimeout(() => { btn.textContent = t('rcpt.suggest_category'); }, 3000);
+}
+
+
+// Hilfsfunktion: Detail-Ansicht eines OFF-Vorschlags rendern
+function renderSuggestionDetail(s) {
+    let html = '<div class="np-suggestion-detail">';
+    if (s.image_url) {
+        html += '<img class="np-preview-img" src="' + esc(s.image_url) + '" alt="">';
+    }
+    html += '<div class="np-suggestion-info">';
+    html += '<strong>' + esc(s.product_name) + '</strong>';
+    if (s.brand) html += ' <span class="text-muted">(' + esc(s.brand) + ')</span>';
+    if (s.quantity_text) html += ' <span class="text-muted">' + esc(s.quantity_text) + '</span>';
+    html += '<span class="match-score ' + (s.name_score >= 70 ? 'score-high' : s.name_score >= 50 ? 'score-mid' : 'score-low') + '">' + s.name_score + '%</span>';
+    if (s.barcode) html += '<span class="np-barcode">EAN: ' + esc(s.barcode) + '</span>';
+    // Naehrwerttabelle anzeigen
+    const n = s.nutrition || {};
+    const hasNutrition = n.energy_kcal != null || n.fat != null || n.protein != null;
+    if (hasNutrition) {
+        html += '<table class="np-nutrition-table"><thead><tr>';
+        html += '<th>' + esc(t('rcpt.nutr_energy')) + '</th>';
+        html += '<th>' + esc(t('rcpt.nutr_fat')) + '</th>';
+        html += '<th>' + esc(t('rcpt.nutr_carbs')) + '</th>';
+        html += '<th>' + esc(t('rcpt.nutr_protein')) + '</th>';
+        html += '<th>' + esc(t('rcpt.nutr_salt')) + '</th>';
+        html += '</tr></thead><tbody><tr>';
+        html += '<td>' + (n.energy_kcal != null ? n.energy_kcal + ' kcal' : '-') + '</td>';
+        html += '<td>' + (n.fat != null ? n.fat + ' g' : '-') + '</td>';
+        html += '<td>' + (n.carbs != null ? n.carbs + ' g' : '-') + '</td>';
+        html += '<td>' + (n.protein != null ? n.protein + ' g' : '-') + '</td>';
+        html += '<td>' + (n.salt != null ? n.salt + ' g' : '-') + '</td>';
+        html += '</tr></tbody></table>';
+    }
+    html += '</div></div>';
+    return html;
+}
+
+
+// Wenn der Nutzer einen anderen Vorschlag aus dem Dropdown waehlt
+function onSuggestionSelect(sel, itemId) {
+    const previewRow = sel.closest('.np-suggestions').parentElement;
+    const suggestions = previewRow._suggestions || [];
+    const idx = parseInt(sel.value);
+    if (isNaN(idx) || !suggestions[idx]) return;
+
+    const s = suggestions[idx];
+    // Detail aktualisieren
+    const detailDiv = previewRow.querySelector('.np-suggestion-detail');
+    if (detailDiv) {
+        detailDiv.outerHTML = renderSuggestionDetail(s);
+    }
+
+    // Barcode-Dropdown aktualisieren wenn Vorschlag einen Barcode hat
+    const fields = document.querySelector('.new-product-fields[data-item-id="' + itemId + '"]');
+    if (fields && s.barcode) {
+        const barcodeSelect = fields.querySelector('.np-barcode-select');
+        if (barcodeSelect) {
+            // Pruefen ob der Barcode schon im Dropdown ist
+            let found = false;
+            for (const opt of barcodeSelect.options) {
+                if (opt.value === s.barcode) { opt.selected = true; found = true; break; }
+            }
+            if (!found) {
+                const opt = document.createElement('option');
+                opt.value = s.barcode;
+                opt.textContent = s.barcode + ' – ' + s.product_name + ' (OpenFoodFacts)';
+                barcodeSelect.insertBefore(opt, barcodeSelect.options[1]);
+                opt.selected = true;
+            }
+        }
+    }
 }
 
 // Barcode-Suche: Dropdown mit Vorschlaegen befuellen
@@ -1244,12 +1332,24 @@ async function confirmCurrentReceipt() {
             if (sel && sel.value === '__NEW__') {
                 const fields = row.querySelector('.new-product-fields');
                 if (fields) {
+                    // Naehrwerte aus dem ausgewaehlten OFF-Vorschlag holen
+                    const previewRow = fields.querySelector('.np-preview-row');
+                    let nutrition = null;
+                    if (previewRow && previewRow._suggestions) {
+                        const sugSel = previewRow.querySelector('.np-suggestion-select');
+                        const idx = sugSel ? parseInt(sugSel.value) : 0;
+                        const sug = previewRow._suggestions[idx];
+                        if (sug && sug.nutrition) {
+                            nutrition = sug.nutrition;
+                        }
+                    }
                     newProducts[itemId] = {
                         name: (fields.querySelector('.np-name')?.value || '').trim(),
                         product_group_id: fields.querySelector('.np-group')?.value || null,
                         location_id: fields.querySelector('.np-location')?.value || null,
                         qu_id: fields.querySelector('.np-qu')?.value || null,
                         barcode: fields.querySelector('.np-barcode-select')?.value || null,
+                        nutrition: nutrition,
                     };
                 }
             }
