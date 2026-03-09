@@ -1031,7 +1031,7 @@ async function openReceiptReview(receiptId) {
         const tbody = document.querySelector('#tableReviewItems tbody');
         const items = receipt.items || [];
         if (!items.length) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">' + esc(t('rcpt.no_receipts')) + '</td></tr>';
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="6">' + esc(t('rcpt.no_receipts')) + '</td></tr>';
         } else {
             tbody.innerHTML = items.map(item => {
                 const scoreClass = item.match_score >= 90 ? 'score-high' :
@@ -1043,7 +1043,6 @@ async function openReceiptReview(receiptId) {
                 ).join('');
 
                 const isUnmatched = !item.matched_product_id;
-                const selectValue = isUnmatched ? '__NEW__' : (item.matched_product_id || '');
 
                 // Kategorien-Dropdown
                 const groupOptions = (window._grocyProductGroups || []).map(g =>
@@ -1062,6 +1061,7 @@ async function openReceiptReview(receiptId) {
                     <td>${esc(item.raw_name)}</td>
                     <td>${item.quantity}</td>
                     <td>${item.unit_price != null ? item.unit_price.toFixed(2) + ' €' : '-'}</td>
+                    <td><span class="match-score ${scoreClass}">${item.match_score > 0 ? Math.round(item.match_score) + '%' : '-'}</span></td>
                     <td>
                         <select class="receipt-match-select" data-item-id="${item.id}" onchange="onItemMatchChange(this, ${receiptId})">
                             <option value="">-- ${esc(t('rcpt.search_product'))} --</option>
@@ -1069,7 +1069,6 @@ async function openReceiptReview(receiptId) {
                             ${productOptions}
                         </select>
                         <div class="new-product-fields" data-item-id="${item.id}" style="${isUnmatched ? '' : 'display:none'}">
-                            <div class="np-preview-row" data-item-id="${item.id}"></div>
                             <div class="np-field-group">
                                 <span class="np-label">${esc(t('rcpt.product_name'))}</span>
                                 <input type="text" class="np-name" value="${esc(item.raw_name)}" placeholder="${esc(t('rcpt.product_name'))}">
@@ -1097,7 +1096,9 @@ async function openReceiptReview(receiptId) {
                             </div>
                         </div>
                     </td>
-                    <td><span class="match-score ${scoreClass}">${item.match_score > 0 ? Math.round(item.match_score) + '%' : '-'}</span></td>
+                    <td class="td-suggestions">
+                        <div class="np-preview-row" data-item-id="${item.id}"></div>
+                    </td>
                 </tr>`;
             }).join('');
         }

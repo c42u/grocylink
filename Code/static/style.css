@@ -1033,6 +1033,9 @@ code.help-code {
 .np-barcode { font-family: monospace; font-size: .8em; color: var(--text-muted); }
 .np-barcode-select { font-family: monospace; font-size: .85em; }
 
+/* Produktvorschlaege-Spalte */
+.td-suggestions { min-width: 280px; vertical-align: top; }
+
 /* Produktvorschlaege-Dropdown und Detail */
 .np-suggestions { margin-top: 6px; }
 .np-suggestion-select { width: 100%; font-size: .85em; margin-bottom: 6px; }
