@@ -1155,7 +1155,9 @@ async function suggestCategory(itemId) {
     const nameInput = fields.querySelector('.np-name');
     const groupSelect = fields.querySelector('.np-group');
     const btn = fields.querySelector('.btn-suggest');
-    const previewRow = fields.querySelector('.np-preview-row');
+    // np-preview-row liegt in der Produktvorschlaege-Spalte, nicht in new-product-fields
+    const row = fields.closest('tr[data-item-id]');
+    const previewRow = row ? row.querySelector('.np-preview-row[data-item-id="' + itemId + '"]') : null;
     const name = nameInput.value.trim();
     if (!name) return;
 
