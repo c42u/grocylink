@@ -1162,7 +1162,6 @@ async function suggestCategory(itemId) {
     if (!name) return;
 
     // Preis vom Kassenbon holen
-    const row = fields.closest('tr[data-item-id]');
     const priceCell = row ? row.querySelector('td:nth-child(3)') : null;
     const priceText = priceCell ? priceCell.textContent.replace('€', '').trim() : null;
     const price = priceText ? parseFloat(priceText.replace(',', '.')) : null;
