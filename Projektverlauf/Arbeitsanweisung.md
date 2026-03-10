@@ -1,23 +1,22 @@
 # Arbeitsanweisung – grocylink
 
-## Erstelldatum - 2026-03-09
+## Letzte Aktualisierung - 2026-03-10
 
-### Beschreibung
+Keine offenen Arbeitsanweisungen.
 
-- Beim Klick auf "Vorschlagen" wird gesucht und es werden Ergebnisse gefunden, aber in der Spalte "Produktvorschläge" erscheint kein Dropdown-Menü zur Auswahl der gefundenen Produkte. Nur beim Barcode (EAN) funktioniert das Dropdown. Das Produktvorschlags-Dropdown muss in der Spalte "Produktvorschläge" korrekt angezeigt werden, mit Bild, Score und Nährwerten.
+---
 
-## Erstelldatum - 2026-03-10
+## Erledigte Arbeitsanweisungen
 
-### Beschreibung
+### 2026-03-10 – EAN/Barcode-Suche in Kassenbon pruefen (erledigt)
 
-- **EAN/Barcode-Suche in Kassenbon pruefen**: Pro Bon-Position ein Barcode-Eingabefeld mit Suchbutton. Bei Eingabe eines EAN wird zuerst in Grocy nach passenden Produkten gesucht. Falls kein Treffer, wird OpenFoodFacts als Fallback abgefragt. Grocy-Treffer werden automatisch im Produkt-Dropdown ausgewaehlt. OFF-Treffer belegen die Felder fuer neues Produkt vor (Name, Marke, Barcode).
+- Pro Bon-Position ein Barcode-Eingabefeld mit Suchbutton
+- Grocy-first, OpenFoodFacts als Fallback
+- Umsetzung: Backend-Endpoint, grocy_client-Methode, Frontend-Funktion, i18n, CSS
 
-### Umsetzung
+### 2026-03-09 – Produktvorschlags-Dropdown in Kassenbon-Review (erledigt)
 
-- Backend: `/api/barcode/lookup` Endpoint in `app.py` (Grocy-first, OFF-Fallback)
-- Client: `search_product_by_barcode()` in `grocy_client.py`
-- Frontend: `lookupBarcode()` Funktion in `app.js`, Barcode-Input pro Tabellenzeile
-- i18n: 7 neue Keys in `i18n.js` (DE + EN)
-- CSS: Styles fuer `.barcode-lookup-row`, Farbindikatoren (gruen=gefunden, rot=nicht gefunden)
+- Beim Klick auf "Vorschlagen" wird gesucht und Ergebnisse gefunden, aber Dropdown erschien nicht
+- Behoben: Dropdown wird korrekt in der Spalte "Produktvorschlaege" angezeigt (Bild, Score, Naehrwerte)
 
 ---
