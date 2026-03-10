@@ -3,7 +3,7 @@
 # Autor: c42u | Co-Autor: ClaudeCode | Lizenz: GPLv3
 #
 # Bei jedem Push auf main:
-#   1. Docker-Image bauen (via DinD mit TLS, Host-Netzwerk, BuildKit)
+#   1. Docker-Image bauen (via Host-Docker mit TLS, BuildKit + Cache)
 #   2. Image in registry.zucker.network:5000 pushen (direkt, HTTP)
 #   3. Container via Komodo API neu deployen (pullt via HTTPS/Caddy)
 # =============================================================================
@@ -28,6 +28,8 @@ build:
   before_script:
     - apk add --no-cache docker-cli docker-cli-buildx
     - docker info
+    # Cache-Image pullen damit --cache-from funktioniert
+    - docker pull ${REGISTRY_PUSH}/${IMAGE_NAME}:latest || true
   script:
     - docker build
         --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)

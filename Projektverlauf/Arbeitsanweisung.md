@@ -1,9 +1,13 @@
 # Arbeitsanweisung – grocylink
 
-## Erstelldatum - 2026-03-09
+## Erstelldatum - YYYY-mm-dd
 
 ### Beschreibung
 
-- Beim Klick auf "Vorschlagen" wird gesucht und es werden Ergebnisse gefunden, aber in der Spalte "Produktvorschläge" erscheint kein Dropdown-Menü zur Auswahl der gefundenen Produkte. Nur beim Barcode (EAN) funktioniert das Dropdown. Das Produktvorschlags-Dropdown muss in der Spalte "Produktvorschläge" korrekt angezeigt werden, mit Bild, Score und Nährwerten.
+_Keine offene Arbeitsanweisung._
 
 ---
+
+#### Generelle Arbeitsanweisung - nicht zu löschen
+- Nach dem Erstellen des Code, der Dokumentation oder ähnliches, sind die neuen Daten mit dem gitlab git.zucker.network im repo develop der jeweiligen Anwendung zu pushen.
+- Die erledigten Arbeistanweisungen sind in erledigte Aufgaben zu überführen und Arbeitsanweisung.md ist, bis auf den Teil "Generelle Arbeitsanweisung - nicht zu löschen", zurück zusetzen.

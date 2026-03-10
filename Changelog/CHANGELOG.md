@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-03-10
+
+### Fixed
+
+- **JavaScript SyntaxError**: Doppelte `const row` Deklaration in `suggestCategory()`
+  verhinderte das Laden von app.js — Menueauswahl war komplett defekt.
+
+### Added
+
+- **EAN/Barcode-Suche im Kassenbon-Review**: Pro Bon-Position ein Barcode-Eingabefeld
+  mit Live-Suche. Workflow:
+  1. EAN eingeben und suchen
+  2. Grocy-Treffer: Produkt wird automatisch im Dropdown ausgewaehlt
+  3. Kein Grocy-Treffer: OpenFoodFacts wird als Fallback abgefragt
+  4. OFF-Treffer: Name und Barcode werden in die Felder fuer neues Produkt uebernommen
+  5. Kein Treffer: Rote Markierung, manuelle Zuordnung noetig
+- Neuer Backend-Endpoint `/api/barcode/lookup` (Grocy-first, OFF-Fallback)
+- Neue Methode `search_product_by_barcode()` in `grocy_client.py`
+- 7 neue i18n-Keys fuer die Barcode-Suche (DE + EN)
+- CSS-Styles fuer Barcode-Lookup (Eingabefeld, Farbindikatoren)
+
+---
+
 ## [1.2.0] - 2026-03-05
 
 ### Added
