@@ -33,6 +33,8 @@ build:
         --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
         --build-arg VERSION=${CI_COMMIT_TAG:-dev}
         --build-arg REVISION=${CI_COMMIT_SHORT_SHA}
+        --cache-from ${REGISTRY_PUSH}/${IMAGE_NAME}:latest
+        --build-arg BUILDKIT_INLINE_CACHE=1
         -t ${REGISTRY_PUSH}/${IMAGE_NAME}:latest
         -t ${REGISTRY_PUSH}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
         -f docker/Dockerfile .
