@@ -149,6 +149,21 @@ class GrocyClient:
         barcodes = self._get('/objects/product_barcodes')
         return [b for b in barcodes if b.get('product_id') == int(product_id)]
 
+    def search_product_by_barcode(self, barcode):
+        """Sucht Produkte in Grocy anhand eines EAN/Barcodes."""
+        all_barcodes = self._get('/objects/product_barcodes')
+        matching = [b for b in all_barcodes if str(b.get('barcode', '')) == str(barcode)]
+        if not matching:
+            return []
+        products = self.get_all_products()
+        products_by_id = {p.get('id'): p for p in products}
+        results = []
+        for bc in matching:
+            product = products_by_id.get(bc.get('product_id'))
+            if product:
+                results.append(product)
+        return results
+
     def get_userfields(self, entity='products'):
         """Liefert alle Benutzerfelder fuer eine Entity (z.B. products)."""
         return self._get(f'/userfields/{entity}')
