@@ -1063,6 +1063,11 @@ async function openReceiptReview(receiptId) {
                     <td>${item.unit_price != null ? item.unit_price.toFixed(2) + ' €' : '-'}</td>
                     <td><span class="match-score ${scoreClass}">${item.match_score > 0 ? Math.round(item.match_score) + '%' : '-'}</span></td>
                     <td>
+                        <div class="barcode-lookup-row" data-item-id="${item.id}">
+                            <input type="text" class="barcode-lookup-input" data-item-id="${item.id}" placeholder="${esc(t('rcpt.barcode_lookup_placeholder'))}" onkeydown="if(event.key==='Enter'){event.preventDefault();lookupBarcode(${item.id})}">
+                            <button type="button" class="btn btn-sm btn-secondary btn-barcode-lookup" onclick="lookupBarcode(${item.id})" title="${esc(t('rcpt.barcode_lookup'))}">🔍</button>
+                            <span class="barcode-lookup-status" data-item-id="${item.id}"></span>
+                        </div>
                         <select class="receipt-match-select" data-item-id="${item.id}" onchange="onItemMatchChange(this, ${receiptId})">
                             <option value="">-- ${esc(t('rcpt.search_product'))} --</option>
                             <option value="__NEW__"${isUnmatched ? ' selected' : ''}>${esc(t('rcpt.create_new'))}</option>
@@ -1136,6 +1141,67 @@ async function updateItemMatch(sel, receiptId) {
     }
 }
 
+async function lookupBarcode(itemId) {
+    const input = document.querySelector('.barcode-lookup-input[data-item-id="' + itemId + '"]');
+    const status = document.querySelector('.barcode-lookup-status[data-item-id="' + itemId + '"]');
+    const barcode = (input ? input.value : '').trim();
+    if (!barcode) return;
+    status.textContent = '...';
+    status.className = 'barcode-lookup-status';
+    try {
+        const result = await api('/api/barcode/lookup', 'POST', { barcode });
+        if (result.grocy_products && result.grocy_products.length > 0) {
+            // Grocy-Treffer: Produkt im Dropdown auswaehlen
+            const productId = result.grocy_products[0].product_id;
+            const sel = document.querySelector('.receipt-match-select[data-item-id="' + itemId + '"]');
+            if (sel) {
+                sel.value = String(productId);
+                sel.dispatchEvent(new Event('change'));
+            }
+            status.textContent = t('rcpt.barcode_found_grocy');
+            status.classList.add('barcode-found');
+            input.classList.add('barcode-found');
+            input.classList.remove('barcode-not-found');
+        } else if (result.off_product) {
+            // OFF-Treffer: Neues Produkt vorbelegen
+            const sel = document.querySelector('.receipt-match-select[data-item-id="' + itemId + '"]');
+            if (sel) {
+                sel.value = '__NEW__';
+                sel.dispatchEvent(new Event('change'));
+            }
+            const fields = document.querySelector('.new-product-fields[data-item-id="' + itemId + '"]');
+            if (fields) {
+                fields.style.display = '';
+                const nameInput = fields.querySelector('.np-name');
+                if (nameInput && result.off_product.name) {
+                    nameInput.value = result.off_product.name + (result.off_product.brand ? ' (' + result.off_product.brand + ')' : '');
+                }
+                // Barcode im Barcode-Dropdown hinzufuegen
+                const bcSelect = fields.querySelector('.np-barcode-select');
+                if (bcSelect) {
+                    const opt = document.createElement('option');
+                    opt.value = barcode;
+                    opt.textContent = barcode;
+                    opt.selected = true;
+                    bcSelect.appendChild(opt);
+                }
+            }
+            status.textContent = t('rcpt.barcode_found_off') + ': ' + result.off_product.name;
+            status.classList.add('barcode-found-off');
+            input.classList.remove('barcode-not-found');
+            input.classList.add('barcode-found');
+        } else {
+            status.textContent = t('rcpt.barcode_not_found');
+            status.classList.add('barcode-not-found');
+            input.classList.add('barcode-not-found');
+            input.classList.remove('barcode-found');
+        }
+    } catch (e) {
+        status.textContent = t('gen.error');
+        status.classList.add('barcode-not-found');
+    }
+}
+
 // Lazy-load Grocy metadata (product groups, locations, quantity units)
 async function loadGrocyMetadata() {
     if (!window._grocyProductGroups) {
@@ -1162,7 +1228,6 @@ async function suggestCategory(itemId) {
     if (!name) return;
 
     // Preis vom Kassenbon holen
-    const row = fields.closest('tr[data-item-id]');
     const priceCell = row ? row.querySelector('td:nth-child(3)') : null;
     const priceText = priceCell ? priceCell.textContent.replace('€', '').trim() : null;
     const price = priceText ? parseFloat(priceText.replace(',', '.')) : null;
