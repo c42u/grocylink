@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-03-10
+
+### Fixed
+
+- **JavaScript-Fehler behoben**: Doppelte `const row` Deklaration in `suggestCategory()`
+  verursachte SyntaxError beim Parsen von app.js. Die gesamte Anwendung war dadurch
+  nicht bedienbar (keine Menue-Auswahl, keine Navigation).
+
+---
+
 ## [1.2.0] - 2026-03-05
 
 ### Added
