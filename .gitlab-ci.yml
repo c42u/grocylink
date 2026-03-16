@@ -2,26 +2,97 @@
 # .gitlab-ci.yml – Grocylink CI/CD Pipeline
 # Autor: c42u | Co-Autor: ClaudeCode | Lizenz: GPLv3
 #
-# Bei jedem Push auf main:
-#   1. Docker-Image bauen (via DinD mit TLS, Host-Netzwerk, BuildKit)
-#   2. Image in registry.zucker.network:5000 pushen (direkt, HTTP)
-#   3. Container via Komodo API neu deployen (pullt via HTTPS/Caddy)
+# Vollstaendige Pipeline mit Lint, Build, Push und Deploy
+# fuer Test- und Wirkbetrieb.
+#
+# Flow:
+#   feature/* → nur Lint + Build (Pruefung)
+#   develop   → Lint + Build + Push (:develop) + TestDeploy (auto)
+#                + Promote :develop→:latest (manuell) + WirkDeploy (manuell)
+#   main      → Lint + Build + Push (:version) + WirkDeploy (manuell)
+#   Tags v*   → Lint + Build + Push (:version + :latest)
+#
+# Voraussetzungen:
+#   - GitLab Runner mit Tag "docker" registriert
+#   - DinD-Container mit TLS-Zertifikaten
+#   - CI/CD-Variablen (Settings → CI/CD → Variables):
+#       KOMODO_API_KEY    (fuer Deploy, protected)
+#       KOMODO_API_SECRET (fuer Deploy, protected + masked)
 # =============================================================================
 
-stages:
-  - build
-  - deploy
-
+# ----------------------------------------------------------
+# Globale Variablen
+# ----------------------------------------------------------
 variables:
-  REGISTRY_PUSH: "registry.zucker.network:5000"
+  # Name des Docker-Images
   IMAGE_NAME: "grocylink"
+  # Ziel-Registry (Push direkt via HTTP auf Port 5000)
+  REGISTRY_PUSH: "registry.zucker.network:5000"
+  # Pfad zum Dockerfile (relativ zum Projekt-Root)
+  DOCKERFILE_PATH: "docker/Dockerfile"
+  # Build-Kontext (Verzeichnis fuer docker build)
+  BUILD_CONTEXT: "."
+  # TLS-Konfiguration fuer DinD-Verbindung
   DOCKER_HOST: "tcp://localhost:2376"
   DOCKER_TLS_VERIFY: "1"
   DOCKER_CERT_PATH: "/certs/client"
   DOCKER_BUILDKIT: "1"
+  # Komodo-Konfiguration fuer Deployment
+  KOMODO_URL: "http://192.168.70.10:9120"
+  # Stack-Name in Komodo
+  KOMODO_STACK: "grocylink"
 
+# ----------------------------------------------------------
+# Stages – Reihenfolge der Pipeline-Schritte
+# ----------------------------------------------------------
+stages:
+  - lint
+  - build
+  - push
+  - promote
+  - deploy
+
+# ----------------------------------------------------------
+# Stage 1: Dockerfile Lint
+# Prueft das Dockerfile mit Hadolint auf Best Practices.
+# Laeuft auf ALLEN Branches (fruehes Feedback).
+# Fehler blockieren die Pipeline NICHT (allow_failure).
+# ----------------------------------------------------------
+dockerfile-lint:
+  stage: lint
+  image: hadolint/hadolint:latest-debian
+  tags:
+    - docker
+  script:
+    - echo ">>> Pruefe ${DOCKERFILE_PATH} mit Hadolint ..."
+    - |
+      hadolint \
+        --ignore DL3008 \
+        --ignore DL3013 \
+        --format tty \
+        "${DOCKERFILE_PATH}" || LINT_EXIT=$?
+    - |
+      if [ "${LINT_EXIT:-0}" -ne 0 ]; then
+        echo ""
+        echo "WARNUNG: Hadolint hat Probleme gefunden (Exit: ${LINT_EXIT})"
+        echo "         Bitte die Hinweise oben pruefen."
+      else
+        echo ">>> Dockerfile-Lint bestanden."
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+    - when: never
+  allow_failure: true
+
+# ----------------------------------------------------------
+# Stage 2: Build
+# Baut das Docker-Image auf Feature-Branches (Pruef-Build).
+# Verwendet alpine + docker-cli (verbindet sich mit DinD).
+# ----------------------------------------------------------
 build:
   stage: build
+  needs: []
   image: alpine:latest
   tags:
     - docker
@@ -29,21 +100,158 @@ build:
     - apk add --no-cache docker-cli docker-cli-buildx
     - docker info
   script:
-    - docker build
-        --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-        --build-arg VERSION=${CI_COMMIT_TAG:-dev}
-        --build-arg REVISION=${CI_COMMIT_SHORT_SHA}
-        --cache-from ${REGISTRY_PUSH}/${IMAGE_NAME}:latest
-        --build-arg BUILDKIT_INLINE_CACHE=1
-        -t ${REGISTRY_PUSH}/${IMAGE_NAME}:latest
-        -t ${REGISTRY_PUSH}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
-        -f docker/Dockerfile .
-    - docker push ${REGISTRY_PUSH}/${IMAGE_NAME}:latest
-    - docker push ${REGISTRY_PUSH}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+    - |
+      echo ">>> Baue ${REGISTRY_PUSH}/${IMAGE_NAME} (Pruef-Build) ..."
+      docker build \
+        --label "org.opencontainers.image.source=${CI_PROJECT_URL}" \
+        --label "org.opencontainers.image.revision=${CI_COMMIT_SHA}" \
+        --cache-from "${REGISTRY_PUSH}/${IMAGE_NAME}:latest" \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        -t "${REGISTRY_PUSH}/${IMAGE_NAME}:ci-${CI_COMMIT_SHORT_SHA}" \
+        -f "${DOCKERFILE_PATH}" \
+        "${BUILD_CONTEXT}"
+      echo ">>> Build erfolgreich."
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != "develop"
+    - when: never
 
-deploy:
+# ----------------------------------------------------------
+# Stage 3a: Push – Testbetrieb (develop)
+# Baut und pusht das Image mit Tag :develop in die Registry.
+# Wird automatisch bei jedem Push auf develop ausgefuehrt.
+# ----------------------------------------------------------
+push-test:
+  stage: push
+  needs: []
+  image: alpine:latest
+  tags:
+    - docker
+  before_script:
+    - apk add --no-cache docker-cli docker-cli-buildx
+    - docker info
+  script:
+    - |
+      echo ">>> TestDeploy-Build: ${REGISTRY_PUSH}/${IMAGE_NAME}:develop"
+      docker build \
+        --label "org.opencontainers.image.source=${CI_PROJECT_URL}" \
+        --label "org.opencontainers.image.revision=${CI_COMMIT_SHA}" \
+        --label "org.opencontainers.image.version=develop-${CI_COMMIT_SHORT_SHA}" \
+        --cache-from "${REGISTRY_PUSH}/${IMAGE_NAME}:develop" \
+        --cache-from "${REGISTRY_PUSH}/${IMAGE_NAME}:latest" \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        -t "${REGISTRY_PUSH}/${IMAGE_NAME}:develop" \
+        -t "${REGISTRY_PUSH}/${IMAGE_NAME}:dev-${CI_COMMIT_SHORT_SHA}" \
+        -f "${DOCKERFILE_PATH}" \
+        "${BUILD_CONTEXT}"
+      docker push "${REGISTRY_PUSH}/${IMAGE_NAME}:develop"
+      docker push "${REGISTRY_PUSH}/${IMAGE_NAME}:dev-${CI_COMMIT_SHORT_SHA}"
+      echo ""
+      echo "=== TestDeploy-Image gepusht ==="
+      echo "  ${REGISTRY_PUSH}/${IMAGE_NAME}:develop"
+      echo "  ${REGISTRY_PUSH}/${IMAGE_NAME}:dev-${CI_COMMIT_SHORT_SHA}"
+      echo "================================"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - when: never
+
+# ----------------------------------------------------------
+# Stage 3b: Push – Wirkbetrieb (main / Tags)
+# Baut und pusht das Image mit Versions-Tag + :latest.
+# ----------------------------------------------------------
+push-prod:
+  stage: push
+  needs: []
+  image: alpine:latest
+  tags:
+    - docker
+  before_script:
+    - apk add --no-cache docker-cli docker-cli-buildx
+    - docker info
+  script:
+    - |
+      # Tag bestimmen
+      if [ -n "${CI_COMMIT_TAG:-}" ]; then
+        VERSION_TAG=$(echo "${CI_COMMIT_TAG}" | sed 's/^v//')
+        echo ">>> Release-Build: ${VERSION_TAG}"
+      else
+        VERSION_TAG="sha-${CI_COMMIT_SHORT_SHA}"
+        echo ">>> Main-Build: ${VERSION_TAG}"
+      fi
+      # Image bauen und pushen
+      docker build \
+        --label "org.opencontainers.image.source=${CI_PROJECT_URL}" \
+        --label "org.opencontainers.image.revision=${CI_COMMIT_SHA}" \
+        --label "org.opencontainers.image.version=${VERSION_TAG}" \
+        --cache-from "${REGISTRY_PUSH}/${IMAGE_NAME}:latest" \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        -t "${REGISTRY_PUSH}/${IMAGE_NAME}:${VERSION_TAG}" \
+        -t "${REGISTRY_PUSH}/${IMAGE_NAME}:latest" \
+        -f "${DOCKERFILE_PATH}" \
+        "${BUILD_CONTEXT}"
+      docker push "${REGISTRY_PUSH}/${IMAGE_NAME}:${VERSION_TAG}"
+      docker push "${REGISTRY_PUSH}/${IMAGE_NAME}:latest"
+      echo ""
+      echo "=== Produktions-Image gepusht ==="
+      echo "  ${REGISTRY_PUSH}/${IMAGE_NAME}:${VERSION_TAG}"
+      echo "  ${REGISTRY_PUSH}/${IMAGE_NAME}:latest"
+      echo "================================="
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - when: never
+
+# ----------------------------------------------------------
+# Stage: Promote – develop-Image als :latest taggen (manuell)
+# Zieht das getestete :develop-Image aus der Registry und
+# pusht es als :latest + :version zurueck. Kein Neubau.
+# ----------------------------------------------------------
+promote-to-latest:
+  stage: promote
+  image: alpine:latest
+  tags:
+    - docker
+  before_script:
+    - apk add --no-cache docker-cli skopeo
+  script:
+    - |
+      echo ">>> Promote: ${REGISTRY_PUSH}/${IMAGE_NAME}:develop → :latest"
+      # Versionstag aus CI-Variable oder Commit bestimmen
+      if [ -n "${PROMOTE_VERSION:-}" ]; then
+        VERSION_TAG="${PROMOTE_VERSION}"
+      else
+        VERSION_TAG="sha-${CI_COMMIT_SHORT_SHA}"
+      fi
+      echo "  Versions-Tag: ${VERSION_TAG}"
+      # Image retaggen via skopeo (kein Pull/Push noetig, nur Manifest-Kopie)
+      skopeo copy \
+        --src-tls-verify=false \
+        --dest-tls-verify=false \
+        "docker://${REGISTRY_PUSH}/${IMAGE_NAME}:develop" \
+        "docker://${REGISTRY_PUSH}/${IMAGE_NAME}:latest"
+      skopeo copy \
+        --src-tls-verify=false \
+        --dest-tls-verify=false \
+        "docker://${REGISTRY_PUSH}/${IMAGE_NAME}:develop" \
+        "docker://${REGISTRY_PUSH}/${IMAGE_NAME}:${VERSION_TAG}"
+      echo ""
+      echo "=== Promote abgeschlossen ==="
+      echo "  ${REGISTRY_PUSH}/${IMAGE_NAME}:latest"
+      echo "  ${REGISTRY_PUSH}/${IMAGE_NAME}:${VERSION_TAG}"
+      echo "=============================="
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+      when: manual
+    - when: never
+  needs:
+    - push-test
+  allow_failure: true
+
+# ----------------------------------------------------------
+# Stage 4a: Deploy – Testbetrieb (automatisch)
+# Loest nach erfolgreichem Push ein Redeployment des
+# Stacks (grocylink) in Komodo aus.
+# ----------------------------------------------------------
+deploy-test:
   stage: deploy
   image: alpine:latest
   tags:
@@ -52,13 +260,93 @@ deploy:
     - apk add --no-cache curl
   script:
     - |
-      echo "Deploying grocylink via Komodo API..."
-      RESPONSE=$(curl -sf -X POST \
-        -H "x-api-key: ${KOMODO_API_KEY}" \
-        -H "x-api-secret: ${KOMODO_API_SECRET}" \
+      echo ">>> TestDeploy via Komodo (Stack: ${KOMODO_STACK}) ..."
+      if [ -z "${KOMODO_API_KEY:-}" ] || [ -z "${KOMODO_API_SECRET:-}" ]; then
+        echo "WARNUNG: KOMODO_API_KEY/SECRET nicht gesetzt."
+        echo "         Deploy muss manuell in Komodo ausgeloest werden."
+        exit 0
+      fi
+      RESPONSE=$(curl -s -X POST "${KOMODO_URL}/execute/DeployStack" \
+        -H "X-API-KEY: ${KOMODO_API_KEY}" \
+        -H "X-API-SECRET: ${KOMODO_API_SECRET}" \
         -H "Content-Type: application/json" \
-        -d '{"type":"DeployStack","params":{"stack":"69937837828d03ff77e7376a"}}' \
-        "http://192.168.70.10:9120/execute")
-      echo "Komodo Response: ${RESPONSE}"
+        -d "{\"stack\": \"${KOMODO_STACK}\"}")
+      echo "  Komodo: ${RESPONSE}"
+      echo ">>> TestDeploy ausgeloest."
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - when: never
+  needs:
+    - push-test
+
+# ----------------------------------------------------------
+# Stage 4b: Deploy – Wirkbetrieb (manuell)
+# Loest ein Redeployment des Produktions-Stacks (grocylink)
+# in Komodo aus. MUSS manuell bestaetigt werden.
+# ----------------------------------------------------------
+deploy-prod:
+  stage: deploy
+  image: alpine:latest
+  tags:
+    - docker
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      echo "=== WIRKDEPLOY ==="
+      echo "  Stack: ${KOMODO_STACK}"
+      echo "==================="
+      if [ -z "${KOMODO_API_KEY:-}" ] || [ -z "${KOMODO_API_SECRET:-}" ]; then
+        echo "FEHLER: KOMODO_API_KEY/SECRET nicht gesetzt."
+        exit 1
+      fi
+      RESPONSE=$(curl -s -X POST "${KOMODO_URL}/execute/DeployStack" \
+        -H "X-API-KEY: ${KOMODO_API_KEY}" \
+        -H "X-API-SECRET: ${KOMODO_API_SECRET}" \
+        -H "Content-Type: application/json" \
+        -d "{\"stack\": \"${KOMODO_STACK}\"}")
+      echo "  Komodo: ${RESPONSE}"
+      echo ">>> WirkDeploy ausgeloest."
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      when: manual
+    - when: never
+  needs:
+    - push-prod
+
+# ----------------------------------------------------------
+# Stage 4c: Deploy – Wirkbetrieb nach Promote (manuell)
+# Deployt den Prod-Stack nachdem das develop-Image als
+# :latest promoted wurde. Nur auf develop-Branch verfuegbar.
+# ----------------------------------------------------------
+deploy-prod-promoted:
+  stage: deploy
+  image: alpine:latest
+  tags:
+    - docker
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      echo "=== WIRKDEPLOY (nach Promote) ==="
+      echo "  Stack: ${KOMODO_STACK}"
+      echo "=================================="
+      if [ -z "${KOMODO_API_KEY:-}" ] || [ -z "${KOMODO_API_SECRET:-}" ]; then
+        echo "FEHLER: KOMODO_API_KEY/SECRET nicht gesetzt."
+        exit 1
+      fi
+      RESPONSE=$(curl -s -X POST "${KOMODO_URL}/execute/DeployStack" \
+        -H "X-API-KEY: ${KOMODO_API_KEY}" \
+        -H "X-API-SECRET: ${KOMODO_API_SECRET}" \
+        -H "Content-Type: application/json" \
+        -d "{\"stack\": \"${KOMODO_STACK}\"}")
+      echo "  Komodo: ${RESPONSE}"
+      echo ">>> WirkDeploy (promoted) ausgeloest."
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+      when: manual
+    - when: never
+  needs:
+    - promote-to-latest
