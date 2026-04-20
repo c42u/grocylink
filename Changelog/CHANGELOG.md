@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2.2] - 2026-03-16
+## [1.3.2] - 2026-04-20
+
+### Changed
+
+- **Versionssprung** von 1.2.1 auf 1.3.2: Angleichung an die in der Registry
+  `registry.zucker.network/grocylink` bereits vorhandenen Tags (1.3.0, 1.3.1).
+  Die Versionen 1.2.2 und 1.3.0/1.3.1 entfallen in diesem Changelog, der Sprung
+  stellt die Konsistenz zwischen Git, App, Registry und Deploy wieder her.
 
 ### Added
 
