@@ -27,7 +27,7 @@ _Keine Aufgaben in Bearbeitung._
 ---
 
 ### 3. >>Erledigte Aufgaben<< <a name="finished"></a>
-#### Letzte Änderung - 2026-03-08
+#### Letzte Änderung - 2026-03-10
 
 #### Aufgabenübersicht
 
@@ -40,5 +40,7 @@ _Keine Aufgaben in Bearbeitung._
 - [x] Aufgabe 7 - Produkt-Matching-DB: Bon-Namen als Erkennungssignaturen
 - [x] Aufgabe 8 - Produktauswahl-Dropdown mit Score, Bild und Naehrwerten
 - [x] Aufgabe 9 - Gotify "ungetestet"-Hinweis entfernt
+- [x] Aufgabe 10 - Bugfix: Duplicate const-Deklaration in app.js (Menueauswahl defekt)
+- [x] Aufgabe 11 - EAN/Barcode-Suche in Kassenbon-Pruefung (Grocy + OpenFoodFacts Fallback)
 
 ---

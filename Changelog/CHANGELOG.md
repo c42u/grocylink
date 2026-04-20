@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **CI/CD**: develop-Branch + Promote-Stage eingefuehrt
   - develop-Flow mit `push-test`, `deploy-test` und `promote-to-latest` ergaenzt
-  - Neuer `promote-to-latest` Job: manuelles Retagging develop→latest per skopeo (kein Neubau)
+  - Neuer `promote-to-latest` Job: manuelles Retagging develop→latest per docker (kein Neubau)
   - `deploy-prod-promoted` fuer Wirkdeploy nach Promote
   - Hadolint Dockerfile-Lint hinzugefuegt
 
