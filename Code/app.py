@@ -434,6 +434,47 @@ def api_barcode_search():
     return jsonify({'suggestions': suggestions})
 
 
+@app.route('/api/barcode/lookup', methods=['POST'])
+def api_barcode_lookup():
+    """Sucht ein Produkt in Grocy anhand eines EAN/Barcodes.
+
+    Falls kein Grocy-Treffer, wird OpenFoodFacts als Fallback abgefragt.
+    """
+    data = request.get_json()
+    barcode = (data.get('barcode') or '').strip()
+    if not barcode:
+        return jsonify({'grocy_products': [], 'off_product': None})
+    try:
+        client = _get_grocy_client()
+        grocy_products = client.search_product_by_barcode(barcode)
+        grocy_results = [{'product_id': p.get('id'), 'name': p.get('name')} for p in grocy_products]
+    except Exception as e:
+        logger.error(f"Grocy-Barcode-Lookup Fehler: {e}")
+        grocy_results = []
+    off_product = None
+    if not grocy_results:
+        try:
+            import requests as req
+            resp = req.get(
+                f'https://world.openfoodfacts.org/api/v2/product/{barcode}.json',
+                headers={'User-Agent': 'Grocylink/1.2.1 (grocylink@c42u.de)'},
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                pdata = resp.json().get('product', {})
+                p_name = (pdata.get('product_name_de') or pdata.get('product_name') or '').strip()
+                if p_name:
+                    off_product = {
+                        'barcode': barcode,
+                        'name': p_name,
+                        'brand': (pdata.get('brands') or '').strip(),
+                        'image_url': pdata.get('image_front_small_url') or pdata.get('image_front_url'),
+                    }
+        except Exception as e:
+            logger.error(f"OFF-Barcode-Lookup Fehler: {e}")
+    return jsonify({'grocy_products': grocy_results, 'off_product': off_product})
+
+
 @app.route('/api/log', methods=['GET'])
 def api_get_log():
     return jsonify(get_log(limit=200))

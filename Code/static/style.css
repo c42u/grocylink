@@ -1033,6 +1033,43 @@ code.help-code {
 .np-barcode { font-family: monospace; font-size: .8em; color: var(--text-muted); }
 .np-barcode-select { font-family: monospace; font-size: .85em; }
 
+/* Barcode-Lookup */
+.barcode-lookup-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+.barcode-lookup-input {
+    font-size: 0.85em;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: monospace;
+    width: 140px;
+    flex-shrink: 0;
+}
+.barcode-lookup-input.barcode-found { border-color: var(--success); }
+.barcode-lookup-input.barcode-not-found { border-color: var(--danger); }
+.btn-barcode-lookup {
+    font-size: 0.8em;
+    padding: 3px 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.barcode-lookup-status {
+    font-size: 0.75em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+.barcode-lookup-status.barcode-found { color: var(--success); }
+.barcode-lookup-status.barcode-found-off { color: var(--info); }
+.barcode-lookup-status.barcode-not-found { color: var(--danger); }
+
 /* Produktvorschlaege-Spalte */
 .td-suggestions { min-width: 280px; vertical-align: top; }
 
