@@ -23,7 +23,7 @@ from receipt_scanner import process_receipt, scan_receipt_folder
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-APP_VERSION = '1.1.0'
+APP_VERSION = '1.2.2'
 
 app = Flask(__name__)
 
@@ -265,7 +265,7 @@ def api_openfoodfacts_suggest():
         resp = req.get(
             'https://de.openfoodfacts.org/cgi/search.pl',
             params={'search_terms': name, 'search_simple': 1, 'action': 'process', 'json': 1, 'page_size': 8},
-            headers={'User-Agent': 'Grocylink/1.2.0 (grocylink@c42u.de)'},
+            headers={'User-Agent': 'Grocylink/1.2.2 (grocylink@c42u.de)'},
             timeout=10,
         )
         resp.raise_for_status()
@@ -409,7 +409,7 @@ def api_barcode_search():
             'https://de.openfoodfacts.org/cgi/search.pl',
             params={'search_terms': name, 'search_simple': 1,
                     'action': 'process', 'json': 1, 'page_size': 8},
-            headers={'User-Agent': 'Grocylink/1.2.0 (grocylink@c42u.de)'},
+            headers={'User-Agent': 'Grocylink/1.2.2 (grocylink@c42u.de)'},
             timeout=10,
         )
         resp.raise_for_status()
@@ -457,7 +457,7 @@ def api_barcode_lookup():
             import requests as req
             resp = req.get(
                 f'https://world.openfoodfacts.org/api/v2/product/{barcode}.json',
-                headers={'User-Agent': 'Grocylink/1.2.1 (grocylink@c42u.de)'},
+                headers={'User-Agent': 'Grocylink/1.2.2 (grocylink@c42u.de)'},
                 timeout=10,
             )
             if resp.status_code == 200:
