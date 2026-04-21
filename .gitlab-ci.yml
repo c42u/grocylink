@@ -26,8 +26,9 @@
 variables:
   # Name des Docker-Images
   IMAGE_NAME: "grocylink"
-  # Ziel-Registry (Push direkt via HTTP auf Port 5000)
-  REGISTRY_PUSH: "registry.zucker.network:5000"
+  # Ziel-Registry (Push via HTTPS ueber Caddy Reverse Proxy)
+  # Port 5000 ist NICHT direkt erreichbar – Caddy terminiert TLS auf 443.
+  REGISTRY_PUSH: "registry.zucker.network"
   # Pfad zum Dockerfile (relativ zum Projekt-Root)
   DOCKERFILE_PATH: "docker/Dockerfile"
   # Build-Kontext (Verzeichnis fuer docker build)
