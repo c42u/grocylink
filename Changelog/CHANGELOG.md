@@ -7,75 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.3.2] - 2026-04-20
-
-### Changed
-
-- **Versionssprung** von 1.2.1 auf 1.3.2: Angleichung an die in der Registry
-  `registry.zucker.network/grocylink` bereits vorhandenen Tags (1.3.0, 1.3.1).
-  Die Versionen 1.2.2 und 1.3.0/1.3.1 entfallen in diesem Changelog, der Sprung
-  stellt die Konsistenz zwischen Git, App, Registry und Deploy wieder her.
+## [1.2.0] - 2026-05-04
 
 ### Added
 
-- **CI/CD**: develop-Branch + Promote-Stage eingefuehrt
-  - develop-Flow mit `push-test`, `deploy-test` und `promote-to-latest` ergaenzt
-  - Neuer `promote-to-latest` Job: manuelles Retagging develop→latest per docker (kein Neubau)
-  - `deploy-prod-promoted` fuer Wirkdeploy nach Promote
-  - Hadolint Dockerfile-Lint hinzugefuegt
-
----
-
-## [1.2.1] - 2026-03-10
-
-### Fixed
-
-- **JavaScript SyntaxError**: Doppelte `const row` Deklaration in `suggestCategory()`
-  verhinderte das Laden von app.js — Menueauswahl war komplett defekt.
-
-### Added
-
-- **EAN/Barcode-Suche im Kassenbon-Review**: Pro Bon-Position ein Barcode-Eingabefeld
-  mit Live-Suche. Workflow:
-  1. EAN eingeben und suchen
-  2. Grocy-Treffer: Produkt wird automatisch im Dropdown ausgewaehlt
-  3. Kein Grocy-Treffer: OpenFoodFacts wird als Fallback abgefragt
-  4. OFF-Treffer: Name und Barcode werden in die Felder fuer neues Produkt uebernommen
-  5. Kein Treffer: Rote Markierung, manuelle Zuordnung noetig
-- Neuer Backend-Endpoint `/api/barcode/lookup` (Grocy-first, OFF-Fallback)
-- Neue Methode `search_product_by_barcode()` in `grocy_client.py`
-- 7 neue i18n-Keys fuer die Barcode-Suche (DE + EN)
-- CSS-Styles fuer Barcode-Lookup (Eingabefeld, Farbindikatoren)
-
----
-
-## [1.2.0] - 2026-03-05
-
-### Added
-
-- **Kassenbon-Scanner**: Neue Seite "Kassenbons" in der Navigation zum Verarbeiten von
-  PDF-Kassenbons als Grocy-Bestandsbuchungen.
-  - **PDF-Upload** per Drag & Drop oder Dateiauswahl direkt in der Web-UI
-  - **Automatische Ordnerueberwachung**: Konfigurierbarer Ordner (`/app/receipts`) wird
-    periodisch auf neue PDFs gescannt (Intervall einstellbar)
-  - **Duale Textextraktion**: Digitale PDFs werden direkt mit pdfplumber gelesen,
-    gescannte PDFs per Tesseract OCR (deutsch) verarbeitet
-  - **Intelligentes Bon-Parsing**: Regex-basierte Erkennung gaengiger deutscher
-    Kassenbon-Formate (Marktname, Datum, Produkte mit Menge/Preis, Gesamtsumme)
-  - **Fuzzy Product Matching**: Automatische Zuordnung von Bon-Produkten zu Grocy-Produkten
-    per rapidfuzz (token_sort_ratio) mit konfigurierbarem Schwellwert
-  - **Gelernte Zuordnungen**: Bestaetigte Zuordnungen werden gespeichert und bei
-    zukuenftigen Bons automatisch angewendet (exakter Match vor Fuzzy-Match)
-  - **Review-Workflow**: Items pruefen, Zuordnungen manuell korrigieren per Dropdown,
-    dann bestaetigen — Bestand wird per `add_stock()` in Grocy gebucht
-  - **Zuordnungsverwaltung**: Gelernte Zuordnungen einsehen und loeschen
-  - **Neue Einstellungen**: Ueberwachungsordner, Scan-Intervall, Match-Schwellwert,
-    Auto-Confirm-Schwellwert
-  - **10 neue API-Endpunkte**: CRUD fuer Kassenbons, Items, Mappings, Upload, Confirm,
-    Reject, Reprocess
-  - **Neue Docker-Abhaengigkeiten**: tesseract-ocr, tesseract-ocr-deu, poppler-utils,
-    pdfplumber, pdf2image, pytesseract, rapidfuzz
-  - **Neues Volume**: `/app/receipts` fuer Ordnerueberwachung
+- **Kassenbon-Scanner**: PDF-Kassenbons (z. B. REWE eBon) können hochgeladen und
+  automatisch in einer "Kassenbon prüfen"-Ansicht analysiert werden. Erkannte
+  Positionen werden den Grocy-Produkten zugeordnet; nicht zuordenbare Positionen
+  können direkt als neues Grocy-Produkt angelegt werden.
+- **OpenFoodFacts-Integration**: Für jede erkannte Position werden über die
+  OpenFoodFacts-API Produktvorschläge inklusive Bild und Nährwerten geladen.
+- **EAN/Barcode-Suche in der Kassenbon-Prüfung**: Direkte Suche per EAN/Barcode
+  im Zuordnungsdialog – findet Produkte sofort über OpenFoodFacts und Grocy.
+- **Netto-Mengenlogik**: Mengen werden netto berechnet (Pfand, Rabatte und
+  Mehrfacheinträge werden korrekt gegengerechnet).
+- **Aldi-Duplikat-Erkennung**: Doppelte Bon-Positionen, die bei Aldi-Bons durch
+  Pfand-/Rabattzeilen entstehen, werden zusammengeführt statt doppelt erfasst.
+- **Produkt-Matching-Datenbank**: Bon-Namen werden als Erkennungssignaturen für
+  Fuzzy-Matching gespeichert. Wiederkehrende Produkte werden bei späteren Bons
+  automatisch dem zuvor zugeordneten Grocy-Produkt zugewiesen.
+- **Produktauswahl mit Nährwerten**: Dropdown-Auswahl mehrerer
+  OpenFoodFacts-Treffer pro Position mit Match-Score, Produktbild und
+  Nährwerten. Beim Anlegen werden Grocy-Userfields für die Nährwerttabelle
+  automatisch erzeugt.
 
 ---
 
