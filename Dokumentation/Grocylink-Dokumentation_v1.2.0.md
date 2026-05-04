@@ -1,6 +1,6 @@
 # Grocylink - Dokumentation
 
-Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://grocy.info/)-Instanz ueberwacht und automatisch Benachrichtigungen versendet, wenn Produkte bald ablaufen, bereits abgelaufen sind oder der Mindestbestand unterschritten wird. Zusaetzlich synchronisiert Grocylink Tasks und Chores bidirektional mit einem CalDAV-Server und kann PDF-Kassenbons einlesen, Produkte extrahieren und als Bestand buchen.
+Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://grocy.info/)-Instanz überwacht und automatisch Benachrichtigungen versendet, wenn Produkte bald ablaufen, bereits abgelaufen sind oder der Mindestbestand unterschritten wird. Zusätzlich synchronisiert Grocylink Tasks und Chores bidirektional mit einem CalDAV-Server und kann PDF-Kassenbons einlesen, Produkte extrahieren und als Bestand buchen.
 
 ## Inhaltsverzeichnis
 
@@ -13,7 +13,7 @@ Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://gr
   - [Manuell](#manuell)
 - [Konfiguration](#konfiguration)
   - [Grocy-Verbindung](#grocy-verbindung)
-  - [Benachrichtigungskanaele](#benachrichtigungskanaele)
+  - [Benachrichtigungskanäle](#benachrichtigungskanäle)
   - [Individuelle Warntage](#individuelle-warntage)
   - [CalDAV-Synchronisation](#caldav-synchronisation)
   - [Kassenbon-Scanner](#kassenbon-scanner)
@@ -26,20 +26,20 @@ Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://gr
 
 ## Features
 
-- **Dashboard** mit Echtzeit-Uebersicht ueber ablaufende, abgelaufene und fehlende Produkte
-- **6 Benachrichtigungskanaele**: Email (SMTP), Pushover, Telegram, Slack, Discord, Gotify
+- **Dashboard** mit Echtzeit-Übersicht über ablaufende, abgelaufene und fehlende Produkte
+- **6 Benachrichtigungskanäle**: Email (SMTP), Pushover, Telegram, Slack, Discord, Gotify
 - **Individuelle Warntage** pro Produkt konfigurierbar (z.B. Milch 2 Tage, Konserven 30 Tage)
 - **Automatischer Scheduler** mit konfigurierbarem Intervall (Standard: 6 Stunden)
 - **Manueller Check** per Button-Klick
-- **Test-Funktion** fuer jeden Notification-Kanal
-- **Benachrichtigungsprotokoll** mit vollstaendiger Historie
+- **Test-Funktion** für jeden Notification-Kanal
+- **Benachrichtigungsprotokoll** mit vollständiger Historie
 - **Dark/Light Mode** (automatisch via System-Einstellung + manueller Toggle)
-- **Responsives Design** fuer Desktop und Mobilgeraete
-- **Verschluesselte Speicherung** aller Passwoerter und API-Keys
-- **CalDAV-Synchronisation**: Bidirektionale Sync von Grocy Tasks und Chores als VTODO-Eintraege
-- **Kassenbon-Scanner**: PDF-Kassenbons hochladen oder per Ordnerueberwachung einlesen, Produkte und Preise per OCR extrahieren, automatisch Grocy-Produkten zuordnen und als Bestand buchen
+- **Responsives Design** für Desktop und Mobilgeräte
+- **Verschlüsselte Speicherung** aller Passwörter und API-Keys
+- **CalDAV-Synchronisation**: Bidirektionale Sync von Grocy Tasks und Chores als VTODO-Einträge
+- **Kassenbon-Scanner**: PDF-Kassenbons hochladen oder per Ordnerüberwachung einlesen, Produkte und Preise per OCR extrahieren, automatisch Grocy-Produkten zuordnen und als Bestand buchen
 - **Mehrsprachig**: Deutsch und Englisch
-- **Non-Root Container**: Laeuft ohne Root-Rechte mit minimalen Berechtigungen
+- **Non-Root Container**: Läuft ohne Root-Rechte mit minimalen Berechtigungen
 
 ---
 
@@ -72,13 +72,13 @@ Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://gr
 grocy/
 ├── compose.yaml        # Docker Compose
 ├── app.py              # Flask-Server, API-Routen, Scheduler-Init
-├── database.py         # SQLite-Zugriff mit Verschluesselung
+├── database.py         # SQLite-Zugriff mit Verschlüsselung
 ├── grocy_client.py     # Grocy REST-API Client
 ├── notifiers.py        # Notification-Provider (6 Stueck)
 ├── scheduler.py        # Automatische Check-Logik
 ├── caldav_sync.py      # CalDAV-Synchronisation (VTODO bidirektional)
 ├── receipt_scanner.py  # Kassenbon-Pipeline (OCR, Parsing, Matching)
-├── crypto.py           # Fernet-Verschluesselung fuer sensible Daten
+├── crypto.py           # Fernet-Verschlüsselung für sensible Daten
 ├── requirements.txt    # Python-Dependencies
 ├── .dockerignore
 ├── templates/
@@ -104,9 +104,9 @@ grocy/
 
 Grocylink verwendet ein externes Docker-Netzwerk mit festen IP-Adressen. Das Netzwerk muss **einmalig** vor dem ersten Start erstellt werden.
 
-#### Macvlan-Netzwerk (empfohlen fuer dedizierte IPs)
+#### Macvlan-Netzwerk (empfohlen für dedizierte IPs)
 
-Ein **Macvlan-Netzwerk** gibt jedem Container eine eigene IP-Adresse im physischen Netzwerk. Die Container sind damit direkt ueber das LAN erreichbar - wie ein eigenstaendiger Server.
+Ein **Macvlan-Netzwerk** gibt jedem Container eine eigene IP-Adresse im physischen Netzwerk. Die Container sind damit direkt über das LAN erreichbar - wie ein eigenständiger Server.
 
 ```bash
 docker network create -d macvlan \
@@ -121,10 +121,10 @@ docker network create -d macvlan \
 | `-d macvlan` | Treiber: Macvlan - Container erhalten eigene MAC-Adressen im physischen Netzwerk |
 | `--subnet=192.168.0.0/16` | Subnetz des physischen Netzwerks. Muss zum bestehenden LAN passen. `/16` erlaubt Adressen von `192.168.0.1` bis `192.168.255.254` |
 | `--gateway=192.168.255.254` | Standard-Gateway (Router) des Netzwerks. In den meisten Heimnetzwerken die Router-IP |
-| `-o parent=ens19` | Physisches Netzwerk-Interface des Hosts. Mit `ip link show` pruefen (haeufig: `eth0`, `ens18`, `ens19`, `enp0s3`) |
-| `DockerNetwork` | Name des Netzwerks - muss mit dem Namen in `compose.yaml` uebereinstimmen |
+| `-o parent=ens19` | Physisches Netzwerk-Interface des Hosts. Mit `ip link show` prüfen (häufig: `eth0`, `ens18`, `ens19`, `enp0s3`) |
+| `DockerNetwork` | Name des Netzwerks - muss mit dem Namen in `compose.yaml` übereinstimmen |
 
-> **Wichtig:** Das Subnetz und Gateway muessen zum bestehenden Netzwerk passen. Beispiele:
+> **Wichtig:** Das Subnetz und Gateway müssen zum bestehenden Netzwerk passen. Beispiele:
 > - Heimnetzwerk mit Fritz!Box: `--subnet=192.168.178.0/24 --gateway=192.168.178.1`
 > - Proxmox/Server-Umgebung: Subnetz und Gateway je nach VLAN-Konfiguration anpassen
 > - Das physische Interface (`-o parent=...`) mit `ip link show` oder `ip addr` ermitteln
@@ -133,18 +133,18 @@ docker network create -d macvlan \
 
 #### Bridge-Netzwerk (Alternative)
 
-Falls kein Macvlan gewuenscht ist, kann auch ein normales Bridge-Netzwerk mit festem Subnetz verwendet werden:
+Falls kein Macvlan gewünscht ist, kann auch ein normales Bridge-Netzwerk mit festem Subnetz verwendet werden:
 
 ```bash
 docker network create \
-  --subnet=10.0.50.0/24 \
-  --gateway=10.0.50.1 \
+  --subnet=10.0.0.0/24 \
+  --gateway=10.0.0.1 \
   DockerNetwork
 ```
 
-Bei einem Bridge-Netzwerk sind Container nur ueber Port-Mappings (`ports:`) von aussen erreichbar.
+Bei einem Bridge-Netzwerk sind Container nur über Port-Mappings (`ports:`) von aussen erreichbar.
 
-#### Netzwerk pruefen
+#### Netzwerk prüfen
 
 ```bash
 # Netzwerk anzeigen
@@ -161,7 +161,7 @@ docker network ls
 - Docker und Docker Compose installiert
 - Docker-Netzwerk `DockerNetwork` erstellt (siehe oben)
 - Quellcode auf dem Server vorhanden
-- **Externer Reverse Proxy** fuer HTTPS (z.B. Caddy, Traefik, Nginx)
+- **Externer Reverse Proxy** für HTTPS (z.B. Caddy, Traefik, Nginx)
 
 #### Image bauen und starten
 
@@ -178,16 +178,16 @@ docker compose up -d
 docker compose logs -f
 ```
 
-Die Anwendung ist dann erreichbar unter `http://<GROCYLINK_IP>:5000`. Fuer HTTPS einen Reverse Proxy vorschalten (siehe [Reverse Proxy / HTTPS](#reverse-proxy--https)).
+Die Anwendung ist dann erreichbar unter `http://<GROCYLINK_IP>:5000`. Für HTTPS einen Reverse Proxy vorschalten (siehe [Reverse Proxy / HTTPS](#reverse-proxy--https)).
 
 #### Umgebungsvariablen (.env)
 
-Die Datei `docker/.env` enthaelt alle konfigurierbaren Umgebungsvariablen:
+Die Datei `docker/.env` enthält alle konfigurierbaren Umgebungsvariablen:
 
 ```env
 GUNICORN_WORKERS=2
 TIMEZONE=Europe/Berlin
-GROCYLINK_IP=10.0.50.26
+GROCYLINK_IP=10.0.0.26
 PATH_TO=/opt/docker-data
 UID=1000
 GID=1000
@@ -196,19 +196,19 @@ GID=1000
 | Variable | Standard | Beschreibung |
 |---|---|---|
 | `GUNICORN_WORKERS` | `2` | Anzahl der Gunicorn Worker-Prozesse |
-| `TIMEZONE` | `Europe/Berlin` | Zeitzone fuer Scheduler und Logs |
-| `GROCYLINK_IP` | `10.0.50.26` | Feste IP-Adresse im Docker-Netzwerk |
-| `PATH_TO` | `/opt/docker-data` | Basispfad fuer persistente Daten (Bind Mounts) |
-| `UID` | `1000` | User-ID unter der der Container laeuft |
-| `GID` | `1000` | Group-ID unter der der Container laeuft |
+| `TIMEZONE` | `Europe/Berlin` | Zeitzone für Scheduler und Logs |
+| `GROCYLINK_IP` | `10.0.0.26` | Feste IP-Adresse im Docker-Netzwerk |
+| `PATH_TO` | `/opt/docker-data` | Basispfad für persistente Daten (Bind Mounts) |
+| `UID` | `1000` | User-ID unter der der Container läuft |
+| `GID` | `1000` | Group-ID unter der der Container läuft |
 
 Die Datenverzeichnisse werden automatisch unter `${PATH_TO}/grocylink/` angelegt:
 - `${PATH_TO}/grocylink/data/` - Datenbank und Encryption Key
-- `${PATH_TO}/grocylink/receipts/` - Kassenbon-PDFs fuer Ordnerueberwachung
+- `${PATH_TO}/grocylink/receipts/` - Kassenbon-PDFs für Ordnerüberwachung
 
 #### Container-Sicherheit
 
-Der Container laeuft mit minimalen Berechtigungen:
+Der Container läuft mit minimalen Berechtigungen:
 
 ```yaml
 user: ${UID}:${GID}           # Non-Root User
@@ -221,7 +221,7 @@ mem_limit: 2G                  # Max 2 GB RAM
 pids_limit: 200                # Max 200 Prozesse
 ```
 
-> **Wichtig:** Die Datenverzeichnisse muessen fuer den konfigurierten User (UID/GID) schreibbar sein:
+> **Wichtig:** Die Datenverzeichnisse müssen für den konfigurierten User (UID/GID) schreibbar sein:
 > ```bash
 > mkdir -p /opt/docker-data/grocylink/data /opt/docker-data/grocylink/receipts
 > chown 1000:1000 /opt/docker-data/grocylink/data /opt/docker-data/grocylink/receipts
@@ -229,18 +229,18 @@ pids_limit: 200                # Max 200 Prozesse
 
 ### Komodo
 
-[Komodo](https://komo.do/) ist eine Self-Hosted Plattform zur Verwaltung von Docker-Containern und Deployments. Grocylink kann als **Stack** in Komodo eingebunden werden - ohne Git, rein ueber Dateien auf dem Host.
+[Komodo](https://komo.do/) ist eine Self-Hosted Plattform zur Verwaltung von Docker-Containern und Deployments. Grocylink kann als **Stack** in Komodo eingebunden werden - ohne Git, rein über Dateien auf dem Host.
 
 **Voraussetzungen:**
-- Komodo Core laeuft und ist erreichbar
+- Komodo Core läuft und ist erreichbar
 - Komodo Periphery ist auf dem Zielserver installiert und verbunden
 - Der Zielserver hat Docker und Docker Compose installiert
 
-> **Wichtiger Hinweis:** Komodo kann standardmaessig keine lokalen Docker-Images bauen. Daher wird das Image **vorab manuell** auf dem Server gebaut und in der `compose.yaml` als fertiges Image referenziert (`image:` statt `build:`). Komodo startet dann nur den Container.
+> **Wichtiger Hinweis:** Komodo kann standardmäßig keine lokalen Docker-Images bauen. Daher wird das Image **vorab manuell** auf dem Server gebaut und in der `compose.yaml` als fertiges Image referenziert (`image:` statt `build:`). Komodo startet dann nur den Container.
 
 #### Schritt 1: Dateien auf den Server kopieren
 
-Zuerst muss der komplette Grocylink-Quellcode auf den Zielserver uebertragen werden. Das Zielverzeichnis kann frei gewaehlt werden, z.B. `/opt/grocylink`.
+Zuerst muss der komplette Grocylink-Quellcode auf den Zielserver übertragen werden. Das Zielverzeichnis kann frei gewählt werden, z.B. `/opt/grocylink`.
 
 **Per SCP (von lokalem Rechner):**
 
@@ -260,7 +260,7 @@ Nach dem Kopieren sollte die Verzeichnisstruktur auf dem Server so aussehen:
 
 ```
 /opt/grocylink/
-├── compose.yaml          # Compose fuer lokales docker compose
+├── compose.yaml          # Compose für lokales docker compose
 ├── app.py
 ├── database.py
 ├── grocy_client.py
@@ -290,20 +290,20 @@ cd /opt/grocylink
 docker build --no-cache --network host -t grocylink:latest -f docker/Dockerfile .
 ```
 
-| Flag | Erklaerung |
+| Flag | Erklärung |
 |---|---|
-| `--no-cache` | Erzwingt einen vollstaendigen Rebuild ohne gecachte Layer. Wichtig nach Code-Aenderungen. |
-| `--network host` | Verwendet das Host-Netzwerk waehrend des Builds. Behebt DNS-Probleme, die in manchen Docker-Umgebungen auftreten (z.B. `deb.debian.org` nicht aufloesbar). |
-| `-t grocylink:latest` | Taggt das Image als `grocylink:latest` - dieser Name muss mit der `compose.yaml` uebereinstimmen. |
+| `--no-cache` | Erzwingt einen vollständigen Rebuild ohne gecachte Layer. Wichtig nach Code-Änderungen. |
+| `--network host` | Verwendet das Host-Netzwerk während des Builds. Behebt DNS-Probleme, die in manchen Docker-Umgebungen auftreten (z.B. `deb.debian.org` nicht auflösbar). |
+| `-t grocylink:latest` | Taggt das Image als `grocylink:latest` - dieser Name muss mit der `compose.yaml` übereinstimmen. |
 | `-f docker/Dockerfile .` | Verwendet das Dockerfile aus dem `docker/`-Unterordner mit dem aktuellen Verzeichnis als Build-Context. |
 
-> **Haeufiges Problem:** Falls der Build mit DNS-Fehlern wie `Temporary failure resolving 'deb.debian.org'` fehlschlaegt, ist `--network host` die Loesung. Docker verwendet sonst ein eigenes Netzwerk fuer den Build, das je nach Server-Konfiguration keine DNS-Aufloesung hat.
+> **Häufiges Problem:** Falls der Build mit DNS-Fehlern wie `Temporary failure resolving 'deb.debian.org'` fehlschlägt, ist `--network host` die Lösung. Docker verwendet sonst ein eigenes Netzwerk für den Build, das je nach Server-Konfiguration keine DNS-Auflösung hat.
 
 #### Schritt 3: Stack in Komodo anlegen
 
 1. In Komodo auf **Stacks** > **+ New Stack** klicken
 2. **Name**: `grocylink`
-3. **Server** auswaehlen (z.B. `vSrv-Docker01`)
+3. **Server** auswählen (z.B. `vSrv-Docker01`)
 
 #### Schritt 4: Compose File in Komodo eintragen
 
@@ -343,16 +343,16 @@ networks:
     external: true
 ```
 
-| Feld | Erklaerung |
+| Feld | Erklärung |
 |---|---|
 | `image: grocylink:latest` | Referenziert das lokal gebaute Image (aus Schritt 2). |
-| `pull_policy: never` | **Wichtig!** Verhindert, dass Docker/Komodo versucht, das Image von Docker Hub zu pullen. Ohne dieses Flag schlaegt der Deploy mit `pull access denied` fehl. |
-| `user: ${UID}:${GID}` | Container laeuft als Non-Root User. |
+| `pull_policy: never` | **Wichtig!** Verhindert, dass Docker/Komodo versucht, das Image von Docker Hub zu pullen. Ohne dieses Flag schlägt der Deploy mit `pull access denied` fehl. |
+| `user: ${UID}:${GID}` | Container läuft als Non-Root User. |
 | `cap_drop: ALL` | Alle Linux Capabilities werden entfernt. |
 | `security_opt: no-new-privileges` | Verhindert Privilege Escalation. |
-| `volumes: ${PATH_TO}/...:/app/data` | Bind Mount fuer Datenbank und Encryption Key. |
-| `volumes: ${PATH_TO}/...:/app/receipts` | Bind Mount fuer Kassenbon-PDFs (Ordnerueberwachung). |
-| `ports: "5000:5000"` | Gunicorn Port. Fuer HTTPS einen Reverse Proxy vorschalten. |
+| `volumes: ${PATH_TO}/...:/app/data` | Bind Mount für Datenbank und Encryption Key. |
+| `volumes: ${PATH_TO}/...:/app/receipts` | Bind Mount für Kassenbon-PDFs (Ordnerüberwachung). |
+| `ports: "5000:5000"` | Gunicorn Port. Für HTTPS einen Reverse Proxy vorschalten. |
 | `networks: DockerNetwork` | Externes Docker-Netzwerk mit fester IP (muss vorher erstellt werden, siehe [Docker-Netzwerk einrichten](#docker-netzwerk-einrichten)). |
 
 #### Schritt 5: Environment konfigurieren
@@ -362,7 +362,7 @@ Unter **Environment** in Komodo die Umgebungsvariablen setzen:
 ```env
 GUNICORN_WORKERS=2
 TIMEZONE=Europe/Berlin
-GROCYLINK_IP=10.0.50.26
+GROCYLINK_IP=10.0.0.26
 PATH_TO=/opt/docker-data
 UID=1000
 GID=1000
@@ -371,15 +371,15 @@ GID=1000
 | Variable | Standard | Beschreibung |
 |---|---|---|
 | `GUNICORN_WORKERS` | `2` | Anzahl Gunicorn Worker-Prozesse |
-| `TIMEZONE` | `Europe/Berlin` | Zeitzone fuer Scheduler und Logs |
-| `GROCYLINK_IP` | `10.0.50.26` | Feste IP-Adresse im Docker-Netzwerk. Muss eine freie Adresse im konfigurierten Subnetz sein. |
-| `PATH_TO` | `/opt/docker-data` | Basispfad fuer persistente Daten auf dem Host. |
-| `UID` | `1000` | User-ID unter der der Container laeuft |
-| `GID` | `1000` | Group-ID unter der der Container laeuft |
+| `TIMEZONE` | `Europe/Berlin` | Zeitzone für Scheduler und Logs |
+| `GROCYLINK_IP` | `10.0.0.26` | Feste IP-Adresse im Docker-Netzwerk. Muss eine freie Adresse im konfigurierten Subnetz sein. |
+| `PATH_TO` | `/opt/docker-data` | Basispfad für persistente Daten auf dem Host. |
+| `UID` | `1000` | User-ID unter der der Container läuft |
+| `GID` | `1000` | Group-ID unter der der Container läuft |
 
-> **Wichtig:** Die IP-Adresse (`GROCYLINK_IP`) muss im Subnetz des Docker-Netzwerks liegen und darf nicht von einem anderen Container oder Geraet belegt sein.
+> **Wichtig:** Die IP-Adresse (`GROCYLINK_IP`) muss im Subnetz des Docker-Netzwerks liegen und darf nicht von einem anderen Container oder Gerät belegt sein.
 
-> **Wichtig:** Die Datenverzeichnisse muessen fuer den konfigurierten User schreibbar sein:
+> **Wichtig:** Die Datenverzeichnisse müssen für den konfigurierten User schreibbar sein:
 > ```bash
 > mkdir -p ${PATH_TO}/grocylink/data ${PATH_TO}/grocylink/receipts
 > chown ${UID}:${GID} ${PATH_TO}/grocylink/data ${PATH_TO}/grocylink/receipts
@@ -388,31 +388,31 @@ GID=1000
 #### Schritt 6: Deploy
 
 1. In Komodo auf **Deploy** klicken
-2. Komodo fuehrt `docker compose -f compose.yaml up -d` im Run Directory aus
+2. Komodo führt `docker compose -f compose.yaml up -d` im Run Directory aus
 3. Der Container startet mit dem lokal gebauten Image `grocylink:latest`
 
 #### Nach dem Deployment
 
-- Grocylink ist erreichbar unter `http://<GROCYLINK_IP>:5000` bzw. ueber den vorgeschalteten Reverse Proxy
+- Grocylink ist erreichbar unter `http://<GROCYLINK_IP>:5000` bzw. über den vorgeschalteten Reverse Proxy
 - In Komodo unter **Stacks** > **grocylink** sind Logs, Container-Status und Ressourcenverbrauch sichtbar
 - **Daten** liegen persistent unter `${PATH_TO}/grocylink/data/` auf dem Host
 
 #### Betrieb hinter einem Reverse Proxy
 
-Grocylink stellt nur HTTP auf Port 5000 bereit. Fuer HTTPS wird ein externer Reverse Proxy empfohlen. Beispiel fuer eine Caddy-Konfiguration:
+Grocylink stellt nur HTTP auf Port 5000 bereit. Für HTTPS wird ein externer Reverse Proxy empfohlen. Beispiel für eine Caddy-Konfiguration:
 
 ```caddyfile
 grocylink.example.com {
     tls /certs/fullchain.pem /certs/key.pem
-    reverse_proxy http://10.0.50.26:5000
+    reverse_proxy http://10.0.0.26:5000
 }
 ```
 
 > **Wichtig:** Beim TLS-Zertifikat immer die **fullchain.pem** (Leaf + Intermediate) verwenden, nicht nur die cert.pem. Details dazu im Abschnitt [Reverse Proxy / HTTPS](#reverse-proxy--https).
 
-#### Updates durchfuehren
+#### Updates durchführen
 
-Bei Code-Aenderungen muessen Image und Container aktualisiert werden:
+Bei Code-Änderungen müssen Image und Container aktualisiert werden:
 
 ```bash
 # 1. Neue Dateien auf den Server kopieren
@@ -425,7 +425,7 @@ docker build --no-cache --network host -t grocylink:latest -f docker/Dockerfile 
 # 3. In Komodo: Stacks > grocylink > Redeploy
 ```
 
-> **Tipp:** Das `data/`-Verzeichnis beim Kopieren ausschliessen (`--exclude='data/'`), damit die Datenbank und der Encryption Key nicht ueberschrieben werden. Diese liegen im Docker-Volume und sind vom Quellcode getrennt.
+> **Tipp:** Das `data/`-Verzeichnis beim Kopieren ausschliessen (`--exclude='data/'`), damit die Datenbank und der Encryption Key nicht überschrieben werden. Diese liegen im Docker-Volume und sind vom Quellcode getrennt.
 
 #### Monitoring in Komodo
 
@@ -449,9 +449,9 @@ pip install -r requirements.txt
 python3 app.py
 ```
 
-Die App laeuft dann auf `http://localhost:5000`.
+Die App läuft dann auf `http://localhost:5000`.
 
-Fuer HTTPS im manuellen Betrieb einen Reverse Proxy (z.B. Caddy, Traefik) vorschalten.
+Für HTTPS im manuellen Betrieb einen Reverse Proxy (z.B. Caddy, Traefik) vorschalten.
 
 ---
 
@@ -459,27 +459,27 @@ Fuer HTTPS im manuellen Betrieb einen Reverse Proxy (z.B. Caddy, Traefik) vorsch
 
 ### Grocy-Verbindung
 
-1. Oeffne die Webapplikation im Browser
+1. Öffne die Webapplikation im Browser
 2. Navigiere zu **Einstellungen**
 3. Trage die **Grocy URL** ein (z.B. `https://grocy.example.com`)
 4. Trage den **API-Key** ein (in Grocy unter Einstellungen > API-Keys zu finden)
 5. Klicke auf **Verbindung testen**
 6. Speichere die Einstellungen
 
-### Benachrichtigungskanaele
+### Benachrichtigungskanäle
 
-Navigiere zu **Kanaele** und klicke auf **+ Kanal hinzufuegen**.
+Navigiere zu **Kanäle** und klicke auf **+ Kanal hinzufügen**.
 
 #### Email (SMTP)
 
 | Feld | Beispiel | Beschreibung |
 |---|---|---|
 | SMTP Host | `smtp.gmail.com` | SMTP-Server |
-| SMTP Port | `587` | Port (587 fuer STARTTLS) |
+| SMTP Port | `587` | Port (587 für STARTTLS) |
 | Benutzername | `user@gmail.com` | Login |
 | Passwort | `app-passwort` | Passwort/App-Passwort |
 | Absender-Email | `user@gmail.com` | Von-Adresse |
-| Empfaenger-Email | `notify@example.com` | Ziel-Adresse |
+| Empfänger-Email | `notify@example.com` | Ziel-Adresse |
 | TLS verwenden | `ja` | STARTTLS aktivieren |
 
 **Hinweis Gmail:** Es muss ein [App-Passwort](https://myaccount.google.com/apppasswords) verwendet werden.
@@ -490,7 +490,7 @@ Navigiere zu **Kanaele** und klicke auf **+ Kanal hinzufuegen**.
 |---|---|
 | API Token | App-Token von pushover.net |
 | User Key | User/Group Key |
-| Prioritaet | -2 (leise) bis 2 (Notfall) |
+| Priorität | -2 (leise) bis 2 (Notfall) |
 
 #### Telegram
 
@@ -499,18 +499,18 @@ Navigiere zu **Kanaele** und klicke auf **+ Kanal hinzufuegen**.
 | Bot Token | Token vom BotFather |
 | Chat ID | Ziel-Chat (User-ID oder Gruppen-ID) |
 
-**Schritt-fuer-Schritt Einrichtung:**
+**Schritt-für-Schritt Einrichtung:**
 
-1. **Bot erstellen**: In Telegram den [BotFather](https://t.me/BotFather) oeffnen und `/newbot` senden
-2. Einen **Namen** und einen **Benutzernamen** fuer den Bot vergeben (Benutzername muss auf `bot` enden, z.B. `MeinGrocyBot`)
-3. Der BotFather gibt einen **HTTP API Token** zurueck im Format:
+1. **Bot erstellen**: In Telegram den [BotFather](https://t.me/BotFather) öffnen und `/newbot` senden
+2. Einen **Namen** und einen **Benutzernamen** für den Bot vergeben (Benutzername muss auf `bot` enden, z.B. `MeinGrocyBot`)
+3. Der BotFather gibt einen **HTTP API Token** zurück im Format:
    ```
    1234567890:AABBccDDeeFFggHHiiJJkkLLmmNNooPPqq
    ```
    Diesen Token in Grocylink unter **Bot Token** eintragen.
 
 4. **Chat ID ermitteln:**
-   - Den eigenen Bot in Telegram oeffnen (nach dem Benutzernamen suchen)
+   - Den eigenen Bot in Telegram öffnen (nach dem Benutzernamen suchen)
    - Auf **Start** klicken oder eine beliebige Nachricht senden (z.B. "Hallo")
    - Folgende URL im Browser aufrufen (Token einsetzen):
      ```
@@ -538,9 +538,9 @@ Navigiere zu **Kanaele** und klicke auf **+ Kanal hinzufuegen**.
 
 > **Leere Antwort (`"result": []`):** Falls `getUpdates` ein leeres Ergebnis liefert, wurde noch keine Nachricht an den Bot gesendet. Erst im Telegram-Chat eine Nachricht an den Bot schicken, dann die URL erneut aufrufen.
 
-> **Gruppen-Benachrichtigungen:** Um Nachrichten in eine Telegram-Gruppe zu senden, den Bot zur Gruppe hinzufuegen, dort eine Nachricht senden, und dann `getUpdates` aufrufen. Gruppen-Chat-IDs sind negativ (z.B. `-100123456789`).
+> **Gruppen-Benachrichtigungen:** Um Nachrichten in eine Telegram-Gruppe zu senden, den Bot zur Gruppe hinzufügen, dort eine Nachricht senden, und dann `getUpdates` aufrufen. Gruppen-Chat-IDs sind negativ (z.B. `-100123456789`).
 
-> **Sicherheitshinweis:** Den Bot-Token niemals oeffentlich teilen. Falls der Token kompromittiert wurde, beim BotFather mit `/revoke` einen neuen Token generieren.
+> **Sicherheitshinweis:** Den Bot-Token niemals öffentlich teilen. Falls der Token kompromittiert wurde, beim BotFather mit `/revoke` einen neuen Token generieren.
 
 #### Slack
 
@@ -564,16 +564,16 @@ Webhook erstellen: Kanal-Einstellungen > Integrationen > Webhooks
 |---|---|
 | Server URL | Gotify-Serveradresse |
 | App Token | App-Token aus Gotify |
-| Prioritaet | Numerisch (Standard: 5) |
+| Priorität | Numerisch (Standard: 5) |
 
 ### Individuelle Warntage
 
-Unter **Produkte** kann fuer jedes Produkt ein individueller Warnzeitraum gesetzt werden:
+Unter **Produkte** kann für jedes Produkt ein individueller Warnzeitraum gesetzt werden:
 
 - **Standard** (aus Einstellungen, z.B. 5 Tage)
 - **Individuell** pro Produkt (z.B. Milch = 2 Tage, Konserven = 30 Tage)
 
-Einfach im Feld "Warntage" den gewuenschten Wert eingeben. "Reset" setzt auf den Standardwert zurueck.
+Einfach im Feld "Warntage" den gewünschten Wert eingeben. "Reset" setzt auf den Standardwert zurück.
 
 ### CalDAV-Synchronisation
 
@@ -583,10 +583,10 @@ Grocylink kann Tasks und Chores aus Grocy bidirektional mit einem CalDAV-Server 
 
 1. Navigiere zu **CalDAV** in der Seitenleiste
 2. Trage die **CalDAV Server URL** ein (z.B. `https://nextcloud.example.com`)
-3. Waehle den **Servertyp** aus oder trage manuell den **DAV-Pfad** ein (z.B. `/remote.php/dav`)
+3. Wähle den **Servertyp** aus oder trage manuell den **DAV-Pfad** ein (z.B. `/remote.php/dav`)
 4. Gib **Benutzername** und **Passwort** ein
-5. Klicke auf **Verbindung testen** - bei Erfolg werden die verfuegbaren Kalender angezeigt
-6. Klicke auf **Laden** neben der Kalender-Auswahl und waehle den gewuenschten Kalender
+5. Klicke auf **Verbindung testen** - bei Erfolg werden die verfügbaren Kalender angezeigt
+6. Klicke auf **Laden** neben der Kalender-Auswahl und wähle den gewünschten Kalender
 7. Setze das **Sync-Intervall** (Standard: 30 Minuten)
 8. Aktiviere die **Automatische Synchronisation**
 9. Klicke auf **CalDAV-Einstellungen speichern**
@@ -606,57 +606,57 @@ Grocylink kann Tasks und Chores aus Grocy bidirektional mit einem CalDAV-Server 
 **Grocy -> CalDAV:**
 - Jeder Grocy-Task und jede Chore wird als VTODO angelegt
 - UID-Schema: `grocy-task-{id}@grocylink` / `grocy-chore-{id}@grocylink`
-- Felder: SUMMARY (Name), DESCRIPTION (Beschreibung), DUE (Faelligkeitsdatum), STATUS
+- Felder: SUMMARY (Name), DESCRIPTION (Beschreibung), DUE (Fälligkeitsdatum), STATUS
 - Erledigte Tasks werden mit STATUS=COMPLETED synchronisiert
 
 **CalDAV -> Grocy:**
-- Wird ein VTODO im CalDAV-Client als erledigt markiert, wird der entsprechende Task/Chore beim naechsten Sync auch in Grocy als erledigt markiert
-- Wird ein VTODO wieder auf "offen" gesetzt, wird der Task in Grocy ebenfalls wieder geoeffnet (undo)
-- Aenderungen an Name, Beschreibung und Faelligkeitsdatum werden zurueck nach Grocy synchronisiert
+- Wird ein VTODO im CalDAV-Client als erledigt markiert, wird der entsprechende Task/Chore beim nächsten Sync auch in Grocy als erledigt markiert
+- Wird ein VTODO wieder auf "offen" gesetzt, wird der Task in Grocy ebenfalls wieder geöffnet (undo)
+- Änderungen an Name, Beschreibung und Fälligkeitsdatum werden zurück nach Grocy synchronisiert
 - Neue Aufgaben, die im CalDAV-Client erstellt werden, werden automatisch als neue Tasks in Grocy angelegt
-- **Duplikat-Erkennung**: Beim Import neuer Aufgaben aus CalDAV wird sowohl die Original-UID als auch die Grocylink-UID in der Sync-Map gespeichert, um doppelte Imports zu verhindern. Zusaetzlich wird geprueft, ob in Grocy bereits ein Task mit identischem Namen existiert
+- **Duplikat-Erkennung**: Beim Import neuer Aufgaben aus CalDAV wird sowohl die Original-UID als auch die Grocylink-UID in der Sync-Map gespeichert, um doppelte Imports zu verhindern. Zusätzlich wird geprüft, ob in Grocy bereits ein Task mit identischem Namen existiert
 
 #### Sync-Mapping
 
-Die Tabelle "Sync-Mapping" auf der CalDAV-Seite zeigt alle synchronisierten Eintraege mit Typ, Grocy-ID, CalDAV-UID, aktuellem Status, Sync-Richtung und Zeitpunkt der letzten Synchronisation.
+Die Tabelle "Sync-Mapping" auf der CalDAV-Seite zeigt alle synchronisierten Einträge mit Typ, Grocy-ID, CalDAV-UID, aktuellem Status, Sync-Richtung und Zeitpunkt der letzten Synchronisation.
 
 ### Kassenbon-Scanner
 
-Grocylink kann PDF-Kassenbons einlesen, Produkte und Preise extrahieren und als Bestandsbuchungen in Grocy uebernehmen. Sowohl digital erstellte PDFs als auch gescannte Kassenbons (per OCR) werden unterstuetzt.
+Grocylink kann PDF-Kassenbons einlesen, Produkte und Preise extrahieren und als Bestandsbuchungen in Grocy übernehmen. Sowohl digital erstellte PDFs als auch gescannte Kassenbons (per OCR) werden unterstützt.
 
 #### Verarbeitungs-Pipeline
 
 ```
-PDF (Upload / Ordnerueberwachung)
+PDF (Upload / Ordnerüberwachung)
   → Typ erkennen (digital / gescannt)
   → Text extrahieren (pdfplumber / Tesseract OCR)
   → Bon parsen (Markt, Datum, Produkte, Preise, Summe)
   → Produkte matchen (gelernte Zuordnung → Fuzzy-Match → kein Treffer)
   → In DB speichern (Status: pending_review)
-  → User prueft in UI (Zuordnungen korrigieren/bestaetigen)
+  → User prüft in UI (Zuordnungen korrigieren/bestätigen)
   → Bestaetigung → Bestand in Grocy buchen (add_stock)
-  → Zuordnungen lernen (fuer zukuenftige Bons)
+  → Zuordnungen lernen (für zukünftige Bons)
 ```
 
 #### Kassenbons hochladen
 
 1. Navigiere zu **Kassenbons** in der Seitenleiste
-2. PDFs per **Drag & Drop** in die Upload-Zone ziehen oder ueber **Dateiauswahl** hochladen
+2. PDFs per **Drag & Drop** in die Upload-Zone ziehen oder über **Dateiauswahl** hochladen
 3. Der Kassenbon wird automatisch verarbeitet und erscheint in der Tabelle
 
-#### Ordnerueberwachung
+#### Ordnerüberwachung
 
-Grocylink kann einen Ordner periodisch auf neue PDF-Kassenbons ueberwachen:
+Grocylink kann einen Ordner periodisch auf neue PDF-Kassenbons überwachen:
 
 1. Navigiere zu **Einstellungen** > **Kassenbons**
-2. Trage den **Ueberwachungsordner** ein (Standard: `/app/receipts`)
+2. Trage den **Überwachungsordner** ein (Standard: `/app/receipts`)
 3. Setze das **Scan-Intervall** (Standard: 5 Minuten)
-4. Aktiviere die **Ordnerueberwachung** per Checkbox
+4. Aktiviere die **Ordnerüberwachung** per Checkbox
 5. Speichere die Einstellungen
 
-Neue PDFs im Ordner werden automatisch erkannt, verarbeitet und in die Kassenbon-Liste uebernommen. Bereits verarbeitete Dateien werden anhand des Dateipfads erkannt und nicht erneut eingelesen.
+Neue PDFs im Ordner werden automatisch erkannt, verarbeitet und in die Kassenbon-Liste übernommen. Bereits verarbeitete Dateien werden anhand des Dateipfads erkannt und nicht erneut eingelesen.
 
-> **Volume-Mount:** Fuer die Ordnerueberwachung muss das Kassenbon-Verzeichnis als Volume gemountet sein:
+> **Volume-Mount:** Für die Ordnerüberwachung muss das Kassenbon-Verzeichnis als Volume gemountet sein:
 > ```yaml
 > volumes:
 >   - ${PATH_TO}/grocylink/receipts:/app/receipts
@@ -666,23 +666,23 @@ Neue PDFs im Ordner werden automatisch erkannt, verarbeitet und in die Kassenbon
 
 Nach dem Einlesen erscheint ein Kassenbon mit Status **Ausstehend**:
 
-1. Klicke auf **Pruefen** um den Review-Dialog zu oeffnen
+1. Klicke auf **Prüfen** um den Review-Dialog zu öffnen
 2. Alle erkannten Positionen werden mit ihrer automatischen Zuordnung angezeigt
-3. Fuer jede Position wird ein **Match-Score** angezeigt:
-   - **Gruen (>90%)**: Hohe Uebereinstimmung
-   - **Gelb (70–90%)**: Mittlere Uebereinstimmung — pruefen empfohlen
-   - **Rot (<70%)**: Geringe Uebereinstimmung — manuelle Korrektur noetig
+3. Für jede Position wird ein **Match-Score** angezeigt:
+   - **Grün (>90%)**: Hohe Übereinstimmung
+   - **Gelb (70–90%)**: Mittlere Übereinstimmung — prüfen empfohlen
+   - **Rot (<70%)**: Geringe Übereinstimmung — manuelle Korrektur nötig
 4. Zuordnungen per **Dropdown** korrigieren (alle Grocy-Produkte durchsuchbar)
-5. Mit **Bestaetigen** werden alle Positionen als Bestand in Grocy gebucht
+5. Mit **Bestätigen** werden alle Positionen als Bestand in Grocy gebucht
 
-Bestaetigte Zuordnungen werden automatisch gelernt und bei zukuenftigen Kassenbons als erstes angewendet (exakter Match vor Fuzzy-Match).
+Bestätigte Zuordnungen werden automatisch gelernt und bei zukünftigen Kassenbons als erstes angewendet (exakter Match vor Fuzzy-Match).
 
 #### Produkt-Matching
 
 Das Matching erfolgt in zwei Stufen:
 
-1. **Gelernte Zuordnungen** (exakt): Zuvor bestaetigte Zuordnungen werden direkt angewendet (Score: 100, Quelle: `learned`)
-2. **Fuzzy-Match** (automatisch): Falls keine gelernte Zuordnung existiert, wird per `token_sort_ratio` (rapidfuzz) das aehnlichste Grocy-Produkt gesucht (Quelle: `fuzzy`)
+1. **Gelernte Zuordnungen** (exakt): Zuvor bestätigte Zuordnungen werden direkt angewendet (Score: 100, Quelle: `learned`)
+2. **Fuzzy-Match** (automatisch): Falls keine gelernte Zuordnung existiert, wird per `token_sort_ratio` (rapidfuzz) das ähnlichste Grocy-Produkt gesucht (Quelle: `fuzzy`)
 
 Der **Match-Schwellwert** (Standard: 70%) bestimmt, ab welchem Score ein Fuzzy-Match als Treffer gilt. Produkte unter dem Schwellwert erhalten keine automatische Zuordnung.
 
@@ -690,30 +690,30 @@ Der **Auto-Confirm-Schwellwert** (Standard: 95%) bestimmt, ab welchem Score Zuor
 
 #### Gelernte Zuordnungen verwalten
 
-Unter **Kassenbons** > **Gelernte Zuordnungen** (aufklappbar) werden alle gespeicherten Zuordnungen angezeigt. Einzelne Zuordnungen koennen geloescht werden, um das Matching fuer bestimmte Bon-Produkte zurueckzusetzen.
+Unter **Kassenbons** > **Gelernte Zuordnungen** (aufklappbar) werden alle gespeicherten Zuordnungen angezeigt. Einzelne Zuordnungen können gelöscht werden, um das Matching für bestimmte Bon-Produkte zurückzusetzen.
 
 #### Einstellungen
 
 | Einstellung | Standard | Beschreibung |
 |---|---|---|
-| Ueberwachungsordner | `/app/receipts` | Ordner fuer automatische Bon-Erkennung |
-| Scan-Intervall | `5` Minuten | Wie oft der Ordner auf neue PDFs geprueft wird |
-| Match-Schwellwert | `70` % | Minimaler Score fuer Fuzzy-Match-Treffer |
+| Überwachungsordner | `/app/receipts` | Ordner für automatische Bon-Erkennung |
+| Scan-Intervall | `5` Minuten | Wie oft der Ordner auf neue PDFs geprüft wird |
+| Match-Schwellwert | `70` % | Minimaler Score für Fuzzy-Match-Treffer |
 | Auto-Confirm-Schwellwert | `95` % | Score ab dem Zuordnungen automatisch als korrekt gelten |
-| Ordnerueberwachung | `aus` | Aktiviert/deaktiviert die periodische Ordnerueberwachung |
+| Ordnerüberwachung | `aus` | Aktiviert/deaktiviert die periodische Ordnerüberwachung |
 
 ---
 
 ## Reverse Proxy / HTTPS
 
-Grocylink stellt nur **HTTP auf Port 5000** bereit. Fuer HTTPS wird ein externer Reverse Proxy empfohlen.
+Grocylink stellt nur **HTTP auf Port 5000** bereit. Für HTTPS wird ein externer Reverse Proxy empfohlen.
 
 ### Beispiel: Caddy
 
 ```caddyfile
 grocylink.example.com {
     tls /certs/fullchain.pem /certs/key.pem
-    reverse_proxy http://10.0.50.26:5000
+    reverse_proxy http://10.0.0.26:5000
 }
 ```
 
@@ -728,7 +728,7 @@ server {
     ssl_certificate_key /certs/key.pem;
 
     location / {
-        proxy_pass http://10.0.50.26:5000;
+        proxy_pass http://10.0.0.26:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -747,9 +747,9 @@ labels:
   - "traefik.http.services.grocylink.loadbalancer.server.port=5000"
 ```
 
-### Vollstaendige Zertifikatskette
+### Vollständige Zertifikatskette
 
-> **Wichtig:** Beim TLS-Zertifikat immer die **fullchain.pem** (Leaf + Intermediate) verwenden, nicht nur die cert.pem. Andernfalls koennen Clients (z.B. Python `requests`) die Verbindung nicht verifizieren, da das Intermediate-Zertifikat fehlt.
+> **Wichtig:** Beim TLS-Zertifikat immer die **fullchain.pem** (Leaf + Intermediate) verwenden, nicht nur die cert.pem. Andernfalls können Clients (z.B. Python `requests`) die Verbindung nicht verifizieren, da das Intermediate-Zertifikat fehlt.
 >
 > ```bash
 > # Fullchain erstellen (Leaf + Intermediate)
@@ -757,13 +757,13 @@ labels:
 > curl -s https://letsencrypt.org/certs/2024/e7.pem >> fullchain.pem
 > ```
 >
-> Pruefen ob die Datei korrekt ist (muss `2` zurueckgeben):
+> Prüfen ob die Datei korrekt ist (muss `2` zurückgeben):
 >
 > ```bash
 > grep -c "BEGIN CERTIFICATE" fullchain.pem
 > ```
 >
-> Pruefen ob der Server die vollstaendige Chain liefert:
+> Prüfen ob der Server die vollständige Chain liefert:
 >
 > ```bash
 > openssl s_client -connect domain.example.com:443 -servername domain.example.com 2>&1 | grep "depth="
@@ -772,51 +772,51 @@ labels:
 
 ### SSL-Verifizierung der Grocy-Verbindung
 
-Grocylink verifiziert standardmaessig das SSL-Zertifikat der Grocy-Instanz. Falls die Grocy-Instanz ein Zertifikat ohne vollstaendige Chain liefert oder ein selbstsigniertes Zertifikat verwendet, kann die Verifizierung unter **Einstellungen** mit der Checkbox **"SSL-Zertifikat verifizieren"** deaktiviert werden.
+Grocylink verifiziert standardmäßig das SSL-Zertifikat der Grocy-Instanz. Falls die Grocy-Instanz ein Zertifikat ohne vollständige Chain liefert oder ein selbstsigniertes Zertifikat verwendet, kann die Verifizierung unter **Einstellungen** mit der Checkbox **"SSL-Zertifikat verifizieren"** deaktiviert werden.
 
-> **Empfehlung:** Die SSL-Verifizierung sollte nur voruebergehend deaktiviert werden. Besser ist es, das SSL-Problem auf dem Grocy-Server zu beheben (vollstaendige Zertifikatskette konfigurieren).
+> **Empfehlung:** Die SSL-Verifizierung sollte nur vorübergehend deaktiviert werden. Besser ist es, das SSL-Problem auf dem Grocy-Server zu beheben (vollständige Zertifikatskette konfigurieren).
 
 ---
 
 ## Sicherheit
 
-### Container-Haertung
+### Container-Härtung
 
-Grocylink laeuft standardmaessig mit minimalen Berechtigungen:
+Grocylink läuft standardmäßig mit minimalen Berechtigungen:
 
-- **Non-Root**: Container laeuft als unprivilegierter User (konfigurierbar via `UID`/`GID`)
+- **Non-Root**: Container läuft als unprivilegierter User (konfigurierbar via `UID`/`GID`)
 - **cap_drop: ALL**: Alle Linux Capabilities entfernt
-- **no-new-privileges**: Keine Privilege Escalation moeglich
+- **no-new-privileges**: Keine Privilege Escalation möglich
 - **Ressourcenlimits**: CPU, RAM und Prozessanzahl begrenzt
 
-### Verschluesselung sensibler Daten
+### Verschlüsselung sensibler Daten
 
-Alle Passwoerter und API-Keys werden mit **Fernet (AES-128-CBC + HMAC-SHA256)** verschluesselt in der SQLite-Datenbank gespeichert.
+Alle Passwörter und API-Keys werden mit **Fernet (AES-128-CBC + HMAC-SHA256)** verschlüsselt in der SQLite-Datenbank gespeichert.
 
-**Verschluesselte Felder:**
+**Verschlüsselte Felder:**
 - Grocy API-Key (Settings)
 - CalDAV-Passwort (Settings)
-- Email-Passwoerter (Channel-Config)
+- Email-Passwörter (Channel-Config)
 - API-Tokens: Pushover, Telegram Bot-Token, Gotify App-Token
 - Webhook-URLs: Slack, Discord
 
 **Encryption Key:**
 - Wird automatisch beim ersten Start generiert
 - Gespeichert in `data/.encryption_key` (Datei-Berechtigung: 600)
-- **Wichtig:** Diese Datei sichern! Ohne sie koennen verschluesselte Daten nicht entschluesselt werden
+- **Wichtig:** Diese Datei sichern! Ohne sie können verschlüsselte Daten nicht entschlüsselt werden
 
 ### Datenpersistenz und Volumes
 
-Grocylink speichert alle Daten in `/app/data/` innerhalb des Containers. Dieses Verzeichnis **muss** als Docker-Volume gemountet sein, damit Daten einen Container-Neustart oder Redeploy ueberleben.
+Grocylink speichert alle Daten in `/app/data/` innerhalb des Containers. Dieses Verzeichnis **muss** als Docker-Volume gemountet sein, damit Daten einen Container-Neustart oder Redeploy überleben.
 
 **Kritische Dateien in `/app/data/`:**
 
 | Datei | Beschreibung |
 |---|---|
-| `grocy_notify.db` | SQLite-Datenbank mit allen Einstellungen, Kanaelen, Overrides und Logs |
-| `.encryption_key` | Fernet-Schluessel zur Ent-/Verschluesselung aller Passwoerter und API-Keys |
+| `grocy_notify.db` | SQLite-Datenbank mit allen Einstellungen, Kanälen, Overrides und Logs |
+| `.encryption_key` | Fernet-Schlüssel zur Ent-/Verschlüsselung aller Passwörter und API-Keys |
 
-> **WICHTIG:** Geht der `.encryption_key` verloren (z.B. durch Loeschen des Volumes), koennen alle verschluesselten Werte in der Datenbank **nicht mehr entschluesselt** werden. Alle Zugangsdaten (API-Keys, Passwoerter, Webhook-URLs, Kanalkonfigurationen) muessen dann neu eingegeben werden.
+> **WICHTIG:** Geht der `.encryption_key` verloren (z.B. durch Löschen des Volumes), können alle verschlüsselten Werte in der Datenbank **nicht mehr entschlüsselt** werden. Alle Zugangsdaten (API-Keys, Passwörter, Webhook-URLs, Kanalkonfigurationen) müssen dann neu eingegeben werden.
 
 **Volume-Konfiguration (Bind Mount):**
 
@@ -828,31 +828,31 @@ volumes:
 
 Bei der Standard-Konfiguration mit `PATH_TO=/opt/docker-data` liegen die Daten unter:
 - `/opt/docker-data/grocylink/data/` - Datenbank und Encryption Key
-- `/opt/docker-data/grocylink/receipts/` - Kassenbon-PDFs fuer Ordnerueberwachung
+- `/opt/docker-data/grocylink/receipts/` - Kassenbon-PDFs für Ordnerüberwachung
 
 **Beim Redeploy beachten:**
 - Bind Mounts bleiben bei `docker compose down` **immer** erhalten (anders als Named Volumes)
-- Auch ein Redeploy in Komodo behaelt alle Daten, da sie direkt auf dem Host liegen
-- Die Daten bleiben selbst bei `docker compose down -v` erhalten, da `-v` nur Named Volumes loescht
-- Beim Start prueft Grocylink automatisch ob das Volume korrekt gemountet ist und gibt eine Warnung aus, falls nicht
+- Auch ein Redeploy in Komodo behält alle Daten, da sie direkt auf dem Host liegen
+- Die Daten bleiben selbst bei `docker compose down -v` erhalten, da `-v` nur Named Volumes löscht
+- Beim Start prüft Grocylink automatisch ob das Volume korrekt gemountet ist und gibt eine Warnung aus, falls nicht
 
-**Integritaetspruefung:**
-Grocylink prueft beim Start ob der Encryption Key zur Datenbank passt. Falls nicht (z.B. nach Key-Verlust), erscheint eine Warnung im Log:
+**Integritätsprüfung:**
+Grocylink prüft beim Start ob der Encryption Key zur Datenbank passt. Falls nicht (z.B. nach Key-Verlust), erscheint eine Warnung im Log:
 
 ```
 WARNUNG: Encryption Key passt nicht zur Datenbank!
-Verschluesselte Werte koennen nicht entschluesselt werden.
+Verschlüsselte Werte können nicht entschlüsselt werden.
 Bitte alle Zugangsdaten neu eingeben.
 ```
 
 ### Empfehlungen
 
-- Datenverzeichnis (`data`) regelmaessig sichern
+- Datenverzeichnis (`data`) regelmäßig sichern
 - **Backup des Encryption Keys**: `docker cp grocylink:/app/data/.encryption_key ./encryption_key.backup`
 - **Backup der Datenbank**: `docker cp grocylink:/app/data/grocy_notify.db ./grocy_notify.db.backup`
-- Zugriff auf die Webapplikation via Firewall oder VPN einschraenken
+- Zugriff auf die Webapplikation via Firewall oder VPN einschränken
 - `data/.encryption_key` separat und sicher aufbewahren
-- Externen Reverse Proxy fuer HTTPS verwenden
+- Externen Reverse Proxy für HTTPS verwenden
 
 ---
 
@@ -866,29 +866,29 @@ Alle API-Endpunkte unter `/api/`:
 | `POST` | `/api/settings` | Einstellungen speichern |
 | `POST` | `/api/test-connection` | Grocy-Verbindung testen |
 | `GET` | `/api/status` | Aktueller Stock-Status (volatile) |
-| `GET` | `/api/channels` | Alle Notification-Kanaele |
+| `GET` | `/api/channels` | Alle Notification-Kanäle |
 | `POST` | `/api/channels` | Kanal erstellen/bearbeiten |
-| `DELETE` | `/api/channels/<id>` | Kanal loeschen |
+| `DELETE` | `/api/channels/<id>` | Kanal löschen |
 | `POST` | `/api/channels/<id>/test` | Test-Nachricht senden |
 | `GET` | `/api/products` | Produkte mit Override-Einstellungen |
 | `POST` | `/api/products/override` | Produkt-Warntage setzen |
 | `GET` | `/api/log` | Benachrichtigungs-Historie |
 | `DELETE` | `/api/log` | Log leeren |
-| `POST` | `/api/check-now` | Manuellen Check ausloesen |
+| `POST` | `/api/check-now` | Manuellen Check auslösen |
 | `GET` | `/api/caldav/status` | CalDAV-Sync-Status und Statistiken |
 | `POST` | `/api/caldav/test` | CalDAV-Verbindung testen |
-| `GET` | `/api/caldav/calendars` | Verfuegbare Kalender abrufen |
-| `POST` | `/api/caldav/sync-now` | Manuelle Synchronisation ausloesen |
+| `GET` | `/api/caldav/calendars` | Verfügbare Kalender abrufen |
+| `POST` | `/api/caldav/sync-now` | Manuelle Synchronisation auslösen |
 | `GET` | `/api/caldav/map` | Sync-Mapping-Tabelle abrufen |
 | `GET` | `/api/receipts` | Alle Kassenbons auflisten |
 | `GET` | `/api/receipts/<id>` | Einzelner Kassenbon mit Items |
 | `POST` | `/api/receipts/upload` | PDF-Kassenbon hochladen (multipart/form-data) |
-| `DELETE` | `/api/receipts/<id>` | Kassenbon loeschen |
-| `PUT` | `/api/receipts/<id>/items/<item_id>` | Item-Zuordnung aendern |
-| `POST` | `/api/receipts/<id>/confirm` | Kassenbon bestaetigen und Bestand buchen |
+| `DELETE` | `/api/receipts/<id>` | Kassenbon löschen |
+| `PUT` | `/api/receipts/<id>/items/<item_id>` | Item-Zuordnung ändern |
+| `POST` | `/api/receipts/<id>/confirm` | Kassenbon bestätigen und Bestand buchen |
 | `POST` | `/api/receipts/<id>/reject` | Kassenbon verwerfen |
 | `GET` | `/api/receipts/mappings` | Gelernte Zuordnungen abrufen |
-| `DELETE` | `/api/receipts/mappings/<id>` | Gelernte Zuordnung loeschen |
+| `DELETE` | `/api/receipts/mappings/<id>` | Gelernte Zuordnung löschen |
 | `POST` | `/api/receipts/reprocess/<id>` | Kassenbon erneut matchen |
 
 ---
@@ -896,68 +896,68 @@ Alle API-Endpunkte unter `/api/`:
 ## Fehlerbehebung
 
 ### "Grocy nicht konfiguriert"
-Unter Einstellungen muessen Grocy-URL und API-Key eingetragen werden.
+Unter Einstellungen müssen Grocy-URL und API-Key eingetragen werden.
 
-### Verbindungstest schlaegt fehl
+### Verbindungstest schlägt fehl
 - Ist die Grocy-URL korrekt (inkl. Protokoll `http://` oder `https://`)?
-- Ist der API-Key gueltig? (In Grocy pruefen)
+- Ist der API-Key gültig? (In Grocy prüfen)
 - Ist Grocy vom Container/Server aus erreichbar?
-- Bei HTTPS: Liefert der Grocy-Server die vollstaendige Zertifikatskette? (siehe [Vollstaendige Zertifikatskette](#vollstaendige-zertifikatskette))
-- Temporaerer Workaround: "SSL-Zertifikat verifizieren" in den Einstellungen deaktivieren
+- Bei HTTPS: Liefert der Grocy-Server die vollständige Zertifikatskette? (siehe [Vollständige Zertifikatskette](#vollständige-zertifikatskette))
+- Temporärer Workaround: "SSL-Zertifikat verifizieren" in den Einstellungen deaktivieren
 
 ### Benachrichtigungen kommen nicht an
 1. Kanal-Test-Funktion nutzen (Button "Test")
-2. Log pruefen (Seite "Log")
+2. Log prüfen (Seite "Log")
 3. Bei Email: App-Passwort statt normalem Passwort verwenden (Gmail, etc.)
-4. Bei Telegram: Chat-ID pruefen (muss numerisch sein)
+4. Bei Telegram: Chat-ID prüfen (muss numerisch sein)
 
 ### SSL-Zertifikat Probleme
 
-**Grocy-Verbindung schlaegt mit SSL-Fehler fehl (`CERTIFICATE_VERIFY_FAILED`):**
+**Grocy-Verbindung schlägt mit SSL-Fehler fehl (`CERTIFICATE_VERIFY_FAILED`):**
 
-Dieses Problem tritt auf, wenn der Grocy-Server nur das Leaf-Zertifikat liefert, aber nicht die vollstaendige Zertifikatskette (Intermediate fehlt). Python `requests` kann die Kette dann nicht verifizieren.
+Dieses Problem tritt auf, wenn der Grocy-Server nur das Leaf-Zertifikat liefert, aber nicht die vollständige Zertifikatskette (Intermediate fehlt). Python `requests` kann die Kette dann nicht verifizieren.
 
 **Diagnose:**
 ```bash
-# Pruefen ob der Server die vollstaendige Chain liefert
+# Prüfen ob der Server die vollständige Chain liefert
 openssl s_client -connect grocy.example.com:443 -servername grocy.example.com 2>&1 | grep "depth="
 # Nur "depth=0" = Intermediate fehlt!
-# "depth=0" + "depth=1" = Chain vollstaendig
+# "depth=0" + "depth=1" = Chain vollständig
 ```
 
-**Loesung (auf dem Grocy-Server):**
+**Lösung (auf dem Grocy-Server):**
 1. `fullchain.pem` erstellen (Leaf + Intermediate):
    ```bash
    cat cert.pem > fullchain.pem
    curl -s https://letsencrypt.org/certs/2024/e7.pem >> fullchain.pem
    ```
 2. Reverse Proxy konfigurieren, `fullchain.pem` statt `cert.pem` zu verwenden
-3. Berechtigungen pruefen - der Webserver-User muss die Datei lesen koennen
+3. Berechtigungen prüfen - der Webserver-User muss die Datei lesen können
 4. Webserver neu starten
 
 **Workaround (in Grocylink):**
-Unter Einstellungen die Checkbox "SSL-Zertifikat verifizieren" deaktivieren. Dies sollte nur als temporaere Loesung verwendet werden.
+Unter Einstellungen die Checkbox "SSL-Zertifikat verifizieren" deaktivieren. Dies sollte nur als temporäre Lösung verwendet werden.
 
 ### CalDAV-Sync funktioniert nicht
 
 1. **Verbindung testen**: Auf der CalDAV-Seite "Verbindung testen" klicken
-2. **URL pruefen**: Die CalDAV-URL muss den korrekten Servertyp/Pfad enthalten (z.B. `/remote.php/dav` bei Nextcloud)
-3. **Kalender pruefen**: Ein Kalender muss ausgewaehlt und gespeichert sein
+2. **URL prüfen**: Die CalDAV-URL muss den korrekten Servertyp/Pfad enthalten (z.B. `/remote.php/dav` bei Nextcloud)
+3. **Kalender prüfen**: Ein Kalender muss ausgewählt und gespeichert sein
 4. **Benutzername/Passwort**: Bei Nextcloud ggf. ein App-Passwort verwenden
 5. **Firewall**: Der CalDAV-Server muss vom Container aus erreichbar sein
-6. **Log pruefen**: Im Container-Log (`docker compose logs -f`) erscheinen detaillierte Sync-Meldungen
+6. **Log prüfen**: Im Container-Log (`docker compose logs -f`) erscheinen detaillierte Sync-Meldungen
 
 ### Kassenbon-Scanner erkennt keine Produkte
 
-1. **Digitaler PDF**: Pruefen ob der Bon tatsaechlich Textdaten enthaelt (nicht nur ein eingebettetes Bild). Im Container-Log wird die Extraktionsmethode angezeigt (`digital` oder `ocr`).
-2. **Gescannter PDF**: Tesseract OCR benoetigt eine ausreichende Bildqualitaet. Unscharfe oder schief gescannte Bons liefern schlechte Ergebnisse.
-3. **Unbekanntes Bon-Format**: Das Parsing unterstuetzt gaengige deutsche Kassenbon-Formate. Bei unbekannten Layouts werden moeglicherweise keine Positionen erkannt. Im Container-Log erscheint der extrahierte Rohtext zur Diagnose.
+1. **Digitaler PDF**: Prüfen ob der Bon tatsächlich Textdaten enthält (nicht nur ein eingebettetes Bild). Im Container-Log wird die Extraktionsmethode angezeigt (`digital` oder `ocr`).
+2. **Gescannter PDF**: Tesseract OCR benötigt eine ausreichende Bildqualität. Unscharfe oder schief gescannte Bons liefern schlechte Ergebnisse.
+3. **Unbekanntes Bon-Format**: Das Parsing unterstützt gängige deutsche Kassenbon-Formate. Bei unbekannten Layouts werden möglicherweise keine Positionen erkannt. Im Container-Log erscheint der extrahierte Rohtext zur Diagnose.
 
-### Kassenbon-Ordnerueberwachung funktioniert nicht
+### Kassenbon-Ordnerüberwachung funktioniert nicht
 
-1. **Volume pruefen**: Ist `/app/receipts` als Volume gemountet? (`docker inspect grocylink | grep receipts`)
-2. **Einstellungen pruefen**: Ordnerueberwachung muss in den Einstellungen aktiviert sein
-3. **Berechtigungen**: Das Kassenbon-Verzeichnis muss fuer den Container-User lesbar sein:
+1. **Volume prüfen**: Ist `/app/receipts` als Volume gemountet? (`docker inspect grocylink | grep receipts`)
+2. **Einstellungen prüfen**: Ordnerüberwachung muss in den Einstellungen aktiviert sein
+3. **Berechtigungen**: Das Kassenbon-Verzeichnis muss für den Container-User lesbar sein:
    ```bash
    chown -R ${UID}:${GID} ${PATH_TO}/grocylink/receipts/
    ```
@@ -968,7 +968,7 @@ Unter Einstellungen die Checkbox "SSL-Zertifikat verifizieren" deaktivieren. Die
 Falls der Container mit Berechtigungsfehlern startet:
 
 ```bash
-# Datenverzeichnisse fuer den Container-User schreibbar machen
+# Datenverzeichnisse für den Container-User schreibbar machen
 chown -R 1000:1000 /opt/docker-data/grocylink/data/
 chown -R 1000:1000 /opt/docker-data/grocylink/receipts/
 
@@ -979,32 +979,32 @@ chown -R ${UID}:${GID} ${PATH_TO}/grocylink/receipts/
 
 ### Daten nach Redeploy verloren
 
-**Symptome:** Nach einem Redeploy sind alle Einstellungen, Kanaele und API-Keys weg, oder Kanaele sind vorhanden aber Verbindungstests schlagen fehl.
+**Symptome:** Nach einem Redeploy sind alle Einstellungen, Kanäle und API-Keys weg, oder Kanäle sind vorhanden aber Verbindungstests schlagen fehl.
 
 **Ursache 1: Volume nicht gemountet**
-Pruefen ob das Volume korrekt gemountet ist:
+Prüfen ob das Volume korrekt gemountet ist:
 ```bash
 docker inspect grocylink | grep -A5 "Mounts"
 ```
-Die Ausgabe muss `/app/data` als Mount zeigen. Falls nicht: `compose.yaml` pruefen ob die Volumes konfiguriert sind.
+Die Ausgabe muss `/app/data` als Mount zeigen. Falls nicht: `compose.yaml` prüfen ob die Volumes konfiguriert sind.
 
 **Ursache 2: Encryption Key verloren**
-Falls die DB vorhanden ist, aber verschluesselte Daten nicht mehr lesbar sind (API-Keys, Passwoerter funktionieren nicht):
+Falls die DB vorhanden ist, aber verschlüsselte Daten nicht mehr lesbar sind (API-Keys, Passwörter funktionieren nicht):
 ```bash
 docker logs grocylink 2>&1 | grep -i "encryption\|warnung"
 ```
-Falls die Warnung "Encryption Key passt nicht" erscheint, muessen alle Zugangsdaten neu eingegeben werden. Ein Backup des Keys kann wiederhergestellt werden:
+Falls die Warnung "Encryption Key passt nicht" erscheint, müssen alle Zugangsdaten neu eingegeben werden. Ein Backup des Keys kann wiederhergestellt werden:
 ```bash
 docker cp ./encryption_key.backup grocylink:/app/data/.encryption_key
 docker compose restart
 ```
 
-### Datenbank zuruecksetzen
+### Datenbank zurücksetzen
 ```bash
 docker exec grocylink rm /app/data/grocy_notify.db
 docker compose restart
 ```
-**Achtung:** Alle Einstellungen und Kanaele gehen verloren.
+**Achtung:** Alle Einstellungen und Kanäle gehen verloren.
 
 ---
 
@@ -1014,15 +1014,15 @@ Grocylink verwendet [GitHub Issues](https://github.com/c42u/grocylink/issues) al
 
 ### Bug melden
 
-1. Oeffne [Bug Report](https://github.com/c42u/grocylink/issues/new?labels=bug&template=bug_report.md)
+1. Öffne [Bug Report](https://github.com/c42u/grocylink/issues/new?labels=bug&template=bug_report.md)
 2. Beschreibe den Fehler, die Schritte zur Reproduktion und das erwartete Verhalten
-3. Fuege wenn moeglich Logs bei (`docker compose logs grocylink`)
+3. Füge wenn möglich Logs bei (`docker compose logs grocylink`)
 
 ### Feature vorschlagen
 
-1. Oeffne [Feature Request](https://github.com/c42u/grocylink/issues/new?labels=enhancement&template=feature_request.md)
-2. Beschreibe das gewuenschte Feature und den Anwendungsfall
-3. Optional: Loesungsvorschlaege oder Mockups beifuegen
+1. Öffne [Feature Request](https://github.com/c42u/grocylink/issues/new?labels=enhancement&template=feature_request.md)
+2. Beschreibe das gewünschte Feature und den Anwendungsfall
+3. Optional: Lösungsvorschläge oder Mockups beifügen
 
 ### Direkt aus der App
 

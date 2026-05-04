@@ -1,7 +1,7 @@
 # Table of contents / Inhaltsverzeichnis
 1. [Grocylink - english](#english)
 2. [Grocylink - deutsch](#deutsch)
-
+3. [Impressum](IMPRESSUM.md)
 ---
 
 # Grocylink <a name="english"></a>
@@ -28,7 +28,6 @@ Self-hosted, offline-capable and fully under your control.
 - **Full notification log** with filtering and sorting
 - **Encrypted storage** of all passwords and API keys (Fernet/AES)
 - **Dark/Light mode** (automatic + manual toggle)
-- **Receipt scanner**: Upload or auto-scan PDF receipts (digital or scanned), extract products and prices via OCR (Tesseract), fuzzy-match to Grocy products, review and book as stock — with learned product mappings for future receipts
 - **Multilingual**: German and English
 - **Non-root container** with minimal privileges
 
@@ -67,9 +66,13 @@ Set the warning days to `0` for any product you don't want notifications for (e.
 ```bash
 mkdir -p /path/to/grocylink/data
 chown 1000:1000 /path/to/grocylink/data
+# Optional: hot-folder for automatic receipt import (see note below)
+# mkdir -p /path/to/grocylink/receipts && chown 1000:1000 /path/to/grocylink/receipts
 ```
 
 ### 2. Docker Compose
+
+`compose.yaml`:
 
 ```yaml
 services:
@@ -77,7 +80,7 @@ services:
     image: c42u/grocylink:latest
     container_name: grocylink
     restart: unless-stopped
-    user: "1000:1000"
+    user: ${UID}:${GID}
     cpus: "1.0"
     pids_limit: 200
     mem_limit: 2G
@@ -88,14 +91,28 @@ services:
     cap_drop:
       - ALL
     environment:
-      GUNICORN_WORKERS: 2
-      TZ: Europe/Berlin
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS}
+      TZ: ${TIMEZONE}
     volumes:
-      - /path/to/grocylink/data:/app/data
-      - /path/to/grocylink/receipts:/app/receipts
+      - ${PATH_TO}/grocylink/data:/app/data
+      # Optional: hot-folder for automatic PDF receipt import
+      # - ${PATH_TO}/grocylink/receipts:/app/receipts
     ports:
       - "5000:5000"
 ```
+
+`.env` (next to `compose.yaml`):
+
+```
+PATH_TO=/path/to
+UID=1000
+GID=1000
+GUNICORN_WORKERS=2
+TIMEZONE=Europe/Berlin
+```
+
+**Note on the `receipts` volume**: The `/app/receipts` mount is the hot-folder for the *automatic* PDF receipt scanner — useful if you want a scanner, mail server, or sync tool to drop PDFs into a directory that Grocylink picks up on its own. The path can be changed in Settings → Receipt watch folder.
+PDFs uploaded through the web UI do **not** use this volume; they are stored inside the `data` volume (`/app/data/receipts/`) and are kept across container restarts without the extra mount. If you only use the web UI uploader, you can leave the `receipts` volume commented out.
 
 ### 3. Start
 
@@ -110,7 +127,6 @@ Grocylink is then accessible at `http://localhost:5000`.
 1. **Grocy connection**: Enter the Grocy URL and API key under Settings
 2. **Notifications**: Set up one or more notification channels under Channels
 3. **CalDAV** (optional): Configure CalDAV server, credentials and calendar
-4. **Receipts** (optional): Configure receipt watch folder and matching thresholds under Settings
 
 ---
 
@@ -161,11 +177,8 @@ All data is stored in `/app/data` inside the container:
 
 | File | Description |
 |---|---|
-| `grocy_notify.db` | SQLite database (settings, channels, logs, receipts) |
+| `grocy_notify.db` | SQLite database (settings, channels, logs) |
 | `.encryption_key` | Encryption key for passwords and API keys |
-| `receipts/` | Uploaded receipt PDFs |
-
-Receipt PDFs from folder watching are stored in `/app/receipts` (separate volume mount).
 
 **Important:** The volume `/app/data` must be mounted so data survives restarts. Make sure to back up the `.encryption_key` - without it, stored credentials cannot be decrypted.
 
@@ -208,8 +221,6 @@ Grocylink is developed with the assistance of [Claude Code](https://claude.ai/co
 - Define requirements or product direction
 - Replace code review — all generated code is read and understood by the developer before use
 
-This is transparent, intentional, and in line with how many modern software projects are built. The developer takes full responsibility for the code and its behavior.
-
 The software is provided "as is" without warranty. Use at your own risk.
 
 ## Links
@@ -225,27 +236,26 @@ The software is provided "as is" without warranty. Use at your own risk.
 
 Grocylink erweitert [Grocy](https://grocy.info/) um automatische Ablaufwarnungen, Multi-Channel-Benachrichtigungen und bidirektionale CalDAV-Synchronisation.
 
-Self-hosted, offline-faehig und vollstaendig unter deiner Kontrolle.
+Self-hosted, offline-fähig und vollständig unter deiner Kontrolle.
 
 ---
 
 ## Funktionen
 
-- **Dashboard** mit Echtzeit-Uebersicht ueber ablaufende, abgelaufene und fehlende Produkte
-- **6 Benachrichtigungskanaele**: E-Mail (SMTP), Pushover, Telegram, Slack, Discord, Gotify
-- **Individuelle Warntage pro Produkt** — z.B. Milch 2 Tage, Konserven 30 Tage; auf `0` setzen deaktiviert Benachrichtigungen fuer dieses Produkt vollstaendig
-- **MHD vs. Verbrauchsdatum**: Grocylink liest das `due_type`-Feld aus Grocy und kennzeichnet Benachrichtigungen entsprechend — nuetzlich wenn man Verbrauchsdaten (z.B. Hackfleisch) anders behandeln moechte als MHD-Angaben (z.B. Nudeln)
-- **Kategorie- und Lagerort-Filter**: Benachrichtigungen auf bestimmte Grocy-Produktkategorien und/oder Lagerorte einschraenken — ideal wenn nur bestimmte Bereiche (z.B. Kuehlschrank) relevant sind
+- **Dashboard** mit Echtzeit-Übersicht über ablaufende, abgelaufene und fehlende Produkte
+- **6 Benachrichtigungskanäle**: E-Mail (SMTP), Pushover, Telegram, Slack, Discord, Gotify
+- **Individuelle Warntage pro Produkt** — z.B. Milch 2 Tage, Konserven 30 Tage; auf `0` setzen deaktiviert Benachrichtigungen für dieses Produkt vollständig
+- **MHD vs. Verbrauchsdatum**: Grocylink liest das `due_type`-Feld aus Grocy und kennzeichnet Benachrichtigungen entsprechend — nützlich wenn man Verbrauchsdaten (z.B. Hackfleisch) anders behandeln möchte als MHD-Angaben (z.B. Nudeln)
+- **Kategorie- und Lagerort-Filter**: Benachrichtigungen auf bestimmte Grocy-Produktkategorien und/oder Lagerorte einschränken — ideal wenn nur bestimmte Bereiche (z.B. Kühlschrank) relevant sind
 - **Bestand direkt aus dem Dashboard buchen**: Produkte unter Mindestbestand nachbuchen ohne Grocylink zu verlassen
-- **Benachrichtigungs-Wiederholung**: Konfigurierbar wie oft Grocylink pro Produkt und Alarmzustand benachrichtigt — immer (Standard), einmalig, 2x, 3x oder 5x. Der Zaehler setzt sich automatisch zurueck wenn ein Produkt nachgebucht wird oder den Alarmzustand verlaesst
+- **Benachrichtigungs-Wiederholung**: Konfigurierbar wie oft Grocylink pro Produkt und Alarmzustand benachrichtigt — immer (Standard), einmalig, 2x, 3x oder 5x. Der Zähler setzt sich automatisch zurück wenn ein Produkt nachgebucht wird oder den Alarmzustand verlaesst
 - **CalDAV-Synchronisation**: Grocy-Aufgaben und Haushaltsarbeiten bidirektional mit CalDAV-Clients synchronisieren (2Do, Apple Reminders, Tasks.org u.a.)
 - **Neue Aufgaben** aus dem CalDAV-Client werden automatisch in Grocy angelegt
-- **Konfigurierbares Pruefintervall** mit automatischem Scheduler
-- **Test-Funktion** fuer jeden Benachrichtigungskanal
-- **Vollstaendiges Benachrichtigungsprotokoll** mit Filter und Sortierung
-- **Verschluesselte Speicherung** aller Passwoerter und API-Keys (Fernet/AES)
+- **Konfigurierbares Prüfintervall** mit automatischem Scheduler
+- **Test-Funktion** für jeden Benachrichtigungskanal
+- **Vollständiges Benachrichtigungsprotokoll** mit Filter und Sortierung
+- **Verschlüsselte Speicherung** aller Passwörter und API-Keys (Fernet/AES)
 - **Dark/Light Mode** (automatisch + manueller Toggle)
-- **Kassenbon-Scanner**: PDF-Kassenbons hochladen oder per Ordnerueberwachung einlesen (digital oder gescannt), Produkte und Preise per OCR (Tesseract) extrahieren, per Fuzzy-Matching Grocy-Produkten zuordnen, pruefen und als Bestand buchen — mit gelernten Zuordnungen fuer zukuenftige Bons
 - **Mehrsprachig**: Deutsch und Englisch
 - **Non-Root Container** mit minimalen Berechtigungen
 
@@ -253,27 +263,27 @@ Self-hosted, offline-faehig und vollstaendig unter deiner Kontrolle.
 
 ## Wie Benachrichtigungen funktionieren
 
-Grocylink prueft den Grocy-Bestand in einem konfigurierbaren Intervall (Standard: alle 6 Stunden). Erfullt ein Produkt eine Alarmbedingung, wird eine Benachrichtigung an alle aktivierten Kanaele gesendet.
+Grocylink prüft den Grocy-Bestand in einem konfigurierbaren Intervall (Standard: alle 6 Stunden). Erfullt ein Produkt eine Alarmbedingung, wird eine Benachrichtigung an alle aktivierten Kanäle gesendet.
 
-**Wann wird eine Benachrichtigung ausgeloest?**
+**Wann wird eine Benachrichtigung ausgelöst?**
 
 | Bedingung | Ausloser |
 |---|---|
 | Ablaufend | MHD oder Verbrauchsdatum liegt innerhalb der konfigurierten Warntage |
-| Abgelaufen | MHD oder Verbrauchsdatum ist ueberschritten |
+| Abgelaufen | MHD oder Verbrauchsdatum ist überschritten |
 | Unter Mindestbestand | Aktueller Bestand liegt unter dem in Grocy definierten Minimum |
 
 **Beispiel — frisches Hackfleisch mit 1 Tag Verbrauchsdatum:**
-Mit dem Standard-Warnwert von 5 Tagen wird Hackfleisch, das heute mit einem Verbrauchsdatum von morgen gekauft wird, beim naechsten Check sofort eine Benachrichtigung ausloesen — weil 1 Tag innerhalb des 5-Tage-Fensters liegt. Um das zu vermeiden, Warntage fuer dieses Produkt auf `1` oder `0` (deaktiviert) setzen.
+Mit dem Standard-Warnwert von 5 Tagen wird Hackfleisch, das heute mit einem Verbrauchsdatum von morgen gekauft wird, beim nächsten Check sofort eine Benachrichtigung auslösen — weil 1 Tag innerhalb des 5-Tage-Fensters liegt. Um das zu vermeiden, Warntage für dieses Produkt auf `1` oder `0` (deaktiviert) setzen.
 
-**Benachrichtigungshaeufigkeit:**
-Standardmaessig sendet Grocylink bei jedem Check eine Benachrichtigung solange die Alarmbedingung aktiv ist. Mit der Einstellung **Benachrichtigungs-Wiederholung** laesst sich das auf einmalig, 2x, 3x oder 5x pro Produkt und Alarmzustand begrenzen.
+**Benachrichtigungshäufigkeit:**
+Standardmäßig sendet Grocylink bei jedem Check eine Benachrichtigung solange die Alarmbedingung aktiv ist. Mit der Einstellung **Benachrichtigungs-Wiederholung** lässt sich das auf einmalig, 2x, 3x oder 5x pro Produkt und Alarmzustand begrenzen.
 
 **Warntage pro Produkt:**
-Individuelle Schwellenwerte koennen fuer jedes Produkt direkt im Grocylink-Dashboard gesetzt werden — aber nur solange das Produkt Bestand in Grocy hat. Produkte ohne eigenen Bestand werden im Dashboard angezeigt, koennen dort aber nicht konfiguriert werden; in diesem Fall den globalen Standard unter Einstellungen verwenden.
+Individuelle Schwellenwerte können für jedes Produkt direkt im Grocylink-Dashboard gesetzt werden — aber nur solange das Produkt Bestand in Grocy hat. Produkte ohne eigenen Bestand werden im Dashboard angezeigt, können dort aber nicht konfiguriert werden; in diesem Fall den globalen Standard unter Einstellungen verwenden.
 
-**Benachrichtigungen fuer bestimmte Produkte deaktivieren:**
-Warntage auf `0` setzen fuer Produkte, fuer die keine Benachrichtigungen gewuenscht sind (z.B. Nudeln, Konserven). Das Produkt erscheint weiterhin im Dashboard, loest aber keine Benachrichtigungen aus.
+**Benachrichtigungen für bestimmte Produkte deaktivieren:**
+Warntage auf `0` setzen für Produkte, für die keine Benachrichtigungen gewünscht sind (z.B. Nudeln, Konserven). Das Produkt erscheint weiterhin im Dashboard, löst aber keine Benachrichtigungen aus.
 
 ---
 
@@ -284,9 +294,13 @@ Warntage auf `0` setzen fuer Produkte, fuer die keine Benachrichtigungen gewuens
 ```bash
 mkdir -p /pfad/zu/grocylink/data
 chown 1000:1000 /pfad/zu/grocylink/data
+# Optional: Hot-Folder für automatischen Kassenbon-Import (siehe Hinweis unten)
+# mkdir -p /pfad/zu/grocylink/receipts && chown 1000:1000 /pfad/zu/grocylink/receipts
 ```
 
 ### 2. Docker Compose
+
+`compose.yaml`:
 
 ```yaml
 services:
@@ -294,7 +308,7 @@ services:
     image: c42u/grocylink:latest
     container_name: grocylink
     restart: unless-stopped
-    user: "1000:1000"
+    user: ${UID}:${GID}
     cpus: "1.0"
     pids_limit: 200
     mem_limit: 2G
@@ -305,14 +319,28 @@ services:
     cap_drop:
       - ALL
     environment:
-      GUNICORN_WORKERS: 2
-      TZ: Europe/Berlin
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS}
+      TZ: ${TIMEZONE}
     volumes:
-      - /pfad/zu/grocylink/data:/app/data
-      - /pfad/zu/grocylink/receipts:/app/receipts
+      - ${PATH_TO}/grocylink/data:/app/data
+      # Optional: Hot-Folder für automatischen Kassenbon-PDF-Import
+      # - ${PATH_TO}/grocylink/receipts:/app/receipts
     ports:
       - "5000:5000"
 ```
+
+`.env` (neben `compose.yaml`):
+
+```
+PATH_TO=/pfad/zu
+UID=1000
+GID=1000
+GUNICORN_WORKERS=2
+TIMEZONE=Europe/Berlin
+```
+
+**Hinweis zum `receipts`-Volume**: Das Mount `/app/receipts` ist der Hot-Folder für den *automatischen* Kassenbon-Scanner — nützlich, wenn ein Scanner, Mailserver oder Sync-Tool PDFs in ein Verzeichnis ablegen soll, das Grocylink eigenständig einliest. Der Pfad ist in Einstellungen → Kassenbon-Watch-Folder anpassbar.
+Über die Web-UI hochgeladene PDFs nutzen dieses Volume **nicht**; sie werden im `data`-Volume gespeichert (`/app/data/receipts/`) und bleiben auch ohne zusätzliches Mount über Container-Neustarts erhalten. Wer ausschliesslich die Web-UI nutzt, kann das `receipts`-Volume auskommentiert lassen.
 
 ### 3. Starten
 
@@ -325,15 +353,14 @@ Grocylink ist dann erreichbar unter `http://localhost:5000`.
 ### 4. Einrichten
 
 1. **Grocy-Verbindung**: Unter Einstellungen die Grocy-URL und den API-Key eintragen
-2. **Benachrichtigungen**: Unter Kanaele einen oder mehrere Benachrichtigungskanaele einrichten
+2. **Benachrichtigungen**: Unter Kanäle einen oder mehrere Benachrichtigungskanäle einrichten
 3. **CalDAV** (optional): CalDAV-Server, Zugangsdaten und Kalender konfigurieren
-4. **Kassenbons** (optional): Ueberwachungsordner und Matching-Schwellwerte unter Einstellungen konfigurieren
 
 ---
 
 ## Reverse Proxy (HTTPS)
 
-Grocylink stellt HTTP auf Port 5000 bereit. Fuer HTTPS einen externen Reverse Proxy vorschalten.
+Grocylink stellt HTTP auf Port 5000 bereit. Für HTTPS einen externen Reverse Proxy vorschalten.
 
 **Caddy-Beispiel:**
 
@@ -368,7 +395,7 @@ server {
 | Variable | Standard | Beschreibung |
 |---|---|---|
 | `GUNICORN_WORKERS` | `2` | Anzahl Gunicorn Worker-Prozesse |
-| `TZ` | `Europe/Berlin` | Zeitzone fuer Scheduler und Logs |
+| `TZ` | `Europe/Berlin` | Zeitzone für Scheduler und Logs |
 
 ---
 
@@ -378,13 +405,10 @@ Alle Daten werden in `/app/data` im Container gespeichert:
 
 | Datei | Beschreibung |
 |---|---|
-| `grocy_notify.db` | SQLite-Datenbank (Einstellungen, Kanaele, Logs, Kassenbons) |
-| `.encryption_key` | Verschluesselungsschluessel fuer Passwoerter und API-Keys |
-| `receipts/` | Hochgeladene Kassenbon-PDFs |
+| `grocy_notify.db` | SQLite-Datenbank (Einstellungen, Kanäle, Logs) |
+| `.encryption_key` | Verschlüsselungsschlüssel für Passwörter und API-Keys |
 
-Kassenbon-PDFs aus der Ordnerueberwachung werden in `/app/receipts` gespeichert (separater Volume-Mount).
-
-**Wichtig:** Das Volume `/app/data` muss gemountet sein, damit Daten einen Neustart ueberleben. Den `.encryption_key` unbedingt sichern - ohne ihn koennen gespeicherte Zugangsdaten nicht mehr entschluesselt werden.
+**Wichtig:** Das Volume `/app/data` muss gemountet sein, damit Daten einen Neustart überleben. Den `.encryption_key` unbedingt sichern - ohne ihn können gespeicherte Zugangsdaten nicht mehr entschlüsselt werden.
 
 ---
 
@@ -402,11 +426,11 @@ Kassenbon-PDFs aus der Ordnerueberwachung werden in `/app/receipts` gespeichert 
 
 ## Sicherheit
 
-- Laeuft als Non-Root User
+- Läuft als Non-Root User
 - Alle Linux Capabilities entfernt (`cap_drop: ALL`)
 - Keine Privilege Escalation (`no-new-privileges`)
-- Alle sensiblen Daten AES-verschluesselt in der Datenbank
-- Ressourcenlimits fuer CPU, RAM und Prozesse
+- Alle sensiblen Daten AES-verschlüsselt in der Datenbank
+- Ressourcenlimits für CPU, RAM und Prozesse
 
 ---
 
@@ -416,22 +440,20 @@ Grocylink wird unter Einsatz von [Claude Code](https://claude.ai/code) (Claude v
 
 **Wie KI in diesem Projekt eingesetzt wird:**
 - **Code-Generierung**: Module, API-Routen, Frontend-Logik und Docker-Konfiguration werden kollaborativ mit der KI auf Basis vom Entwickler definierter Anforderungen erstellt
-- **Fehleranalyse & Behebung**: Die KI hilft bei der Ursachenanalyse und schlaegt Loesungen vor, die der Entwickler prueft und umsetzt
-- **Dokumentation**: README, Changelogs und Code-Kommentare werden mit KI-Unterstuetzung verfasst und vom Entwickler geprueft
+- **Fehleranalyse & Behebung**: Die KI hilft bei der Ursachenanalyse und schlägt Lösungen vor, die der Entwickler prüft und umsetzt
+- **Dokumentation**: README, Changelogs und Code-Kommentare werden mit KI-Unterstützung verfasst und vom Entwickler geprüft
 - **Architekturentscheidungen**: Alle Designentscheidungen — Feature-Umfang, Datenmodell, Sicherheitsansatz — trifft der Entwickler; die KI setzt sie um
 
 **Was die KI nicht tut:**
-- Eigenstaendig committen oder Code deployen
+- Eigenständig committen oder Code deployen
 - Anforderungen oder Produktrichtung bestimmen
 - Code-Review ersetzen — jeder generierte Code wird vom Entwickler gelesen und verstanden, bevor er eingesetzt wird
 
-Dies ist transparent, beabsichtigt und entspricht der Art, wie viele moderne Software-Projekte entwickelt werden. Der Entwickler traegt die volle Verantwortung fuer den Code und sein Verhalten.
-
-Die Software wird "wie besehen" ohne jegliche Gewaehrleistung bereitgestellt. Nutzung auf eigene Gefahr.
+Die Software wird "wie besehen" ohne jegliche Gewährleistung bereitgestellt. Nutzung auf eigene Gefahr.
 
 ## Links
 
 - [GitHub](https://github.com/c42u/grocylink)
 - [Docker Hub](https://hub.docker.com/r/c42u/grocylink)
 - [Impressum](IMPRESSUM.md)
-- [Unterstuetzung](https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00)
+- [Unterstützung](https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00)
