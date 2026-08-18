@@ -5,85 +5,89 @@ All notable changes to Grocylink will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+> **A note on version numbers.** Development runs on its own line; the public
+> releases on Docker Hub and GitHub follow the `1.2.x` series. Where the two
+> differ, the entry says so. Entries up to 1.6.0 are in German.
+
 ---
 
 ## [1.7.1] - 2026-08-18
 
-Nachtrag zu 1.7.0: Unter *Einstellungen -> App-Zugaenge* standen die
-Uebersetzungsschluessel im Klartext (`keys.title`, `keys.device`, `keys.create`
-…) statt der Texte.
+*Published as **1.2.2** on Docker Hub — see the note below.*
+
+Follow-up to 1.7.0: under *Settings → App access* the translation keys were
+shown verbatim (`keys.title`, `keys.device`, `keys.create` …) instead of the
+texts.
 
 ### Fixed
 
-* **Fuenf Schluessel fehlten ganz.** `index.html` verweist auf `keys.title`,
-  `keys.hint`, `keys.new`, `keys.once` und `keys.create` – angelegt waren sie
-  nie. `t()` gibt bei einem unbekannten Schluessel den Schluessel selbst
-  zurueck, deshalb stand er auf der Seite.
-* **Der deutsche Satz lag im englischen Block.** Die uebrigen `keys.*` wurden
-  in 1.7.0 versehentlich zweimal in den englischen Abschnitt von `i18n.js`
-  eingefuegt. Auf Deutsch fehlten sie damit vollstaendig, auf Englisch standen
-  deutsche Texte.
-* **Der Platzhalter im Namensfeld** („z. B. iPhone von c42u") war fest deutsch
-  und traegt jetzt `data-i18n`.
+* **Five keys were never defined.** `index.html` refers to `keys.title`,
+  `keys.hint`, `keys.new`, `keys.once` and `keys.create` — they had never been
+  added to `i18n.js`. The translation helper returns the key itself when it
+  does not know it, which is why the key ended up on the page.
+* **The German set landed in the English block.** The remaining `keys.*`
+  entries were inserted twice into the English section of `i18n.js`. German was
+  missing them entirely, while English carried German texts.
+* **The placeholder in the key-name field** ("z. B. iPhone von c42u") was
+  hard-coded German and now carries `data-i18n`.
 
 ### Added
 
-* `tests/test_i18n_vollstaendig.py`: prueft, dass **jeder** in `index.html`
-  oder `app.js` verwendete Schluessel in **beiden** Sprachen existiert, dass
-  beide Sprachen denselben Schluesselsatz haben und dass kein Schluessel
-  doppelt vorkommt – ein zweites Vorkommen ueberschreibt das erste
-  stillschweigend. Genau diese drei Pruefungen haetten den Fehler verhindert.
-  68 Tests bestehen.
+* `tests/test_i18n_vollstaendig.py`: checks that **every** key used in
+  `index.html` or `app.js` exists in **both** languages, that both languages
+  carry the same set, and that no key appears twice — a second entry silently
+  overrides the first. Exactly these three checks would have prevented the bug.
+  68 tests pass.
+* The README documents the `/api/v1` interface in both languages, including the
+  note that an iOS app is being built on it.
 
 ---
 
 ## [1.7.0] - 2026-08-18
 
-Behebt [#1](https://github.com/c42u/grocylink/issues/1): Die Sprachwahl wirkte
-nur im Browser. Alles, was der **Server** formuliert, blieb deutsch – und in
-einem neuen Fenster stand die ganze Oberflaeche wieder auf Deutsch.
+*Published as **1.2.1** on Docker Hub.*
+
+Fixes [#1](https://github.com/c42u/grocylink/issues/1): the language setting
+only ever applied to the browser. Everything the **server** writes stayed
+German — and in a fresh window the whole UI was back in German.
 
 ### Fixed
 
-* **Die Sprache ist jetzt eine Servereinstellung.** `static/i18n.js` las sie aus
-  dem `localStorage`; gespeichert wurde sie zwar auch auf dem Server, von dort
-  aber nie geholt. Nun liefert `GET /` das HTML bereits mit der eingestellten
-  Sprache aus (`<html lang="…">` und `window.SERVER_LANG`) – ohne den kurzen
-  deutschen Moment beim Laden, den ein nachtraeglicher Abruf mit sich braechte.
-  Der Browserspeicher bleibt als Rueckfall.
-* **Serverseitige Texte folgen der Einstellung.** Betrifft die Antwort auf
-  "Jetzt pruefen" (`Check durchgeführt!` → `Check completed!`), die
-  **Testnachricht an einen Kanal** (der im Fehlerbericht genannte Discord-Fall),
-  die Synchronisationsmeldung und dreizehn weitere Antworten der Schnittstelle.
-* **Die Eintraege im Log der Oberflaeche wechseln die Sprache mit** – auch
-  bereits geschriebene. In der Datenbank steht dafuer nicht mehr der fertige
-  Satz, sondern **Schluessel und Werte** (neue Spalten `message_key`,
-  `message_args`); der Text entsteht erst beim Anzeigen. Eintraege ohne
-  Schluessel – Ausnahmemeldungen und alles vor 1.7.0 – bleiben unveraendert
-  stehen: Ein deutscher Fehlertext ist besser als gar keiner.
-* **App-Zugaenge uebersetzt** (aus 1.6.0): Tabellenkopf, "noch nie",
-  "widerrufen" und die Rueckfrage vor dem Widerruf standen fest im Skript.
+* **The language is now a server setting.** `static/i18n.js` read it from
+  `localStorage`; it was stored on the server as well, but never read back from
+  there. `GET /` now ships the page with the configured language already
+  applied (`<html lang="…">` and `window.SERVER_LANG`) — without the brief
+  German flash a later fetch would cause. The browser store remains as a
+  fallback.
+* **Server-side texts follow that setting**: the "check completed" response,
+  the **test notification sent to a channel** (the reported Discord case), the
+  sync message and thirteen further API responses.
+* **Log entries in the UI switch language too** — including ones already
+  written. The database now holds **key and values** instead of a finished
+  sentence (new columns `message_key`, `message_args`); the text is built when
+  it is displayed. Entries without a key — exception messages and anything
+  written before 1.7.0 — are kept as they are: a German error message beats no
+  message at all.
+* **App access keys translated** (from 1.6.0): table header, "never",
+  "revoke" and the confirmation prompt were hard-coded in the script.
 
-### Nicht geaendert
+### Not changed
 
-Das **Anwendungsprotokoll** (`logger.…`) bleibt deutsch. Es ist
-Betriebsdiagnostik: Beim Suchen nach einer Meldung hilft eine feste Sprache mehr
-als eine wechselnde. Das Log **in der Oberflaeche** ist davon unberuehrt – das
-ist Nutzertext und wird uebersetzt.
+The **application log** (`logger.…`) stays German. It is operational
+diagnostics, and a fixed language is easier to grep than one that moves with a
+setting. The log **in the UI** is user-facing text and is translated.
 
-### Technisches
+### Technical
 
-* Neu: `Code/sprache.py` – eine Tabelle fuer alle serverseitigen Texte
-  (de/en, 33 Schluessel), `t(key, lang=None, **werte)` und `sprache_lesen()`
-  (Sprache aus `settings.language`, Vorgabe `de`).
-* `scheduler.TRANSLATIONS` ist dorthin gewandert; die 11 Schluessel des
-  Warnungsversands stehen jetzt neben denen der Schnittstelle.
-* `add_log_entry(..., key=…, args=…)` und `get_log(limit, lang=…)`.
-* `setLanguage(lang, speichern)` – beim Anwenden einer schon gespeicherten
-  Sprache entfaellt das Zurueckschreiben.
-* Neues Testmodul `tests/test_sprache.py` (12 Pruefungen), darunter der
-  gemeldete Discord-Fall und der Sprachwechsel bereits geschriebener
-  Log-Eintraege; 65 Tests bestehen.
+* New: `Code/sprache.py` — one table for all server-side texts (de/en, 33
+  keys), `t(key, lang=None, **values)` and `sprache_lesen()` (language from
+  `settings.language`, default `de`).
+* `scheduler.TRANSLATIONS` moved there; the 11 keys of the alert dispatch now
+  sit next to those of the API.
+* `add_log_entry(..., key=…, args=…)` and `get_log(limit, lang=…)`.
+* `setLanguage(lang, save)` — applying an already stored language no longer
+  writes it back.
+* New test module `tests/test_sprache.py` (12 checks); 65 tests pass.
 
 ---
 
