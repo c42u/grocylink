@@ -28,7 +28,7 @@ from receipt_scanner import process_receipt, scan_receipt_folder
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-APP_VERSION = '1.7.0'
+APP_VERSION = '1.7.1'
 
 # Grocy-Userfield, in dem Grocylink den Stueckpreis aus Bring! ablegt.
 # Hat Vorrang vor `last_price`/`avg_price` aus dem Stock-Log.

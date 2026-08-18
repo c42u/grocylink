@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.1] - 2026-08-18
+
+Nachtrag zu 1.7.0: Unter *Einstellungen -> App-Zugaenge* standen die
+Uebersetzungsschluessel im Klartext (`keys.title`, `keys.device`, `keys.create`
+…) statt der Texte.
+
+### Fixed
+
+* **Fuenf Schluessel fehlten ganz.** `index.html` verweist auf `keys.title`,
+  `keys.hint`, `keys.new`, `keys.once` und `keys.create` – angelegt waren sie
+  nie. `t()` gibt bei einem unbekannten Schluessel den Schluessel selbst
+  zurueck, deshalb stand er auf der Seite.
+* **Der deutsche Satz lag im englischen Block.** Die uebrigen `keys.*` wurden
+  in 1.7.0 versehentlich zweimal in den englischen Abschnitt von `i18n.js`
+  eingefuegt. Auf Deutsch fehlten sie damit vollstaendig, auf Englisch standen
+  deutsche Texte.
+* **Der Platzhalter im Namensfeld** („z. B. iPhone von c42u") war fest deutsch
+  und traegt jetzt `data-i18n`.
+
+### Added
+
+* `tests/test_i18n_vollstaendig.py`: prueft, dass **jeder** in `index.html`
+  oder `app.js` verwendete Schluessel in **beiden** Sprachen existiert, dass
+  beide Sprachen denselben Schluesselsatz haben und dass kein Schluessel
+  doppelt vorkommt – ein zweites Vorkommen ueberschreibt das erste
+  stillschweigend. Genau diese drei Pruefungen haetten den Fehler verhindert.
+  68 Tests bestehen.
+
+---
+
 ## [1.7.0] - 2026-08-18
 
 Behebt [#1](https://github.com/c42u/grocylink/issues/1): Die Sprachwahl wirkte

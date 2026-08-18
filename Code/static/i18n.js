@@ -383,6 +383,27 @@ const I18N = {
     // General
     'gen.error': 'Fehler',
     'gen.theme_toggle': 'Design wechseln',
+
+    // App-Zugaenge (seit 1.6.0). Die fuenf Schluessel aus index.html
+    // (title/hint/new/once/create) fehlten bis 1.7.1 ganz, und der deutsche
+    // Satz war versehentlich im englischen Block gelandet -- in der
+    // Oberflaeche stand deshalb "keys.title" und "keys.device" als Rohtext.
+    'keys.title': 'App-Zugänge',
+    'keys.hint': 'Für die iOS-App gibt es eine JSON-Schnittstelle unter /api/v1/. Jedes Gerät bekommt einen eigenen Schlüssel – geht ein Handy verloren, wird nur dessen Zugang widerrufen. Der Schlüssel gehört in die Kopfzeile X-API-Key.',
+    'keys.new': 'Neuer Schlüssel',
+    'keys.once': 'nicht wieder angezeigt',
+    'keys.create': 'Zugang anlegen',
+    'keys.name_placeholder': 'z. B. iPhone von c42u',
+    'keys.none': 'Noch kein Zugang angelegt.',
+    'keys.device': 'Gerät',
+    'keys.created': 'angelegt',
+    'keys.last_used': 'zuletzt benutzt',
+    'keys.never': 'noch nie',
+    'keys.revoked': 'widerrufen',
+    'keys.revoke': 'widerrufen',
+    'keys.unreadable': 'Zugänge nicht lesbar',
+    'keys.create_failed': 'Zugang konnte nicht angelegt werden',
+    'keys.confirm_revoke': 'Zugang „{name}“ widerrufen? Das Gerät kommt danach nicht mehr herein.',
   },
 
   en: {
@@ -770,6 +791,12 @@ const I18N = {
     'gen.theme_toggle': 'Toggle theme',
 
     // App access keys
+    'keys.title': 'App access',
+    'keys.hint': 'The iOS app talks to a JSON interface at /api/v1/. Every device gets its own key \u2013 if a phone goes missing, only that one access is revoked. The key belongs in the X-API-Key header.',
+    'keys.new': 'New key',
+    'keys.once': 'not shown again',
+    'keys.create': 'Create access',
+    'keys.name_placeholder': 'e.g. c42u\u2019s iPhone',
     'keys.none': 'No access created yet.',
     'keys.device': 'Device',
     'keys.created': 'created',
@@ -780,18 +807,6 @@ const I18N = {
     'keys.unreadable': 'Access keys could not be read',
     'keys.create_failed': 'Access could not be created',
     'keys.confirm_revoke': 'Revoke access "{name}"? The device will no longer get in.',
-
-    // App-Zugaenge (seit 1.6.0; die Texte standen fest im Skript)
-    'keys.none': 'Noch kein Zugang angelegt.',
-    'keys.device': 'Gerät',
-    'keys.created': 'angelegt',
-    'keys.last_used': 'zuletzt benutzt',
-    'keys.never': 'noch nie',
-    'keys.revoked': 'widerrufen',
-    'keys.revoke': 'widerrufen',
-    'keys.unreadable': 'Zugänge nicht lesbar',
-    'keys.create_failed': 'Zugang konnte nicht angelegt werden',
-    'keys.confirm_revoke': 'Zugang „{name}“ widerrufen? Das Gerät kommt danach nicht mehr herein.',
   }
 };
 

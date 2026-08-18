@@ -196,6 +196,29 @@ All data is stored in `/app/data` inside the container:
 
 ---
 
+## App access (`/api/v1`)
+
+Since 1.2.1 Grocylink ships a **key-protected JSON interface** at `/api/v1/`.
+Every device gets its own key (created under *Settings → App access*), stored as
+a SHA-256 hash and revocable one by one — if a phone goes missing, only that key
+is revoked. Pass it as `X-API-Key` or `Authorization: Bearer`.
+
+It covers what the web UI does: dashboard and stock, per-product settings,
+notification channels (list, create, delete, test), the log, `check-now`, CalDAV
+and Bring! — receipt scanning and barcode lookup are the exceptions. The
+endpoints are documented in
+[`Dokumentation/grocylink-API.md`](Dokumentation/grocylink-API.md).
+
+**An iOS app is being built on top of it.** The interface exists for that app,
+but it is not tied to it — it is plain JSON over HTTP, so your own client,
+shortcut or script works just as well. Feedback on the interface is welcome
+while it is still young.
+
+> Only expose Grocylink to the internet behind a reverse proxy with HTTPS
+> (see above). The keys protect `/api/v1/`, not the web UI itself.
+
+---
+
 ## Security
 
 - Runs as non-root user
@@ -420,6 +443,31 @@ Alle Daten werden in `/app/data` im Container gespeichert:
 | Baikal | `/baikal/html/dav.php` |
 | iCloud | - |
 | RFC 6764 | `/.well-known/caldav` |
+
+---
+
+## App-Zugang (`/api/v1`)
+
+Seit 1.2.1 bringt Grocylink eine **mit Schlüsseln geschützte JSON-Schnittstelle**
+unter `/api/v1/` mit. Jedes Gerät bekommt einen eigenen Schlüssel (anzulegen
+unter *Einstellungen → App-Zugänge*); in der Datenbank steht nur dessen
+SHA-256-Hash, und jeder Zugang lässt sich einzeln widerrufen — geht ein Handy
+verloren, ist nur dessen Schlüssel betroffen. Mitgegeben wird er als
+`X-API-Key` oder `Authorization: Bearer`.
+
+Abgedeckt ist, was die Weboberfläche kann: Überblick und Vorrat, Einstellungen
+je Produkt, Benachrichtigungskanäle (lesen, anlegen, entfernen, testen),
+Protokoll, `check-now`, CalDAV und Bring! — außen vor bleiben Kassenbon-Import
+und Barcode-Suche. Die Endpunkte stehen in
+[`Dokumentation/grocylink-API.md`](Dokumentation/grocylink-API.md).
+
+**Darauf entsteht gerade eine iOS-App.** Die Schnittstelle ist für diese App
+gebaut, aber nicht an sie gebunden: Es ist schlichtes JSON über HTTP — ein
+eigener Client, ein Kurzbefehl oder ein Skript funktionieren genauso.
+Rückmeldungen zur Schnittstelle sind willkommen, solange sie noch jung ist.
+
+> Grocylink gehört nur hinter einen Reverse Proxy mit HTTPS ins Internet
+> (siehe oben). Die Schlüssel schützen `/api/v1/`, nicht die Weboberfläche.
 
 ---
 
