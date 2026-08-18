@@ -228,7 +228,6 @@ The software is provided "as is" without warranty. Use at your own risk.
 - [GitHub](https://github.com/c42u/grocylink)
 - [Docker Hub](https://hub.docker.com/r/c42u/grocylink)
 - [Impressum / Legal Notice](IMPRESSUM.md)
-- [Support](https://buymeacoffee.com/c42u)
 
 ---
 
@@ -456,4 +455,3 @@ Die Software wird "wie besehen" ohne jegliche Gewährleistung bereitgestellt. Nu
 - [GitHub](https://github.com/c42u/grocylink)
 - [Docker Hub](https://hub.docker.com/r/c42u/grocylink)
 - [Impressum](IMPRESSUM.md)
-- [Unterstützung](https://buymeacoffee.com/c42u)
