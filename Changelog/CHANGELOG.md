@@ -7,29 +7,623 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2.0] - 2026-05-04
+## [1.7.0] - 2026-08-18
+
+Behebt [#1](https://github.com/c42u/grocylink/issues/1): Die Sprachwahl wirkte
+nur im Browser. Alles, was der **Server** formuliert, blieb deutsch – und in
+einem neuen Fenster stand die ganze Oberflaeche wieder auf Deutsch.
+
+### Fixed
+
+* **Die Sprache ist jetzt eine Servereinstellung.** `static/i18n.js` las sie aus
+  dem `localStorage`; gespeichert wurde sie zwar auch auf dem Server, von dort
+  aber nie geholt. Nun liefert `GET /` das HTML bereits mit der eingestellten
+  Sprache aus (`<html lang="…">` und `window.SERVER_LANG`) – ohne den kurzen
+  deutschen Moment beim Laden, den ein nachtraeglicher Abruf mit sich braechte.
+  Der Browserspeicher bleibt als Rueckfall.
+* **Serverseitige Texte folgen der Einstellung.** Betrifft die Antwort auf
+  "Jetzt pruefen" (`Check durchgeführt!` → `Check completed!`), die
+  **Testnachricht an einen Kanal** (der im Fehlerbericht genannte Discord-Fall),
+  die Synchronisationsmeldung und dreizehn weitere Antworten der Schnittstelle.
+* **Die Eintraege im Log der Oberflaeche wechseln die Sprache mit** – auch
+  bereits geschriebene. In der Datenbank steht dafuer nicht mehr der fertige
+  Satz, sondern **Schluessel und Werte** (neue Spalten `message_key`,
+  `message_args`); der Text entsteht erst beim Anzeigen. Eintraege ohne
+  Schluessel – Ausnahmemeldungen und alles vor 1.7.0 – bleiben unveraendert
+  stehen: Ein deutscher Fehlertext ist besser als gar keiner.
+* **App-Zugaenge uebersetzt** (aus 1.6.0): Tabellenkopf, "noch nie",
+  "widerrufen" und die Rueckfrage vor dem Widerruf standen fest im Skript.
+
+### Nicht geaendert
+
+Das **Anwendungsprotokoll** (`logger.…`) bleibt deutsch. Es ist
+Betriebsdiagnostik: Beim Suchen nach einer Meldung hilft eine feste Sprache mehr
+als eine wechselnde. Das Log **in der Oberflaeche** ist davon unberuehrt – das
+ist Nutzertext und wird uebersetzt.
+
+### Technisches
+
+* Neu: `Code/sprache.py` – eine Tabelle fuer alle serverseitigen Texte
+  (de/en, 33 Schluessel), `t(key, lang=None, **werte)` und `sprache_lesen()`
+  (Sprache aus `settings.language`, Vorgabe `de`).
+* `scheduler.TRANSLATIONS` ist dorthin gewandert; die 11 Schluessel des
+  Warnungsversands stehen jetzt neben denen der Schnittstelle.
+* `add_log_entry(..., key=…, args=…)` und `get_log(limit, lang=…)`.
+* `setLanguage(lang, speichern)` – beim Anwenden einer schon gespeicherten
+  Sprache entfaellt das Zurueckschreiben.
+* Neues Testmodul `tests/test_sprache.py` (12 Pruefungen), darunter der
+  gemeldete Discord-Fall und der Sprachwechsel bereits geschriebener
+  Log-Eintraege; 65 Tests bestehen.
+
+---
+
+## [1.6.0] - 2026-08-17
+
+Eine abgesicherte JSON-Schnittstelle fuer eine eigene iOS-App. Bis auf
+Kassenbons und Barcode-Suche laesst sich damit alles steuern, was die
+Weboberflaeche kann.
 
 ### Added
 
-- **Kassenbon-Scanner**: PDF-Kassenbons (z. B. REWE eBon) können hochgeladen und
-  automatisch in einer "Kassenbon prüfen"-Ansicht analysiert werden. Erkannte
-  Positionen werden den Grocy-Produkten zugeordnet; nicht zuordenbare Positionen
-  können direkt als neues Grocy-Produkt angelegt werden.
-- **OpenFoodFacts-Integration**: Für jede erkannte Position werden über die
-  OpenFoodFacts-API Produktvorschläge inklusive Bild und Nährwerten geladen.
-- **EAN/Barcode-Suche in der Kassenbon-Prüfung**: Direkte Suche per EAN/Barcode
-  im Zuordnungsdialog – findet Produkte sofort über OpenFoodFacts und Grocy.
-- **Netto-Mengenlogik**: Mengen werden netto berechnet (Pfand, Rabatte und
-  Mehrfacheinträge werden korrekt gegengerechnet).
-- **Aldi-Duplikat-Erkennung**: Doppelte Bon-Positionen, die bei Aldi-Bons durch
-  Pfand-/Rabattzeilen entstehen, werden zusammengeführt statt doppelt erfasst.
-- **Produkt-Matching-Datenbank**: Bon-Namen werden als Erkennungssignaturen für
-  Fuzzy-Matching gespeichert. Wiederkehrende Produkte werden bei späteren Bons
-  automatisch dem zuvor zugeordneten Grocy-Produkt zugewiesen.
-- **Produktauswahl mit Nährwerten**: Dropdown-Auswahl mehrerer
-  OpenFoodFacts-Treffer pro Position mit Match-Score, Produktbild und
-  Nährwerten. Beim Anlegen werden Grocy-Userfields für die Nährwerttabelle
-  automatisch erzeugt.
+* **`/api/v1/` mit Geraeteschluesseln.** Je Geraet ein Schluessel (`gl_…`),
+  unter *Einstellungen -> App-Zugaenge* erzeugt, mit "angelegt" und "zuletzt
+  benutzt", einzeln widerrufbar. In der Datenbank steht nur der **SHA-256** --
+  ein Schluessel, der sich zurueckholen laesst, ist keiner. Mitgegeben wird er
+  als `X-API-Key` oder `Authorization: Bearer`.
+* **Abgedeckt:** Ueberblick und Vorrat (`status`, `products`,
+  `products/override`, `stock/add`, Stammdaten), Einstellungen, Kanaele
+  (lesen, anlegen, entfernen, testen), Protokoll, `check-now`, CalDAV
+  (Status, Test, Kalender, `sync-now`, Zuordnung) und Bring! (Status, Test,
+  Listen, `sync-now`, Positionen lesen/aendern, manuelle Position,
+  Uebersteuerungen, Zuordnung).
+* **`GET /api/v1/info`** zum Pruefen beim Einrichten: Fassung, Zugangsname und
+  was konfiguriert ist.
+* Schnittstellenbeschreibung: `Dokumentation/grocylink-API.md` (+PDF).
+
+### Warum eine eigene Fassung neben `/api/…`
+
+Die Weboberflaeche ruft ihre 47 Endpunkte aus dem Browser **ohne** Schluessel
+auf; eine Schluesselpflicht dort haette sie lahmgelegt, und ein Sonderweg fuer
+"Anfragen aus dem eigenen Browser" waere geraten. `/api/v1/` ist deshalb eine
+abgesicherte Schicht darueber, die **dieselben View-Funktionen** aufruft --
+keine zweite Umsetzung, die mit der Zeit auseinanderlaeuft.
+
+### Nicht enthalten
+
+**Kassenbons und Barcode-Suche** -- mit dem Nutzer so festgelegt. Beides lebt
+von Kamera und Dateiupload und braucht, wenn ueberhaupt, einen eigenen
+Zuschnitt.
+
+---
+
+## [1.5.0] - 2026-08-09
+
+Haertung des Bring!-Layers. Kein sichtbares neues Feature, aber deutlich
+weniger Last gegenueber der Bring-API - Grundlage fuer die geplante
+Rueckrichtung Bring -> Grocy.
+
+### Added
+
+- **Neues Modul `bring_runtime.py`**: ein dauerhafter asyncio-Eventloop in
+  einem Daemon-Thread haelt aiohttp-Session und eingeloggten Bring-Client
+  zwischen den Aufrufen am Leben.
+  - Client wird ueber einen Fingerprint der Zugangsdaten zwischengespeichert;
+    aendern sich Mail oder Passwort, wird automatisch neu eingeloggt
+  - Access-Token erneuert `bring-api` selbst per Refresh-Token, solange der
+    Client lebt
+  - Einmaliger Relogin bei abgelaufenem Token (`BringAuthException`)
+  - Zeitlimit pro Aufruf (180s), damit ein haengender Request keinen
+    Gunicorn-Worker blockiert
+- **Testsuite fuer den Bring!-Layer** unter `Code/tests/` (48 Tests,
+  91% Abdeckung von `bring_sync.py` und `bring_runtime.py`). Laeuft ohne
+  Netzwerk und ohne Datenbank gegen eine Client-Attrappe.
+  - `Code/requirements-dev.txt` und `Code/pytest.ini` neu
+  - Aufruf: `python3 -m pytest` im Ordner `Code/`
+
+### Changed
+
+- **Ein Login statt einem pro Request.** Bisher oeffnete jeder Aufruf
+  (Status, Listen, Listeninhalt, Sync) einen eigenen Eventloop, eine eigene
+  Session und einen eigenen Login. Ein Wechsel auf den Bring!-Tab kostete
+  damit mehrere Anmeldungen hintereinander.
+- **Sync braucht statt rund 2N nur noch zwei Requests.** Anlegen, Aendern
+  und Entfernen sind in der Library allesamt `batch_update_list` mit
+  unterschiedlicher Operation - der Sync sammelt die Differenz jetzt und
+  schickt sie gebuendelt (in Bloecken zu 50). Faellt ein Sammelrequest um,
+  werden die Aenderungen des Blocks einzeln nachgereicht, damit ein
+  einzelnes stoerendes Produkt nicht den ganzen Block kostet.
+- **Kein Vollabruf der Liste mehr nach jedem neuen Eintrag.** Die Item-UUID
+  darf beim Anlegen selbst vergeben werden (`uuid4`), das frueher noetige
+  `get_list()` zum Nachschlagen entfaellt - beim Sync ebenso wie beim
+  manuellen Hinzufuegen und beim Umbenennen.
+- **Die `bring_sync_map` wird erst nach erfolgreicher Uebertragung
+  geschrieben.** Vorher konnte sie Eintraege fuehren, die auf der
+  Bring-Liste nie ankamen.
+- Geaenderte Bring-Zugangsdaten verwerfen den gecachten Client sofort
+  (`POST /api/settings` und `POST /api/bring/test`).
+
+### Misc
+
+- `APP_VERSION` 1.4.13 -> 1.5.0, User-Agent-Strings aktualisiert
+- `bring-api` bleibt auf 1.1.2 - das ist der aktuelle Stand auf PyPI
+  (04.05.2026), es gibt nichts zu heben
+- `.dockerignore` schliesst `Code/tests/` und Bytecode aus dem Image aus
+
+---
+
+## [1.4.13] - 2026-05-08
+
+### Added
+
+- **Aktive Seite ueberlebt einen Reload**: Beim Reload landet man jetzt
+  auf der zuletzt geoeffneten Seite statt immer im Dashboard
+  (`localStorage`-basiertes Routing). Wechsel ueber die Sidebar
+  speichert die aktuelle Page automatisch.
+
+### Changed
+
+- **"Aktuelle Einkaufsliste" laedt deutlich schneller.** Backend war
+  vorher pro Bring-Item zwei sequentielle Grocy-Calls
+  (`get_product_userfields` + `get_product_details`); bei 30 Items
+  ergab das ~60 Roundtrips. Jetzt:
+  - Userfield `grocylink_unit_price` wird direkt aus `/api/objects/products`
+    gelesen (`show_as_column_in_tables=1` exposed das Feld als Spalte) -
+    spart einen Call pro Item komplett.
+  - `last_price` wird parallel via `ThreadPoolExecutor` (8 Worker)
+    gefetcht statt sequentiell.
+  - Effekt: ~5x schneller bei typischen Listen, deduplizierte Calls
+    (gleiche product_id wird nur einmal gefragt).
+- **"Item" -> "Produkt"** im Bring!-Tab konsequent: Stat-Card
+  "Items synchronisiert" -> "Produkte synchronisiert", Auto-Remove-
+  Beschriftung, Sync-Mapping-Hinweis "Noch keine Produkte..." (DE+EN).
+
+### Misc
+
+- `APP_VERSION` 1.4.12 -> 1.4.13, User-Agent-Strings aktualisiert
+
+---
+
+## [1.4.12] - 2026-05-08
+
+### Fixed
+
+- **Kassenbon-Buchung war intransparent bei Fehlern:** Beim Klick auf
+  "Bestaetigen & Buchen" lief der Endpoint durch, setzte den Status pauschal
+  auf `confirmed` und gab N rote Toasts zurueck - aber **nichts landete im
+  notification_log**, der Bon-Status verbarg den Teil-Erfolg, und Items waren
+  in Grocy nicht angelegt. Jetzt:
+  - Jeder Item-Fehler wird mit `add_log_entry` als `receipt_error` ins Log
+    geschrieben (mit Bon-ID + Markt + Datum als Kontext).
+  - Logger schreibt zusaetzlich den vollen Stacktrace pro Fehler ins
+    Container-Log.
+  - Bon-Status haengt jetzt vom Ergebnis ab:
+    - `confirmed`: alle Positionen erfolgreich gebucht
+    - `partial`: einiges gebucht, einiges fehlgeschlagen
+    - `error`: keine Buchung, alle Items fehlten
+  - Zusammenfassungs-Eintrag pro Bon im Log (`receipt_summary`).
+  - Frontend zeigt **einen Sammel-Toast** ("X gebucht, Y fehlgeschlagen –
+    Details siehe Log") statt N einzelne. Details werden in einem Modal
+    aufgelistet, das Review-Modal bleibt offen, damit der User die nicht
+    gebuchten Positionen nachbearbeiten kann.
+
+### Added
+
+- Neuer Status **"Teilweise gebucht"** (`partial`) in der Kassenbon-Tabelle
+  mit gelbem Badge.
+- Neue Log-Typen `receipt_error`, `receipt_summary`, `bring_sync`,
+  `bring_manual` mit eigenen Farb-Badges und i18n-Labels (waren bislang
+  nicht typisiert dargestellt).
+
+### Misc
+
+- `APP_VERSION` 1.4.11 -> 1.4.12, User-Agent-Strings aktualisiert
+- `ok` im JSON-Response von `/api/receipts/<id>/confirm` jetzt nur
+  noch true wenn mind. ein Item gebucht wurde.
+
+---
+
+## [1.4.11] - 2026-05-08
+
+### Fixed
+
+- **Gesamtpreis-Summierung war falsch:** zwei Ursachen behoben.
+  1. `parseFloat("2,49")` liefert in JS `2`, nicht `2.49`. Im Frontend
+     wurden Live-Werte mit Komma als Dezimaltrennzeichen verstuemmelt.
+     Neuer Helper `parseLocaleNumber` akzeptiert sowohl `2,49` als auch
+     `2.49` und wird ueberall in der Bring-Tabelle benutzt.
+  2. Items ohne explizit gespeicherten Stueckpreis, aber mit `last_price`
+     aus Grocy, wurden in der Live-Berechnung als "kein Preis" gewertet
+     - dadurch summierte das Frontend zu wenig. Neu:
+     `bringEffectivePrice(row, idx)` faellt auf `last_price` aus dem
+     Origin-Snapshot zurueck (gleiche Logik wie das Backend).
+- **Anzahl in Spec wurde nicht zuverlaessig erkannt:** Regex erforderte
+  bisher ein Leerzeichen zwischen `x` und Info. Jetzt matcht auch
+  `2xVollmilch` (ohne Space). Mengenangaben wie `200ml`, `500g`,
+  `2,5L Wasser` werden weiterhin korrekt als Info behandelt
+  (kein `x` direkt nach der Zahl).
+
+### Misc
+
+- `APP_VERSION` 1.4.10 -> 1.4.11, User-Agent-Strings aktualisiert
+- Origin-Snapshot enthaelt jetzt `last_price` fuer korrekte Live-Summen
+
+---
+
+## [1.4.10] - 2026-05-08
+
+### Fixed
+
+- **Stueckpreis konnte nicht eingetragen werden**, weil das Eingabefeld
+  bei Bring-Items ohne Grocy-Match disabled war. Feld ist jetzt **immer
+  editierbar**; Items ohne Grocy-Verknuepfung haben einen dezent gelben
+  gestrichelten Rand (`bring-edit-price-unmatched`). Beim Speichern ohne
+  Match liefert das Backend einen klaren 400 mit erklaerendem Toast.
+- **Gesamtpreis-Kumulierung** lief ins Leere, weil viele Bring-Items
+  keinen Grocy-Match bekamen (Bring normalisiert Item-Namen, exact-Match
+  scheiterte). Jetzt **Fuzzy-Match als Fallback** mit `rapidfuzz`
+  (`token_set_ratio`, Cutoff 75%) - dadurch werden mehr Items zugeordnet,
+  Preise und Totals werden ueberhaupt erst berechenbar.
+
+### Added
+
+- **Listen werden automatisch geladen**, sobald der Bring!-Tab geoeffnet
+  wird und Bring-Konto+Passwort gesetzt sind. Kein manueller "Laden"-
+  Klick mehr noetig.
+
+### Misc
+
+- `APP_VERSION` 1.4.9 -> 1.4.10, User-Agent-Strings aktualisiert
+
+---
+
+## [1.4.9] - 2026-05-07
+
+### Fixed
+
+- **Cache-Busting fuer Static-Assets:** `style.css`, `app.js` und `i18n.js`
+  haben jetzt einen Versions-Querystring (`?v=1.4.9` etc.). Das war der
+  eigentliche Grund warum der Frontend-Fix aus 1.4.8 fuer den Stueckpreis
+  beim User nicht ankam – der Browser hat die alte JS-Version aus dem
+  Cache bedient.
+
+### Added
+
+- **Gesamtpreis-Anzeige** rechts oben in der Karten-Ueberschrift
+  "Aktuelle Einkaufsliste". Live-Berechnung als Summe aller Zeilen-
+  Totale, aktualisiert sich beim Tippen.
+- **Waehrung wird jetzt aus Grocy uebernommen** (CURRENCY-Setting via
+  `/api/system/config`). Stueckpreis, Gesamt-Spalte und Gesamtpreis
+  zeigen das passende Waehrungssymbol (z.B. €, $, CHF, ...). Fallback
+  ist EUR, falls Grocy nicht erreichbar ist.
+
+### Changed
+
+- `GrocyClient.get_system_config()` und `get_currency()` neu
+- `GET /api/bring/list-items` liefert zusaetzlich `currency`
+- Frontend: `formatPriceNumber` separat von `bringFormatPrice` (mit Symbol),
+  Symbol via `Intl.NumberFormat.formatToParts`
+
+### Misc
+
+- `APP_VERSION` 1.4.8 -> 1.4.9, User-Agent-Strings aktualisiert
+- 1 neuer i18n-Key (`bring.view_grand_total`, DE+EN, Diff = 0)
+
+---
+
+## [1.4.8] - 2026-05-07
+
+### Fixed
+
+- **Stueckpreis konnte nicht gespeichert werden:** Der PUT-Endpoint hat
+  beim Speichern immer ein Bring-Update mitgeschickt, auch wenn nur der
+  Preis geaendert wurde. Wenn Bring update_item bei "kein Diff" nicht sauber
+  durchlief, wurde das Grocy-Userfield-Update nicht mehr ausgefuehrt.
+  Frontend schickt jetzt nur die wirklich geaenderten Felder, Backend
+  faehrt Bring- und Grocy-Update unabhaengig voneinander.
+
+### Added
+
+- **Detail-Spalte aufgeteilt** in zwei Spalten: **Anzahl** (Number) und
+  **Weitere Info** (Text). Beim Push nach Bring werden sie als
+  `<n>x <Info>` zusammengefuegt (z.B. `3x Vollmilch`). Beim Lesen wird die
+  Spec entsprechend wieder zerlegt.
+- **Spalte "Gesamt"** zwischen Stueckpreis und Aktion: Anzahl x Stueckpreis,
+  live im UI berechnet beim Tippen.
+- **Globaler Button "Alle Änderungen speichern"** unter der Tabelle:
+  sammelt Diffs aller Zeilen und speichert sie sequenziell. Toast meldet
+  Erfolg + ggf. Anzahl Fehler.
+- Geaenderte Zeilen werden visuell hervorgehoben (`row-dirty`, leichtes Gelb).
+
+### Changed
+
+- **Footer mittig:** Der Block (Copyright, KI-Disclaimer, Bugs-Link) wird
+  jetzt zentriert dargestellt. Logo links via `position: absolute`, sodass
+  der Text echt mittig steht und nicht durch den Logo-Platz verschoben wird.
+- API `GET /api/bring/list-items` liefert zusaetzlich `quantity`, `info`
+  und `total_price` (= quantity x effective_price); vorhandenes `spec`-Feld
+  bleibt zur Rueckwaertskompatibilitaet erhalten.
+- API `PUT /api/bring/list-items` akzeptiert jetzt `quantity`+`info` statt
+  `spec`. Felder sind alle optional - was fehlt, wird nicht angefasst.
+  Ein reiner `unit_price`-Update loest kein Bring-Update mehr aus.
+- 8 neue i18n-Keys (DE+EN, Diff = 0)
+
+### Misc
+
+- `APP_VERSION` 1.4.7 -> 1.4.8, User-Agent-Strings aktualisiert
+
+---
+
+## [1.4.7] - 2026-05-07
+
+### Changed
+
+- Sidebar-Reihenfolge: CalDAV bekommt einen eigenen Block zwischen
+  Kassenbons und Einstellungen, mit Trennern oben und unten:
+  Bring!, Kassenbons | CalDAV | Einstellungen, Hilfe, Log
+- `APP_VERSION` 1.4.6 -> 1.4.7, User-Agent-Strings aktualisiert
+
+---
+
+## [1.4.6] - 2026-05-07
+
+### Changed
+
+- **Sidebar neu gruppiert** mit Trennern fuer bessere Lesbarkeit:
+  1. Dashboard
+  2. Kanaele, Produkte
+  3. CalDAV, Bring!, Kassenbons
+  4. Einstellungen, Hilfe, Log
+  5. Kaffee, Fehlermeldung
+  Bring! sitzt jetzt zwischen CalDAV und Kassenbons (Sync-Block).
+  Einstellungen ueber Hilfe, Log unter Hilfe.
+- "Kaffee?" -> "Kaffee" (Fragezeichen entfernt; EN: "Coffee?" -> "Coffee")
+- Neue CSS-Klasse `.nav-divider` als zarter horizontaler Trenner
+  (1px, rgba(255,255,255,.1)) analog zum Border ueber `sidebar-section`
+- **Stripe-Spendenlink aus Fusszeile entfernt** (Block `footer-right`
+  inkl. SVG-Logo), zugehoeriges CSS `.footer-right` raus
+
+### Misc
+
+- `APP_VERSION` 1.4.5 -> 1.4.6, User-Agent-Strings aktualisiert
+
+---
+
+## [1.4.5] - 2026-05-07
+
+### Added
+
+- **Stueckpreis pro Produkt in Grocy als Userfield** `grocylink_unit_price`
+  (Type: number-decimal). Wird in der Karte "Aktuelle Einkaufsliste" pro
+  Produktzeile als editierbares Eingabefeld angezeigt.
+  - Userfield-Definition wird automatisch in Grocy angelegt, sobald sie zum
+    ersten Mal gesetzt wird (`GrocyClient.ensure_userfield`).
+  - Anzeige-Reihenfolge: Userfield-Wert > `last_price`/`avg_price` aus dem
+    Stock-Log (Userfield hat Vorrang).
+  - Wird der Eingabewert geleert, wird der Userfield-Wert in Grocy geloescht.
+- **Bring-Items inline editierbar:** Pro Zeile koennen Name, Detail/Spec
+  und Stueckpreis direkt geaendert werden. Save-Button pro Zeile.
+  - Name-Aenderung: Eintrag wird mit neuem Namen neu angelegt und der alte
+    via UUID entfernt (Bring zeigt umbenannte Items via update_item nicht
+    zuverlaessig in der App an, save+remove ist konsistenter).
+  - Spec-Aenderung: `update_item` mit UUID.
+  - Preis-Aenderung: Userfield-Set in Grocy (nur wenn Produkt zugeordnet).
+- Neue API-Endpoints/Methoden:
+  - `PUT /api/bring/list-items` – kombiniertes Update (Bring + Grocy)
+  - `BringSync.update_list_item(list_uuid, item_uuid, name, spec, old_name)`
+  - `GrocyClient.ensure_userfield`, `get_userfield_definitions`,
+    `create_userfield_definition`, `get_product_userfields`
+
+### Changed
+
+- Spaltenkopf "Letzter Preis" -> "Stueckpreis" in der Bring-View-Tabelle
+- `last_price` aus Grocy wird jetzt als Placeholder im Preis-Input angezeigt,
+  wenn noch kein Userfield-Wert gesetzt ist
+- Bei Bring-Items ohne Grocy-Match ist das Preis-Input deaktiviert (kein
+  Speicherort)
+- 14 neue i18n-Keys (DE+EN, Diff = 0)
+- `APP_VERSION` 1.4.4 -> 1.4.5, User-Agent-Strings aktualisiert
+
+---
+
+## [1.4.4] - 2026-05-07
+
+### Changed
+
+- **Sidebar:** "Unterstuetzung"-Link durch direkten Buy-Me-A-Coffee-Link
+  (https://buymeacoffee.com/c42u) ersetzt – mit Lucide-Coffee-Icon und
+  dezent gelb-orangem Hover-Style (analog DALI ServUI). Oeffnet in neuem Tab.
+- Komplette Seite `page-support` entfernt (146 HTML-Zeilen) inklusive aller
+  zugehoerigen Logik:
+  - JS-Bezuege auf `supportDe`/`supportEn` und `page === 'support'` raus
+  - i18n-Keys `nav.support` raus, neu: `nav.coffee` und `nav.coffee_title`
+  - CSS `.support-*`-Block (~120 Zeilen) raus
+
+### Added
+
+- CSS `.nav-link-coffee` mit Hover-Highlight
+
+### Misc
+
+- `APP_VERSION` 1.4.3 -> 1.4.4, User-Agent-Strings aktualisiert
+
+---
+
+## [1.4.3] - 2026-05-07
+
+### Added
+
+- **Karte "Aktuelle Einkaufsliste"** im Bring!-Tab: Liste auswaehlen ->
+  Produkte aus Bring werden tabellarisch dargestellt (Produkt, Detail,
+  Letzter Preis). Wird zu einem Bring-Produkt ein passender Grocy-Eintrag
+  gefunden (per `bring_sync_map`-UUID oder ueber Namens-Match), wird zusaetzlich
+  der letzte Einkaufspreis aus Grocy (`last_price`/`avg_price`) angezeigt.
+- Neuer Endpoint: `GET /api/bring/list-items?list_uuid=<uuid>`
+- Neue Methode `BringSync.get_list_items()`
+
+### Changed
+
+- **UI-Texte:** "Item manuell hinzufuegen" -> "Produkt manuell hinzufuegen",
+  "Item-Name" -> "Produkt-Name" (DE+EN konsistent)
+- **Manual-Add:** Option "Globale Liste verwenden" entfernt. Stattdessen wird
+  beim Listen-Laden die globale Liste automatisch im Ziel-Listen-Dropdown
+  vorausgewaehlt. Der User MUSS jetzt eine konkrete Liste waehlen.
+- Beim Hinzufuegen eines Produkts ueber das Manual-Dropdown wird die
+  "Aktuelle Einkaufsliste"-Karte automatisch aktualisiert, falls dieselbe
+  Liste angezeigt wird.
+- Listen-Dropdown beim Laden spiegelt jetzt in alle drei Sub-Dropdowns
+  (Hauptauswahl, Manual-Add, View)
+- `APP_VERSION` 1.4.2 -> 1.4.3, User-Agent-Strings aktualisiert
+
+---
+
+## [1.4.2] - 2026-05-06
+
+### Added
+
+- **Manuelles Hinzufuegen einzelner Items** auf eine Bring!-Liste, ohne dafuer
+  ein Grocy-Produkt zu brauchen. Neue Karte "Item manuell hinzufuegen" im
+  Bring!-Tab mit Eingabefeldern fuer Name, Detail/Menge und Ziel-Liste.
+  - Default ist die global konfigurierte Bring!-Liste
+  - Optional eine andere Liste aus dem Dropdown waehlen (produktspezifisch)
+  - Neuer Endpoint: `POST /api/bring/items/manual` (Body: `name`, `spec`, `list_uuid`)
+  - Neue Methode `BringSync.add_item_manual()`
+  - Items werden im `notification_log` als Typ `bring_manual` protokolliert
+- **UI-Hinweis** unter dem Listen-Dropdown: "Einkaufslisten koennen nur ueber
+  die Bring!-App angelegt werden" (entspricht der Plattform-Limitierung)
+
+### Changed
+
+- `APP_VERSION` 1.4.1 -> 1.4.2, User-Agent-Strings aktualisiert
+- Listen-Dropdown beim Laden spiegelt automatisch in das manuelle "Ziel-Liste"-Dropdown
+
+---
+
+## [1.4.1] - 2026-05-06
+
+### Fixed
+
+- **Bring!-Verbindungstest schlug mit `'BringListResponse' object is not subscriptable`
+  fehl**: Die Library `bring-api` 1.1.2 liefert Dataclasses statt Dicts
+  (`BringListResponse`, `BringItemsResponse`, `BringPurchase`, `Items`, `BringList`).
+  Drei Stellen in `bring_sync.py` umgestellt auf Attribut-Zugriff
+  (`.lists`, `.listUuid`, `.items.purchase`, `.itemId`, `.specification`, `.uuid`).
+
+### Changed
+
+- `APP_VERSION` 1.4.0 -> 1.4.1, User-Agent-Strings (OFF + Bring) aktualisiert
+
+---
+
+## [1.4.0] - 2026-05-06
+
+### Added
+
+- **Bring!-Synchronisation** (eigener Sync-Layer neben CalDAV): Grocy-Eintraege
+  werden in eine Bring!-Einkaufsliste geschoben.
+  - Neuer Tab **Bring!** in der Sidebar mit Status-Karten, Konto-Setup,
+    Listen-Auswahl, Sync-Einstellungen und Mapping-Tabelle
+  - Quellen-Modi (Setting `bring_source`):
+    - `shopping_list` (Default): Grocy-Einkaufsliste wird komplett uebernommen
+    - `missing`: nur Produkte mit unterschrittenem Mindestbestand
+  - Item-Spec wird aus Menge + Mengeneinheit (Plural-Form falls vorhanden) gebaut
+  - Dedup ueber UUID-Mapping in neuer Tabelle `bring_sync_map`
+  - Per-Produkt-Overrides in neuer Tabelle `bring_item_overrides`:
+    `hide_from_bring`, `custom_name`, `custom_spec`
+  - Auto-Remove (Setting `bring_auto_remove`, Default aus): Items, die nicht mehr
+    benoetigt werden, werden aus Bring! entfernt
+  - Sanitizer ersetzt das in der Bring-API problematische `%` durch `Prozent`
+  - Sync-Intervall ueber APScheduler (`schedule_bring_sync()`)
+  - v1 unidirektional (Grocy -> Bring!), bidirektionaler Modus fuer spaeter geplant
+- Neue Bibliothek: `bring-api==1.1.2` (miaucl, async aiohttp)
+- Neue Backend-Endpoints:
+  `/api/bring/status`, `/api/bring/test`, `/api/bring/lists`,
+  `/api/bring/sync-now`, `/api/bring/map`, `/api/bring/overrides`
+- Neue Grocy-Client-Methoden: `get_shopping_list()`, `get_shopping_lists()`
+- 47 neue i18n-Keys (DE + EN) fuer den Bring!-Bereich
+
+### Changed
+
+- Setting `bring_password` in `SENSITIVE_SETTINGS` aufgenommen (Fernet-Verschluesselung)
+- `User-Agent` der OpenFoodFacts-Abfragen auf `Grocylink/1.4.0` aktualisiert
+- `APP_VERSION` 1.3.2 -> 1.4.0
+
+### Notes
+
+- Bring! Labs bietet keine offizielle API. Die Integration nutzt eine
+  reverse-engineered Library und kann brechen, wenn Bring! die App-API umbaut.
+- Im UI wird ein entsprechender Disclaimer angezeigt.
+
+---
+
+## [1.3.2] - 2026-04-20
+
+### Changed
+
+- **Versionssprung** von 1.2.1 auf 1.3.2: Angleichung an die in der internen
+  Registry bereits vorhandenen Tags (1.3.0, 1.3.1).
+  Die Versionen 1.2.2 und 1.3.0/1.3.1 entfallen in diesem Changelog, der Sprung
+  stellt die Konsistenz zwischen Git, App, Registry und Deploy wieder her.
+
+### Added
+
+- **CI/CD**: develop-Branch + Promote-Stage eingefuehrt
+  - develop-Flow mit `push-test`, `deploy-test` und `promote-to-latest` ergaenzt
+  - Neuer `promote-to-latest` Job: manuelles Retagging develop→latest per docker (kein Neubau)
+  - `deploy-prod-promoted` fuer Wirkdeploy nach Promote
+  - Hadolint Dockerfile-Lint hinzugefuegt
+
+---
+
+## [1.2.1] - 2026-03-10
+
+### Fixed
+
+- **JavaScript SyntaxError**: Doppelte `const row` Deklaration in `suggestCategory()`
+  verhinderte das Laden von app.js — Menueauswahl war komplett defekt.
+
+### Added
+
+- **EAN/Barcode-Suche im Kassenbon-Review**: Pro Bon-Position ein Barcode-Eingabefeld
+  mit Live-Suche. Workflow:
+  1. EAN eingeben und suchen
+  2. Grocy-Treffer: Produkt wird automatisch im Dropdown ausgewaehlt
+  3. Kein Grocy-Treffer: OpenFoodFacts wird als Fallback abgefragt
+  4. OFF-Treffer: Name und Barcode werden in die Felder fuer neues Produkt uebernommen
+  5. Kein Treffer: Rote Markierung, manuelle Zuordnung noetig
+- Neuer Backend-Endpoint `/api/barcode/lookup` (Grocy-first, OFF-Fallback)
+- Neue Methode `search_product_by_barcode()` in `grocy_client.py`
+- 7 neue i18n-Keys fuer die Barcode-Suche (DE + EN)
+- CSS-Styles fuer Barcode-Lookup (Eingabefeld, Farbindikatoren)
+
+---
+
+## [1.2.0] - 2026-03-05
+
+### Added
+
+- **Kassenbon-Scanner**: Neue Seite "Kassenbons" in der Navigation zum Verarbeiten von
+  PDF-Kassenbons als Grocy-Bestandsbuchungen.
+  - **PDF-Upload** per Drag & Drop oder Dateiauswahl direkt in der Web-UI
+  - **Automatische Ordnerueberwachung**: Konfigurierbarer Ordner (`/app/receipts`) wird
+    periodisch auf neue PDFs gescannt (Intervall einstellbar)
+  - **Duale Textextraktion**: Digitale PDFs werden direkt mit pdfplumber gelesen,
+    gescannte PDFs per Tesseract OCR (deutsch) verarbeitet
+  - **Intelligentes Bon-Parsing**: Regex-basierte Erkennung gaengiger deutscher
+    Kassenbon-Formate (Marktname, Datum, Produkte mit Menge/Preis, Gesamtsumme)
+  - **Fuzzy Product Matching**: Automatische Zuordnung von Bon-Produkten zu Grocy-Produkten
+    per rapidfuzz (token_sort_ratio) mit konfigurierbarem Schwellwert
+  - **Gelernte Zuordnungen**: Bestaetigte Zuordnungen werden gespeichert und bei
+    zukuenftigen Bons automatisch angewendet (exakter Match vor Fuzzy-Match)
+  - **Review-Workflow**: Items pruefen, Zuordnungen manuell korrigieren per Dropdown,
+    dann bestaetigen — Bestand wird per `add_stock()` in Grocy gebucht
+  - **Zuordnungsverwaltung**: Gelernte Zuordnungen einsehen und loeschen
+  - **Neue Einstellungen**: Ueberwachungsordner, Scan-Intervall, Match-Schwellwert,
+    Auto-Confirm-Schwellwert
+  - **10 neue API-Endpunkte**: CRUD fuer Kassenbons, Items, Mappings, Upload, Confirm,
+    Reject, Reprocess
+  - **Neue Docker-Abhaengigkeiten**: tesseract-ocr, tesseract-ocr-deu, poppler-utils,
+    pdfplumber, pdf2image, pytesseract, rapidfuzz
+  - **Neues Volume**: `/app/receipts` fuer Ordnerueberwachung
 
 ---
 

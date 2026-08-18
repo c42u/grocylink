@@ -7,9 +7,11 @@ const I18N = {
     'nav.products': 'Produkte',
     'nav.log': 'Log',
     'nav.caldav': 'CalDAV',
+    'nav.bring': 'Bring!',
     'nav.help': 'Hilfe',
     'nav.settings': 'Einstellungen',
-    'nav.support': 'Unterstützung',
+    'nav.coffee': 'Kaffee',
+    'nav.coffee_title': 'Spendiere mir einen Kaffee',
     'nav.issues': 'Fehlermeldung',
 
     // Dashboard
@@ -127,6 +129,10 @@ const I18N = {
     'log.type_missing': 'Fehlend',
     'log.type_test': 'Test',
     'log.type_error': 'Fehler',
+    'log.type_receipt_error': 'Bon-Fehler',
+    'log.type_receipt_summary': 'Bon-Zusammenfassung',
+    'log.type_bring_sync': 'Bring!-Sync',
+    'log.type_bring_manual': 'Bring!-Manuell',
     'log.status_ok': 'OK',
     'log.status_error': 'Fehler',
     'log.filter_all': 'Alle',
@@ -182,6 +188,88 @@ const I18N = {
     'cal.no_entries': 'Noch keine Einträge synchronisiert.',
     'cal.testing': 'Teste...',
 
+    // Bring!
+    'bring.title': 'Bring! Synchronisation',
+    'bring.sync_now': 'Jetzt synchronisieren',
+    'bring.items_synced': 'Produkte synchronisiert',
+    'bring.last_sync': 'Letzte Synchronisation',
+    'bring.status': 'Status',
+    'bring.active': 'Aktiv',
+    'bring.inactive': 'Inaktiv',
+    'bring.connection': 'Bring!-Konto',
+    'bring.disclaimer': 'Hinweis: Bring! Labs bietet keine offizielle API. Grocylink nutzt eine reverse-engineered Library (miaucl/bring-api).',
+    'bring.email': 'Bring!-E-Mail',
+    'bring.password': 'Bring!-Passwort',
+    'bring.test_connection': 'Verbindung testen',
+    'bring.list': 'Liste',
+    'bring.list_select': '-- Liste wählen --',
+    'bring.list_load': 'Laden',
+    'bring.list_loading': 'Laden...',
+    'bring.list_error': 'Listen konnten nicht geladen werden',
+    'bring.list_create_hint': 'Hinweis: Einkaufslisten können nur über die Bring!-App angelegt werden.',
+    'bring.manual_title': 'Produkt manuell hinzufügen',
+    'bring.manual_hint': 'Schiebe ein einzelnes Produkt auf eine Bring!-Liste, ohne dafür ein Grocy-Produkt zu brauchen.',
+    'bring.manual_name': 'Produkt-Name',
+    'bring.manual_name_ph': 'z.B. Milch',
+    'bring.manual_spec': 'Detail / Menge (optional)',
+    'bring.manual_spec_ph': 'z.B. 2 Liter',
+    'bring.manual_target': 'Ziel-Liste',
+    'bring.manual_add': 'Auf Liste setzen',
+    'bring.manual_added': 'Produkt hinzugefügt!',
+    'bring.manual_error': 'Fehler beim Hinzufügen',
+    'bring.manual_name_required': 'Bitte einen Produkt-Namen eingeben',
+    'bring.manual_list_required': 'Bitte eine Ziel-Liste auswählen',
+    'bring.view_title': 'Aktuelle Einkaufsliste',
+    'bring.view_hint': 'Zeigt die Produkte einer Bring!-Liste. Wird zu einem Produkt ein Grocy-Eintrag gefunden, ergänzen wir den letzten Einkaufspreis.',
+    'bring.view_list': 'Liste',
+    'bring.view_select': '-- Liste wählen --',
+    'bring.view_th_product': 'Produkt',
+    'bring.view_th_qty': 'Anzahl',
+    'bring.view_th_info': 'Weitere Info',
+    'bring.view_th_price': 'Stückpreis',
+    'bring.view_th_total': 'Gesamt',
+    'bring.view_th_action': 'Aktion',
+    'bring.view_save_all': 'Alle Änderungen speichern',
+    'bring.view_saved_count': '{n} Änderungen gespeichert.',
+    'bring.view_saved_partial': '{ok} gespeichert, {fail} fehlgeschlagen.',
+    'bring.view_grand_total': 'Gesamtpreis',
+    'bring.view_no_list': 'Bitte eine Liste auswählen.',
+    'bring.view_loading': 'Lade Produkte...',
+    'bring.view_empty': 'Liste ist leer.',
+    'bring.view_error': 'Fehler beim Laden',
+    'bring.view_save': 'Speichern',
+    'bring.view_saved': 'Änderungen gespeichert!',
+    'bring.view_save_error': 'Fehler beim Speichern',
+    'bring.view_no_changes': 'Keine Änderungen.',
+    'bring.view_grocy_match': 'Verknüpft mit Grocy-Produkt',
+    'bring.view_no_grocy_match': 'Kein Grocy-Produkt verknüpft – Stückpreis kann nicht gespeichert werden.',
+    'bring.view_price_userfield': 'Stückpreis aus Grocy-Userfield (grocylink_unit_price)',
+    'bring.view_price_grocy_fallback': 'Kein Userfield-Wert – zeigt letzten Einkaufspreis aus Grocy als Vorschlag',
+    'bring.sync_settings': 'Synchronisations-Einstellungen',
+    'bring.source': 'Quelle',
+    'bring.source_shopping_list': 'Grocy-Einkaufsliste',
+    'bring.source_missing': 'Mindestbestand unterschritten',
+    'bring.interval': 'Sync-Intervall (Minuten)',
+    'bring.auto_remove': 'Produkte aus Bring! entfernen, wenn sie nicht mehr benötigt werden',
+    'bring.auto_sync': 'Automatische Synchronisation aktiviert',
+    'bring.save': 'Bring!-Einstellungen speichern',
+    'bring.saved': 'Bring!-Einstellungen gespeichert!',
+    'bring.mapping': 'Sync-Mapping',
+    'bring.clear_map': 'Mapping leeren',
+    'bring.confirm_clear_map': 'Sync-Mapping wirklich leeren?',
+    'bring.map_cleared': 'Sync-Mapping geleert.',
+    'bring.th_grocy_id': 'Grocy ID',
+    'bring.th_name': 'Bring!-Name',
+    'bring.th_spec': 'Spec',
+    'bring.th_uuid': 'Bring UUID',
+    'bring.th_last_sync': 'Letzter Sync',
+    'bring.no_entries': 'Noch keine Produkte synchronisiert.',
+    'bring.never': 'Nie',
+    'bring.sync_running': 'Synchronisation läuft...',
+    'bring.sync_error': 'Sync-Fehler',
+    'bring.load_error': 'Fehler beim Laden der Bring!-Daten',
+    'bring.testing': 'Teste...',
+
     // Settings
     'set.title': 'Einstellungen',
     'set.grocy_connection': 'Grocy-Verbindung',
@@ -232,6 +320,9 @@ const I18N = {
     'rcpt.status_confirmed': 'Bestätigt',
     'rcpt.status_rejected': 'Verworfen',
     'rcpt.status_error': 'Fehler',
+    'rcpt.status_partial': 'Teilweise gebucht',
+    'rcpt.confirm_with_errors': '{added} gebucht, {failed} fehlgeschlagen – Details siehe Log',
+    'rcpt.confirm_error_title': 'Fehler beim Buchen',
     'rcpt.review_title': 'Kassenbon prüfen',
     'rcpt.th_product_raw': 'Bon-Name',
     'rcpt.th_qty': 'Menge',
@@ -301,9 +392,11 @@ const I18N = {
     'nav.products': 'Products',
     'nav.log': 'Log',
     'nav.caldav': 'CalDAV',
+    'nav.bring': 'Bring!',
     'nav.help': 'Help',
     'nav.settings': 'Settings',
-    'nav.support': 'Support',
+    'nav.coffee': 'Coffee',
+    'nav.coffee_title': 'Buy me a coffee',
     'nav.issues': 'Report Issue',
 
     // Dashboard
@@ -421,6 +514,10 @@ const I18N = {
     'log.type_missing': 'Missing',
     'log.type_test': 'Test',
     'log.type_error': 'Error',
+    'log.type_receipt_error': 'Receipt error',
+    'log.type_receipt_summary': 'Receipt summary',
+    'log.type_bring_sync': 'Bring! sync',
+    'log.type_bring_manual': 'Bring! manual',
     'log.status_ok': 'OK',
     'log.status_error': 'Error',
     'log.filter_all': 'All',
@@ -476,6 +573,88 @@ const I18N = {
     'cal.no_entries': 'No entries synced yet.',
     'cal.testing': 'Testing...',
 
+    // Bring!
+    'bring.title': 'Bring! Synchronization',
+    'bring.sync_now': 'Sync now',
+    'bring.items_synced': 'Products synced',
+    'bring.last_sync': 'Last synchronization',
+    'bring.status': 'Status',
+    'bring.active': 'Active',
+    'bring.inactive': 'Inactive',
+    'bring.connection': 'Bring! account',
+    'bring.disclaimer': 'Note: Bring! Labs does not offer an official API. Grocylink uses a reverse-engineered library (miaucl/bring-api).',
+    'bring.email': 'Bring! email',
+    'bring.password': 'Bring! password',
+    'bring.test_connection': 'Test connection',
+    'bring.list': 'List',
+    'bring.list_select': '-- Select list --',
+    'bring.list_load': 'Load',
+    'bring.list_loading': 'Loading...',
+    'bring.list_error': 'Could not load lists',
+    'bring.list_create_hint': 'Note: Shopping lists can only be created in the Bring! mobile app.',
+    'bring.manual_title': 'Add product manually',
+    'bring.manual_hint': 'Push a single product to a Bring! list without needing a Grocy product.',
+    'bring.manual_name': 'Product name',
+    'bring.manual_name_ph': 'e.g. Milk',
+    'bring.manual_spec': 'Detail / quantity (optional)',
+    'bring.manual_spec_ph': 'e.g. 2 liters',
+    'bring.manual_target': 'Target list',
+    'bring.manual_add': 'Add to list',
+    'bring.manual_added': 'Product added!',
+    'bring.manual_error': 'Error adding product',
+    'bring.manual_name_required': 'Please enter a product name',
+    'bring.manual_list_required': 'Please select a target list',
+    'bring.view_title': 'Current shopping list',
+    'bring.view_hint': 'Shows the products on a Bring! list. If a matching Grocy product is found, the last purchase price is added.',
+    'bring.view_list': 'List',
+    'bring.view_select': '-- Select list --',
+    'bring.view_th_product': 'Product',
+    'bring.view_th_qty': 'Qty',
+    'bring.view_th_info': 'More info',
+    'bring.view_th_price': 'Unit price',
+    'bring.view_th_total': 'Total',
+    'bring.view_th_action': 'Action',
+    'bring.view_save_all': 'Save all changes',
+    'bring.view_saved_count': '{n} changes saved.',
+    'bring.view_saved_partial': '{ok} saved, {fail} failed.',
+    'bring.view_grand_total': 'Grand total',
+    'bring.view_no_list': 'Please select a list.',
+    'bring.view_loading': 'Loading products...',
+    'bring.view_empty': 'List is empty.',
+    'bring.view_error': 'Error loading',
+    'bring.view_save': 'Save',
+    'bring.view_saved': 'Changes saved!',
+    'bring.view_save_error': 'Error saving',
+    'bring.view_no_changes': 'No changes.',
+    'bring.view_grocy_match': 'Linked to Grocy product',
+    'bring.view_no_grocy_match': 'No Grocy product linked – unit price cannot be saved.',
+    'bring.view_price_userfield': 'Unit price from Grocy userfield (grocylink_unit_price)',
+    'bring.view_price_grocy_fallback': 'No userfield value – showing last purchase price from Grocy as suggestion',
+    'bring.sync_settings': 'Synchronization settings',
+    'bring.source': 'Source',
+    'bring.source_shopping_list': 'Grocy shopping list',
+    'bring.source_missing': 'Below minimum stock',
+    'bring.interval': 'Sync interval (minutes)',
+    'bring.auto_remove': 'Remove products from Bring! when no longer needed',
+    'bring.auto_sync': 'Automatic synchronization enabled',
+    'bring.save': 'Save Bring! settings',
+    'bring.saved': 'Bring! settings saved!',
+    'bring.mapping': 'Sync mapping',
+    'bring.clear_map': 'Clear mapping',
+    'bring.confirm_clear_map': 'Really clear sync mapping?',
+    'bring.map_cleared': 'Sync mapping cleared.',
+    'bring.th_grocy_id': 'Grocy ID',
+    'bring.th_name': 'Bring! name',
+    'bring.th_spec': 'Spec',
+    'bring.th_uuid': 'Bring UUID',
+    'bring.th_last_sync': 'Last sync',
+    'bring.no_entries': 'No products synced yet.',
+    'bring.never': 'Never',
+    'bring.sync_running': 'Synchronization running...',
+    'bring.sync_error': 'Sync error',
+    'bring.load_error': 'Error loading Bring! data',
+    'bring.testing': 'Testing...',
+
     // Settings
     'set.title': 'Settings',
     'set.grocy_connection': 'Grocy Connection',
@@ -526,6 +705,9 @@ const I18N = {
     'rcpt.status_confirmed': 'Confirmed',
     'rcpt.status_rejected': 'Rejected',
     'rcpt.status_error': 'Error',
+    'rcpt.status_partial': 'Partially booked',
+    'rcpt.confirm_with_errors': '{added} booked, {failed} failed – see log for details',
+    'rcpt.confirm_error_title': 'Booking errors',
     'rcpt.review_title': 'Review receipt',
     'rcpt.th_product_raw': 'Receipt name',
     'rcpt.th_qty': 'Qty',
@@ -586,26 +768,59 @@ const I18N = {
     // General
     'gen.error': 'Error',
     'gen.theme_toggle': 'Toggle theme',
+
+    // App access keys
+    'keys.none': 'No access created yet.',
+    'keys.device': 'Device',
+    'keys.created': 'created',
+    'keys.last_used': 'last used',
+    'keys.never': 'never',
+    'keys.revoked': 'revoked',
+    'keys.revoke': 'revoke',
+    'keys.unreadable': 'Access keys could not be read',
+    'keys.create_failed': 'Access could not be created',
+    'keys.confirm_revoke': 'Revoke access "{name}"? The device will no longer get in.',
+
+    // App-Zugaenge (seit 1.6.0; die Texte standen fest im Skript)
+    'keys.none': 'Noch kein Zugang angelegt.',
+    'keys.device': 'Gerät',
+    'keys.created': 'angelegt',
+    'keys.last_used': 'zuletzt benutzt',
+    'keys.never': 'noch nie',
+    'keys.revoked': 'widerrufen',
+    'keys.revoke': 'widerrufen',
+    'keys.unreadable': 'Zugänge nicht lesbar',
+    'keys.create_failed': 'Zugang konnte nicht angelegt werden',
+    'keys.confirm_revoke': 'Zugang „{name}“ widerrufen? Das Gerät kommt danach nicht mehr herein.',
   }
 };
 
-let currentLang = localStorage.getItem('grocylink-lang') || 'de';
+// Die Servereinstellung gilt, nicht der Browserspeicher. Bis 1.6.0 war es
+// umgekehrt: Die Wahl wurde zwar an den Server geschickt, beim Laden aber nie
+// von dort geholt -- in einem privaten Fenster stand die Oberflaeche wieder
+// auf Deutsch (GitHub-Fehler #1). Der Browserspeicher bleibt als Rueckfall,
+// falls die Seite ohne Server-Angabe ausgeliefert wird.
+let currentLang = window.SERVER_LANG || localStorage.getItem('grocylink-lang') || 'de';
 
 function t(key) {
   return (I18N[currentLang] && I18N[currentLang][key]) || (I18N['de'] && I18N['de'][key]) || key;
 }
 
-function setLanguage(lang) {
+function setLanguage(lang, speichern) {
   currentLang = lang;
   localStorage.setItem('grocylink-lang', lang);
   document.documentElement.setAttribute('lang', lang);
   document.documentElement.setAttribute('data-lang', lang);
-  // Persist language to backend
-  fetch('/api/settings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ language: lang })
-  }).catch(() => {});
+  // Auf dem Server hinterlegen -- dort entstehen Testnachrichten, Warnungen
+  // und die Eintraege im Log. Beim blossen Anwenden einer schon gespeicherten
+  // Sprache (speichern === false) entfaellt das.
+  if (speichern !== false) {
+    fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ language: lang })
+    }).catch(() => {});
+  }
   // Update language selector if it exists
   const langSel = document.getElementById('langSelect');
   if (langSel) langSel.value = lang;
@@ -617,11 +832,6 @@ function setLanguage(lang) {
     else if (attr === 'title') el.title = t(key);
     else el.textContent = t(key);
   });
-  // Update support page visibility
-  const supportDe = document.getElementById('supportDe');
-  const supportEn = document.getElementById('supportEn');
-  if (supportDe) supportDe.style.display = lang === 'de' ? '' : 'none';
-  if (supportEn) supportEn.style.display = lang === 'en' ? '' : 'none';
   // Reload dynamic content for active page
   if (typeof loadPageData === 'function') {
     const activePage = document.querySelector('.page.active');
@@ -629,6 +839,7 @@ function setLanguage(lang) {
   }
 }
 
-// Apply stored language on load
+// Beim Laden anwenden -- ohne zurueckzuschreiben.
 document.documentElement.setAttribute('lang', currentLang);
 document.documentElement.setAttribute('data-lang', currentLang);
+localStorage.setItem('grocylink-lang', currentLang);

@@ -16,7 +16,7 @@ assignees: ''
 <!-- How could this be implemented? / Wie koennte das umgesetzt werden? -->
 
 ## Alternatives Considered / Alternativen
-<!-- Are there alternative solutions? / Gibt es alternative Lösungen? -->
+<!-- Are there alternative solutions? / Gibt es alternative Loesungen? -->
 
 ## Additional Context / Zusaetzlicher Kontext
 <!-- Screenshots, links, examples / Screenshots, Links, Beispiele -->

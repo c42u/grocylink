@@ -105,6 +105,14 @@ body {
 .nav-link:hover { background: var(--bg-sidebar-hover); color: #fff; }
 .nav-link.active { background: var(--primary); color: #fff; }
 
+/* Trenner zwischen Nav-Gruppen – analog zur sidebar-section */
+.nav-divider {
+    list-style: none;
+    height: 1px;
+    margin: 8px 0;
+    background: rgba(255,255,255,.1);
+}
+
 .sidebar-section {
     padding: 8px 16px;
     border-top: 1px solid rgba(255,255,255,.1);
@@ -124,6 +132,51 @@ body {
 .nav-link-external .external-icon {
     margin-left: auto;
     opacity: .5;
+}
+/* Buy-me-a-coffee Link in der Sidebar – dezent gelb-orange */
+.nav-link.nav-link-coffee {
+    color: #e89a00;
+}
+.nav-link.nav-link-coffee:hover {
+    background: rgba(255, 178, 36, 0.18);
+    color: #f7b500;
+}
+
+/* Inline-editable Bring-Tabelle */
+#tableBringListItems input.bring-edit-name,
+#tableBringListItems input.bring-edit-info,
+#tableBringListItems input.bring-edit-qty,
+#tableBringListItems input.bring-edit-price {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: .9em;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+#tableBringListItems input.bring-edit-qty {
+    max-width: 90px;
+    text-align: right;
+}
+#tableBringListItems input.bring-edit-price {
+    max-width: 110px;
+    text-align: right;
+}
+#tableBringListItems input:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+#tableBringListItems input.bring-edit-price-unmatched {
+    border-color: var(--warning, #f59e0b);
+    border-style: dashed;
+}
+#tableBringListItems tr.row-dirty {
+    background: rgba(245, 158, 11, 0.08);
+}
+#tableBringListItems .bring-edit-total {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 .sidebar-footer {
     padding: 16px;
@@ -573,10 +626,11 @@ th.sortable.sort-desc::after {
     text-decoration: underline;
 }
 
-/* Footer */
+/* Footer – Logo links, Text echt mittig (Logo via absolute) */
 .app-footer {
+    position: relative;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: 16px 0;
     margin-top: auto;
@@ -584,20 +638,16 @@ th.sortable.sort-desc::after {
     font-size: .85em;
     color: var(--text-muted);
 }
-.footer-left, .footer-center, .footer-right {
-    flex: 1;
-}
 .footer-left {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
 }
 .footer-center {
     text-align: center;
-}
-.footer-right {
-    display: flex;
-    justify-content: flex-end;
-    gap: 20px;
 }
 .footer-logo {
     height: 32px;
@@ -742,116 +792,6 @@ code.help-code {
     line-height: 1.5;
 }
 
-/* Support-Seite */
-.support-lang-toggle {
-    display: flex;
-    gap: 8px;
-}
-.support-lang-toggle .btn.active {
-    background: var(--primary);
-    color: #fff;
-}
-.support-logo {
-    text-align: center;
-    margin: 0 0 32px 0;
-}
-.support-logo img {
-    max-width: 220px;
-    height: auto;
-    border-radius: 16px;
-}
-.support-hero {
-    text-align: center;
-    margin-bottom: 32px;
-}
-.support-hero h2 {
-    font-size: 1.5em;
-    margin-bottom: 16px;
-    color: var(--text);
-}
-.support-hero p {
-    font-size: 1.05em;
-    line-height: 1.7;
-    color: var(--text-muted);
-    max-width: 700px;
-    margin: 8px auto;
-}
-.support-features {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin: 24px 0 32px 0;
-}
-.support-feature {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-size: .95em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.support-feature-icon {
-    font-size: 1.2em;
-}
-.support-text {
-    text-align: center;
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-bottom: 32px;
-    font-size: 1.05em;
-}
-.support-thanks {
-    text-align: center;
-    font-size: 1.1em;
-    color: var(--text);
-    margin: 32px 0 16px 0;
-}
-.support-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin: 32px 0;
-    flex-wrap: wrap;
-}
-.support-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 28px;
-    border-radius: 12px;
-    font-size: 1.05em;
-    font-weight: 600;
-    text-decoration: none;
-    transition: transform .15s, box-shadow .15s;
-}
-.support-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-.support-btn-coffee {
-    background: #ffdd00;
-    color: #0d0d0d;
-}
-.support-btn-coffee:hover {
-    background: #ffcc00;
-}
-.support-btn-liberapay {
-    background: #f6c915;
-    color: #1a1a1a;
-}
-.support-btn-liberapay:hover {
-    background: #e6b800;
-}
-.support-btn-stripe {
-    background: #635bff;
-    color: #ffffff;
-}
-.support-btn-stripe:hover {
-    background: #5046e5;
-}
 /* Disclaimer */
 .disclaimer {
     margin-top: 32px;
@@ -915,15 +855,6 @@ code.help-code {
 }
 .feedback-btn:hover {
     opacity: .85;
-}
-
-/* Support page inline link */
-.support-inline-link {
-    color: var(--primary);
-    text-decoration: underline;
-}
-.support-inline-link:hover {
-    color: var(--primary-hover);
 }
 
 /* Language visibility */

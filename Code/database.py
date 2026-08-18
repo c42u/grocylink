@@ -119,11 +119,46 @@ def init_db():
             created_at TEXT NOT NULL DEFAULT (datetime('now')),
             last_used TEXT NOT NULL DEFAULT (datetime('now'))
         );
+
+        CREATE TABLE IF NOT EXISTS bring_sync_map (
+            grocy_product_id INTEGER PRIMARY KEY,
+            bring_item_uuid TEXT NOT NULL,
+            bring_item_name TEXT NOT NULL,
+            last_spec TEXT,
+            last_synced TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        -- Zugaenge fuer die App: je Geraet ein Schluessel, einzeln
+        -- widerrufbar. Gespeichert wird nur der SHA-256 -- ein Schluessel, der
+        -- sich aus der Datenbank zurueckholen laesst, ist kein Schluessel.
+        -- (Uebernommen aus grocyplan 0.38.0, bewusst gleich aufgebaut.)
+        CREATE TABLE IF NOT EXISTS api_keys (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            name          TEXT NOT NULL,
+            hash          TEXT NOT NULL UNIQUE,
+            created_at    TEXT NOT NULL,
+            last_used_at  TEXT,
+            active        INTEGER DEFAULT 1
+        );
+
+        CREATE TABLE IF NOT EXISTS bring_item_overrides (
+            grocy_product_id INTEGER PRIMARY KEY,
+            hide_from_bring INTEGER NOT NULL DEFAULT 0,
+            custom_name TEXT,
+            custom_spec TEXT
+        );
     """)
     # Migrationen: fehlende Spalten nachträglich hinzufügen
     for migration in [
         "ALTER TABLE caldav_sync_map ADD COLUMN sync_direction TEXT NOT NULL DEFAULT ''",
         "ALTER TABLE product_overrides ADD COLUMN custom_repeat_limit INTEGER",
+        # Log-Eintraege sprachneutral ablegen: Schluessel + Werte statt fertigem
+        # Satz. Sonst bleibt ein einmal geschriebener deutscher Text fuer immer
+        # deutsch, auch wenn die Oberflaeche spaeter auf Englisch steht
+        # (GitHub-Fehler #1). Der Freitext in `message` bleibt als Rueckfall --
+        # fuer Ausnahmetexte und fuer alles, was vor 1.7.0 geschrieben wurde.
+        "ALTER TABLE notification_log ADD COLUMN message_key TEXT",
+        "ALTER TABLE notification_log ADD COLUMN message_args TEXT",
     ]:
         try:
             conn.execute(migration)
@@ -159,6 +194,15 @@ def init_db():
         'receipt_default_location': '',
         'receipt_default_product_group': '',
         'receipt_default_qu_id': '',
+        # Bring!-Sync (eigener Sync-Layer, nicht Notification-Channel)
+        'bring_sync_enabled': '0',
+        'bring_email': '',
+        'bring_password': '',
+        'bring_list_uuid': '',
+        'bring_sync_interval_minutes': '30',
+        'bring_source': 'shopping_list',  # 'shopping_list' | 'missing'
+        'bring_sync_direction': 'grocy_to_bring',  # v1: nur unidirektional
+        'bring_auto_remove': '0',
     }
     for key, value in defaults.items():
         conn.execute(
@@ -303,23 +347,61 @@ def delete_product_override(product_id):
     conn.close()
 
 
-def add_log_entry(product_name, notification_type, channel_name, message, success=True):
+def add_log_entry(product_name, notification_type, channel_name, message,
+                  success=True, key=None, args=None):
+    """Schreibt einen Eintrag ins Log der Oberflaeche.
+
+    Args:
+        message: fertiger Text -- fuer Ausnahmemeldungen, die sich nicht
+            uebersetzen lassen, und als Rueckfall
+        key: Schluessel aus `sprache.TEXTE`, wenn der Satz uebersetzbar ist
+        args: Werte fuer die Platzhalter des Schluessels
+
+    Mit `key` steht in der Datenbank **kein** fertiger Satz, sondern die
+    Bauanleitung. Erst beim Anzeigen entsteht daraus Text -- in der Sprache,
+    die dann eingestellt ist. Wer die Sprache wechselt, sieht auch alte
+    Eintraege in der neuen Sprache.
+    """
     conn = get_db()
     conn.execute(
-        "INSERT INTO notification_log (product_name, notification_type, channel_name, message, success) VALUES (?, ?, ?, ?, ?)",
-        (product_name, notification_type, channel_name, message, 1 if success else 0)
+        "INSERT INTO notification_log (product_name, notification_type, "
+        "channel_name, message, success, message_key, message_args) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (product_name, notification_type, channel_name, message,
+         1 if success else 0, key,
+         json.dumps(args, ensure_ascii=False) if args else None)
     )
     conn.commit()
     conn.close()
 
 
-def get_log(limit=100):
+def get_log(limit=100, lang=None):
+    """Log-Eintraege, uebersetzt in die eingestellte Sprache.
+
+    Eintraege ohne Schluessel (Ausnahmetexte, Altbestand vor 1.7.0) kommen
+    unveraendert zurueck: Ein deutscher Fehlertext ist besser als gar keiner.
+    """
     conn = get_db()
     rows = conn.execute(
         "SELECT * FROM notification_log ORDER BY timestamp DESC LIMIT ?", (limit,)
     ).fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+
+    import sprache
+    if lang is None:
+        lang = sprache.sprache_lesen()
+
+    eintraege = []
+    for r in rows:
+        e = dict(r)
+        if e.get('message_key'):
+            try:
+                werte = json.loads(e.get('message_args') or '{}')
+            except ValueError:
+                werte = {}
+            e['message'] = sprache.t(e['message_key'], lang=lang, **werte)
+        eintraege.append(e)
+    return eintraege
 
 
 def clear_log():
@@ -626,3 +708,169 @@ def receipt_filepath_exists(filepath):
     ).fetchone()
     conn.close()
     return row is not None
+
+
+# Bring!-Sync ----------------------------------------------------------
+
+def get_bring_sync_map():
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM bring_sync_map ORDER BY bring_item_name"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_bring_sync_entry(grocy_product_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM bring_sync_map WHERE grocy_product_id = ?",
+        (int(grocy_product_id),)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def upsert_bring_sync_entry(grocy_product_id, bring_item_uuid, bring_item_name, last_spec=None):
+    conn = get_db()
+    conn.execute(
+        """INSERT INTO bring_sync_map
+           (grocy_product_id, bring_item_uuid, bring_item_name, last_spec, last_synced)
+           VALUES (?, ?, ?, ?, datetime('now'))
+           ON CONFLICT(grocy_product_id) DO UPDATE SET
+             bring_item_uuid = excluded.bring_item_uuid,
+             bring_item_name = excluded.bring_item_name,
+             last_spec = excluded.last_spec,
+             last_synced = datetime('now')""",
+        (int(grocy_product_id), bring_item_uuid, bring_item_name, last_spec)
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_bring_sync_entry(grocy_product_id):
+    conn = get_db()
+    conn.execute(
+        "DELETE FROM bring_sync_map WHERE grocy_product_id = ?",
+        (int(grocy_product_id),)
+    )
+    conn.commit()
+    conn.close()
+
+
+def clear_bring_sync_map():
+    conn = get_db()
+    conn.execute("DELETE FROM bring_sync_map")
+    conn.commit()
+    conn.close()
+
+
+def get_bring_overrides():
+    """Liefert alle Per-Produkt-Overrides als Dict: product_id -> override-Dict."""
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM bring_item_overrides").fetchall()
+    conn.close()
+    return {r['grocy_product_id']: dict(r) for r in rows}
+
+
+def get_bring_overrides_list():
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM bring_item_overrides ORDER BY grocy_product_id"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def save_bring_override(grocy_product_id, hide_from_bring=0, custom_name=None, custom_spec=None):
+    conn = get_db()
+    conn.execute(
+        """INSERT OR REPLACE INTO bring_item_overrides
+           (grocy_product_id, hide_from_bring, custom_name, custom_spec)
+           VALUES (?, ?, ?, ?)""",
+        (int(grocy_product_id), 1 if hide_from_bring else 0,
+         custom_name or None, custom_spec or None)
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_bring_override(grocy_product_id):
+    conn = get_db()
+    conn.execute(
+        "DELETE FROM bring_item_overrides WHERE grocy_product_id = ?",
+        (int(grocy_product_id),)
+    )
+    conn.commit()
+    conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Zugaenge fuer die App
+#
+# Der Schluessel selbst wird nie gespeichert, nur sein SHA-256. Beim Anlegen
+# bekommt der Nutzer ihn einmal zu sehen; wer ihn verliert, legt einen neuen
+# an. Anders als bei den Zugangsdaten in `settings` (Grocy, Bring, SMTP), die
+# grocylink selbst wieder braucht und deshalb verschluesselt ablegt.
+# ---------------------------------------------------------------------------
+
+def _api_key_hash(key):
+    import hashlib
+    return hashlib.sha256((key or '').encode()).hexdigest()
+
+
+def create_api_key(name):
+    """Legt einen Zugang an und liefert den Schluessel -- einmalig."""
+    import secrets
+    from datetime import datetime
+    key = 'gl_' + secrets.token_urlsafe(32)
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO api_keys (name, hash, created_at) VALUES (?, ?, ?)",
+        ((name or 'Geraet').strip()[:60], _api_key_hash(key),
+         datetime.now().isoformat(timespec='seconds')))
+    conn.commit()
+    conn.close()
+    return key
+
+
+def check_api_key(key):
+    """Prueft einen Schluessel und schreibt die Benutzung fort.
+
+    Returns:
+        Der Zugang als dict oder None. Ein widerrufener gilt als unbekannt.
+    """
+    if not key:
+        return None
+    from datetime import datetime
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM api_keys WHERE hash = ? AND active = 1",
+        (_api_key_hash(key),)).fetchone()
+    if row:
+        conn.execute("UPDATE api_keys SET last_used_at = ? WHERE id = ?",
+                     (datetime.now().isoformat(timespec='seconds'), row['id']))
+        conn.commit()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_api_keys():
+    """Alle Zugaenge fuer die Oberflaeche -- ohne den Hash."""
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT id, name, created_at, last_used_at, active FROM api_keys "
+        "ORDER BY active DESC, id DESC").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def revoke_api_key(key_id):
+    """Setzt einen Zugang still. Liefert seinen Namen."""
+    conn = get_db()
+    row = conn.execute("SELECT name FROM api_keys WHERE id = ?",
+                       (int(key_id),)).fetchone()
+    conn.execute("UPDATE api_keys SET active = 0 WHERE id = ?", (int(key_id),))
+    conn.commit()
+    conn.close()
+    return row['name'] if row else ''

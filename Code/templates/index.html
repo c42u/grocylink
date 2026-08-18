@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de" data-lang="de">
+<html lang="{{ lang }}" data-lang="{{ lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grocylink</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v={{ version }}">
 </head>
 <body>
     <div class="app">
@@ -18,6 +18,7 @@
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                     <span data-i18n="nav.dashboard">Dashboard</span>
                 </a></li>
+                <li class="nav-divider" aria-hidden="true"></li>
                 <li><a href="#" class="nav-link" data-page="channels">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
                     <span data-i18n="nav.channels">Kanäle</span>
@@ -26,31 +27,38 @@
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                     <span data-i18n="nav.products">Produkte</span>
                 </a></li>
+                <li class="nav-divider" aria-hidden="true"></li>
+                <li><a href="#" class="nav-link" data-page="bring">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><polyline points="9,12 11,14 15,10"/></svg>
+                    <span data-i18n="nav.bring">Bring!</span>
+                </a></li>
                 <li><a href="#" class="nav-link" data-page="receipts">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l4-2 4 2 4-2 4 2V2l-4 2-4-2-4 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
                     <span data-i18n="nav.receipts">Kassenbons</span>
                 </a></li>
-                <li><a href="#" class="nav-link" data-page="log">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    <span data-i18n="nav.log">Log</span>
-                </a></li>
+                <li class="nav-divider" aria-hidden="true"></li>
                 <li><a href="#" class="nav-link" data-page="caldav">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
                     <span data-i18n="nav.caldav">CalDAV</span>
+                </a></li>
+                <li class="nav-divider" aria-hidden="true"></li>
+                <li><a href="#" class="nav-link" data-page="settings">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                    <span data-i18n="nav.settings">Einstellungen</span>
                 </a></li>
                 <li><a href="#" class="nav-link" data-page="help">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     <span data-i18n="nav.help">Hilfe</span>
                 </a></li>
-                <li><a href="#" class="nav-link" data-page="settings">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                    <span data-i18n="nav.settings">Einstellungen</span>
+                <li><a href="#" class="nav-link" data-page="log">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span data-i18n="nav.log">Log</span>
                 </a></li>
             </ul>
             <div class="sidebar-section">
-                <a href="#" class="nav-link" data-page="support">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                    <span data-i18n="nav.support">Unterstützung</span>
+                <a href="https://buymeacoffee.com/c42u" target="_blank" rel="noopener noreferrer" class="nav-link nav-link-coffee" data-i18n="nav.coffee_title" data-i18n-attr="title" title="Spendiere mir einen Kaffee">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
+                    <span data-i18n="nav.coffee">Kaffee</span>
                 </a>
                 <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="nav-link nav-link-external">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -328,6 +336,148 @@
                 </div>
             </div>
 
+            <!-- Bring! -->
+            <div class="page" id="page-bring">
+                <div class="page-header">
+                    <h1 data-i18n="bring.title">Bring! Synchronisation</h1>
+                    <button class="btn btn-primary" onclick="bringSyncNow()" data-i18n="bring.sync_now">Jetzt synchronisieren</button>
+                </div>
+
+                <div class="stats-grid" id="bringStatsGrid">
+                    <div class="stat-card stat-info">
+                        <div class="stat-number" id="bringItems">-</div>
+                        <div class="stat-label" data-i18n="bring.items_synced">Items synchronisiert</div>
+                    </div>
+                    <div class="stat-card stat-ok">
+                        <div class="stat-number" id="bringLastSync">-</div>
+                        <div class="stat-label" data-i18n="bring.last_sync">Letzte Synchronisation</div>
+                    </div>
+                    <div class="stat-card" id="bringStatusCard">
+                        <div class="stat-number" id="bringEnabled">-</div>
+                        <div class="stat-label" data-i18n="bring.status">Status</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 data-i18n="bring.connection">Bring!-Konto</h3>
+                    <p style="color:var(--text-muted);font-size:.9em;margin-top:0">
+                        <span data-i18n="bring.disclaimer">Hinweis: Bring! Labs bietet keine offizielle API. Grocylink nutzt eine reverse-engineered Library (miaucl/bring-api).</span>
+                    </p>
+                    <div class="form-group">
+                        <label data-i18n="bring.email">Bring!-E-Mail</label>
+                        <input type="email" id="bringEmail" placeholder="dein@account.de">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="bring.password">Bring!-Passwort</label>
+                        <input type="password" id="bringPassword" data-i18n="bring.password" data-i18n-attr="placeholder" placeholder="Passwort">
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+                        <button type="button" class="btn btn-secondary" onclick="bringTestConnection()" data-i18n="bring.test_connection">Verbindung testen</button>
+                        <span id="bringConnectionStatus"></span>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="bring.list">Liste</label>
+                        <div style="display:flex;gap:10px">
+                            <select id="bringList" style="flex:1"><option value="" data-i18n="bring.list_select">-- Liste wählen --</option></select>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="bringLoadLists()" data-i18n="bring.list_load">Laden</button>
+                        </div>
+                        <p style="color:var(--text-muted);font-size:.85em;margin-top:6px" data-i18n="bring.list_create_hint">Hinweis: Einkaufslisten können nur über die Bring!-App angelegt werden.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 data-i18n="bring.sync_settings">Synchronisations-Einstellungen</h3>
+                    <div class="form-group">
+                        <label data-i18n="bring.source">Quelle</label>
+                        <select id="bringSource">
+                            <option value="shopping_list" data-i18n="bring.source_shopping_list">Grocy-Einkaufsliste</option>
+                            <option value="missing" data-i18n="bring.source_missing">Mindestbestand unterschritten</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="bring.interval">Sync-Intervall (Minuten)</label>
+                        <input type="number" id="bringInterval" min="5" max="1440" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="bringAutoRemove">
+                            <span data-i18n="bring.auto_remove">Items aus Bring! entfernen, wenn sie nicht mehr benötigt werden</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="bringSyncEnabled">
+                            <span data-i18n="bring.auto_sync">Automatische Synchronisation aktiviert</span>
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="saveBringSettings()" data-i18n="bring.save">Bring!-Einstellungen speichern</button>
+                </div>
+
+                <div class="card">
+                    <h3 data-i18n="bring.manual_title">Produkt manuell hinzufügen</h3>
+                    <p style="color:var(--text-muted);font-size:.9em;margin-top:0" data-i18n="bring.manual_hint">Schiebe ein einzelnes Produkt auf eine Bring!-Liste, ohne dafür ein Grocy-Produkt zu brauchen.</p>
+                    <div class="form-group">
+                        <label data-i18n="bring.manual_name">Produkt-Name</label>
+                        <input type="text" id="bringManualName" data-i18n="bring.manual_name_ph" data-i18n-attr="placeholder" placeholder="z.B. Milch">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="bring.manual_spec">Detail / Menge (optional)</label>
+                        <input type="text" id="bringManualSpec" data-i18n="bring.manual_spec_ph" data-i18n-attr="placeholder" placeholder="z.B. 2 Liter">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="bring.manual_target">Ziel-Liste</label>
+                        <select id="bringManualList"></select>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="bringAddItemManual()" data-i18n="bring.manual_add">Auf Liste setzen</button>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
+                        <h3 data-i18n="bring.view_title" style="margin:0">Aktuelle Einkaufsliste</h3>
+                        <div style="font-size:.95em;color:var(--text-muted)">
+                            <span data-i18n="bring.view_grand_total">Gesamtpreis</span>:
+                            <strong id="bringGrandTotal" style="font-variant-numeric:tabular-nums;color:var(--text)">–</strong>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-muted);font-size:.9em;margin-top:8px" data-i18n="bring.view_hint">Zeigt die Produkte einer Bring!-Liste. Wird zu einem Produkt ein Grocy-Eintrag gefunden, ergänzen wir den letzten Einkaufspreis.</p>
+                    <div class="form-group">
+                        <label data-i18n="bring.view_list">Liste</label>
+                        <select id="bringViewList" onchange="bringLoadListItems()">
+                            <option value="" data-i18n="bring.view_select">-- Liste wählen --</option>
+                        </select>
+                    </div>
+                    <div class="table-wrap">
+                        <table id="tableBringListItems">
+                            <thead><tr>
+                                <th data-i18n="bring.view_th_product">Produkt</th>
+                                <th data-i18n="bring.view_th_qty">Anzahl</th>
+                                <th data-i18n="bring.view_th_info">Weitere Info</th>
+                                <th data-i18n="bring.view_th_price">Stückpreis</th>
+                                <th data-i18n="bring.view_th_total">Gesamt</th>
+                                <th data-i18n="bring.view_th_action">Aktion</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;margin-top:12px">
+                        <button type="button" class="btn btn-primary" onclick="bringSaveAll()" data-i18n="bring.view_save_all">Alle Änderungen speichern</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 data-i18n="bring.mapping">Sync-Mapping</h2>
+                        <button class="btn btn-secondary" onclick="clearBringMap()" data-i18n="bring.clear_map">Mapping leeren</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table id="tableBringMap">
+                            <thead><tr><th data-i18n="bring.th_grocy_id">Grocy ID</th><th data-i18n="bring.th_name">Bring!-Name</th><th data-i18n="bring.th_spec">Spec</th><th data-i18n="bring.th_uuid">Bring UUID</th><th data-i18n="bring.th_last_sync">Letzter Sync</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Kassenbons -->
             <div class="page" id="page-receipts">
                 <div class="page-header">
@@ -514,6 +664,32 @@
                     </div>
                     <button type="submit" class="btn btn-primary" data-i18n="set.save">Einstellungen speichern</button>
                 </form>
+
+                <!-- App-Zugaenge: je Geraet ein Schluessel fuer /api/v1 -->
+                <div class="card" style="margin-top:1.5rem">
+                    <h3 data-i18n="keys.title">App-Zugänge</h3>
+                    <p class="hint" data-i18n="keys.hint">Für die iOS-App gibt es
+                        eine JSON-Schnittstelle unter <code>/api/v1/</code>. Jedes
+                        Gerät bekommt einen eigenen Schlüssel – geht ein Handy
+                        verloren, wird nur dessen Zugang widerrufen. Der Schlüssel
+                        gehört in die Kopfzeile <code>X-API-Key</code>.</p>
+
+                    <div id="newKeyBox" style="display:none" class="alert alert-success">
+                        <p><strong data-i18n="keys.new">Neuer Schlüssel</strong> –
+                            jetzt in die App übertragen, er wird
+                            <strong data-i18n="keys.once">nicht wieder angezeigt</strong>:</p>
+                        <code id="newKeyValue" style="display:block;padding:.4rem;
+                              word-break:break-all;user-select:all"></code>
+                    </div>
+
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0">
+                        <input type="text" id="newKeyName" maxlength="60"
+                               placeholder="z. B. iPhone von c42u" style="flex:1 1 16rem">
+                        <button type="button" class="btn btn-primary"
+                                onclick="createApiKey()" data-i18n="keys.create">Zugang anlegen</button>
+                    </div>
+                    <div id="apiKeysList"></div>
+                </div>
             </div>
 
             <!-- Hilfe -->
@@ -1076,153 +1252,6 @@ openssl s_client -connect domain:443 2&gt;&amp;1 | grep "depth="    # depth=0 + 
                 </div>
             </div>
 
-            <!-- Unterstützung -->
-            <div class="page" id="page-support">
-                <div class="page-header">
-                    <div></div>
-                </div>
-
-                <div class="support-logo">
-                    <img src="/static/logo-c42u.png" alt="c42u Logo">
-                </div>
-
-                <!-- Deutsch -->
-                <div class="support-content" id="supportDe">
-                    <div class="support-hero">
-                        <h2>Support Independent Infrastructure Software</h2>
-                        <p>Ich entwickle moderne, praxisnahe Softwareloesungen fuer reale IT-Umgebungen &ndash; mit Fokus auf Transparenz, Automatisierung, Offline-Faehigkeit und sauberer Architektur.</p>
-                        <p>Meine Projekte entstehen aus echten Anforderungen in Homelab-, Enterprise- und Self-Hosting-Umgebungen. Sie sollen nicht nur &quot;funktionieren&quot;, sondern nachvollziehbar, dokumentiert und langfristig wartbar sein.</p>
-                    </div>
-
-                    <div class="support-features">
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f512;</span> sicherheitsorientiert</div>
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f310;</span> self-hosted &amp; offline-faehig</div>
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f9e9;</span> modular und erweiterbar</div>
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f4e6;</span> reproduzierbar deploybar</div>
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f4da;</span> sauber dokumentiert</div>
-                    </div>
-
-                    <p class="support-text">Ich investiere viel Zeit in Entwicklung, Testing, Dokumentation, Packaging und Support &ndash; oft weit ueber das hinaus, was man auf den ersten Blick sieht.</p>
-
-                    <div class="help-section">
-                        <h2>Warum Unterstuetzung?</h2>
-                        <div class="help-card">
-                            <p>Open-Source- und Community-Projekte leben von Menschen, die sie aktiv nutzen &ndash; und von denen, die bereit sind, ihre Weiterentwicklung zu ermoeglichen.</p>
-                            <p><strong>Deine Unterstuetzung hilft dabei:</strong></p>
-                            <ul>
-                                <li>neue Features umzusetzen</li>
-                                <li>Bugs schneller zu beheben</li>
-                                <li>Dokumentation &amp; Handbuecher auszubauen</li>
-                                <li>langfristige Wartung sicherzustellen</li>
-                                <li>Projekte unabhaengig und werbefrei zu halten</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="help-section">
-                        <h2>Transparenz &amp; Qualitaet</h2>
-                        <div class="help-card">
-                            <p>Ich arbeite strukturiert, versioniert und nachvollziehbar. Jede Unterstuetzung fliesst direkt in:</p>
-                            <ul>
-                                <li>Entwicklungszeit</li>
-                                <li>Infrastruktur</li>
-                                <li>Testumgebungen</li>
-                                <li>Dokumentation &amp; Packaging</li>
-                                <li>Community-Support</li>
-                            </ul>
-                            <p>Keine Marketing-Maschinerie. Kein Venture-Capital-Druck.<br>Nur solide Software fuer Menschen, die saubere Loesungen schaetzen.</p>
-                        </div>
-                    </div>
-
-                    <div class="help-section">
-                        <h2>Unterstuetzen statt konsumieren</h2>
-                        <div class="help-card">
-                            <p>Wenn dir meine Arbeit Zeit spart, dein Setup stabiler macht oder dir einfach Mehrwert bringt &ndash; dann kannst du sie hier unterstuetzen.</p>
-                            <p>Jeder Beitrag hilft. Regelmaessig oder einmalig.</p>
-                            <p>Und falls du nicht finanziell unterstuetzen moechtest:<br>Feedback, Issues, Feature-Ideen und konstruktive Kritik sind genauso willkommen &ndash; direkt ueber <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="support-inline-link">GitHub Issues</a>.</p>
-                        </div>
-                    </div>
-
-                    <p class="support-thanks"><strong>Danke, dass du unabhaengige Softwareentwicklung moeglich machst.</strong></p>
-                </div>
-
-                <!-- English -->
-                <div class="support-content" id="supportEn" style="display:none">
-                    <div class="support-hero">
-                        <h2>Support Independent Infrastructure Software</h2>
-                        <p>I build modern, practical software solutions for real-world IT environments &mdash; with a strong focus on transparency, automation, offline capability, and clean architecture.</p>
-                        <p>My projects grow out of real needs in homelab, enterprise, and self-hosted infrastructures. They are designed not just to &quot;work,&quot; but to be understandable, well-documented, and maintainable in the long term.</p>
-                    </div>
-
-                    <div class="support-features">
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f512;</span> security-focused</div>
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f310;</span> self-hosted &amp; offline-capable</div>
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f9e9;</span> modular and extensible</div>
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f4e6;</span> reproducibly deployable</div>
-                        <div class="support-feature"><span class="support-feature-icon">&#x1f4da;</span> thoroughly documented</div>
-                    </div>
-
-                    <p class="support-text">I invest significant time into development, testing, documentation, packaging, and support &mdash; often far beyond what is immediately visible.</p>
-
-                    <div class="help-section">
-                        <h2>Why Support?</h2>
-                        <div class="help-card">
-                            <p>Open-source and community-driven software thrives when users choose to actively sustain its development.</p>
-                            <p><strong>Your support helps to:</strong></p>
-                            <ul>
-                                <li>implement new features</li>
-                                <li>fix bugs faster</li>
-                                <li>expand documentation and manuals</li>
-                                <li>ensure long-term maintenance</li>
-                                <li>keep projects independent and ad-free</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="help-section">
-                        <h2>Transparency &amp; Quality</h2>
-                        <div class="help-card">
-                            <p>I work in a structured, versioned, and traceable way. Every contribution directly supports:</p>
-                            <ul>
-                                <li>development time</li>
-                                <li>infrastructure costs</li>
-                                <li>testing environments</li>
-                                <li>documentation and packaging</li>
-                                <li>community support</li>
-                            </ul>
-                            <p>No marketing machinery. No venture capital pressure.<br>Just solid software for people who value clean and reliable solutions.</p>
-                        </div>
-                    </div>
-
-                    <div class="help-section">
-                        <h2>Support Instead of Just Consuming</h2>
-                        <div class="help-card">
-                            <p>If my work saves you time, stabilizes your setup, or simply delivers real value &mdash; you can support it here.</p>
-                            <p>Every contribution matters. Recurring or one-time.</p>
-                            <p>And if financial support isn&rsquo;t an option:<br>Constructive feedback, issues, feature ideas, and thoughtful discussions are always welcome &ndash; directly via <a href="https://github.com/c42u/grocylink/issues" target="_blank" rel="noopener" class="support-inline-link">GitHub Issues</a>.</p>
-                        </div>
-                    </div>
-
-                    <p class="support-thanks"><strong>Thank you for helping make independent software development sustainable.</strong></p>
-                </div>
-
-                <!-- Spenden-Buttons -->
-                <div class="support-buttons">
-                    <a href="https://www.buymeacoffee.com/c42u" target="_blank" rel="noopener" class="support-btn support-btn-coffee">
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zm4-5c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1zm4 0c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1zm4 0c.7 0 1 .6 1 1s-.5 1.5-1 2c-.5-.5-1-1.3-1-2s.3-1 1-1z"/></svg>
-                        Buy me a Coffee
-                    </a>
-                    <a href="https://liberapay.com/c42u" target="_blank" rel="noopener" class="support-btn support-btn-liberapay">
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                        Liberapay
-                    </a>
-                    <a href="https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00" target="_blank" rel="noopener" class="support-btn support-btn-stripe">
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
-                        Stripe
-                    </a>
-                </div>
-            </div>
-
             <footer class="app-footer">
                 <div class="footer-left">
                     <a href="https://github.com/c42u" target="_blank" rel="noopener" title="c42u auf GitHub">
@@ -1239,18 +1268,18 @@ openssl s_client -connect domain:443 2&gt;&amp;1 | grep "depth="    # depth=0 + 
                         <span class="lang-en">Bugs &amp; Feature Requests</span>
                     </a>
                 </div>
-                <div class="footer-right">
-                    <a href="https://donate.stripe.com/cNi6oH4OX6KO8i1dpa1Nu00" target="_blank" rel="noopener">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="vertical-align:middle;margin-right:4px"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
-                        Stripe
-                    </a>
-                </div>
             </footer>
         </main>
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
-    <script src="/static/i18n.js"></script>
-    <script src="/static/app.js"></script>
+    <script>
+      // Die Sprache aus den Einstellungen -- fuer i18n.js die massgebliche
+      // Quelle. Sie steht **vor** dem Skript, damit dieses beim Laden nicht
+      // erst den Browserspeicher befragen muss.
+      window.SERVER_LANG = "{{ lang }}";
+    </script>
+    <script src="/static/i18n.js?v={{ version }}"></script>
+    <script src="/static/app.js?v={{ version }}"></script>
 </body>
 </html>

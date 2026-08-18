@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from grocy_client import GrocyClient
 from notifiers import get_notifier
+import sprache
 from database import (
     get_all_settings, get_channels_decrypted, get_product_overrides,
     add_log_entry, get_tracker_entry, upsert_tracker_entry, cleanup_tracker
@@ -11,38 +12,12 @@ from database import (
 logger = logging.getLogger(__name__)
 
 
-TRANSLATIONS = {
-    'de': {
-        'expiry_date': 'Ablaufdatum (MHD)',
-        'use_by_date': 'Verbrauchsdatum',
-        'expired_since': 'Abgelaufen seit (MHD)',
-        'use_by_since': 'Verbrauchsdatum überschritten seit',
-        'missing_amount': 'Fehlmenge',
-        'unknown': 'Unbekannt',
-        'product_nr': 'Produkt',
-        'type_expiring': 'Bald ablaufend',
-        'type_expired': 'Abgelaufen',
-        'type_missing': 'Mindestbestand unterschritten',
-        'title': 'Grocy Warnung: {count} Produkt(e) erfordern Aufmerksamkeit',
-    },
-    'en': {
-        'expiry_date': 'Best before date',
-        'use_by_date': 'Use by date',
-        'expired_since': 'Best before exceeded since',
-        'use_by_since': 'Use by date exceeded since',
-        'missing_amount': 'Missing amount',
-        'unknown': 'Unknown',
-        'product_nr': 'Product',
-        'type_expiring': 'Expiring soon',
-        'type_expired': 'Expired',
-        'type_missing': 'Below minimum stock',
-        'title': 'Grocy Warning: {count} product(s) require attention',
-    },
-}
-
-
-def _t(lang, key):
-    return TRANSLATIONS.get(lang, TRANSLATIONS['de']).get(key, TRANSLATIONS['de'].get(key, key))
+# Die Texte stehen seit 1.7.0 in `sprache.py` -- dieselbe Tabelle bedient
+# jetzt auch die Antworten der Schnittstelle, die Testnachricht und das Log
+# der Oberflaeche. Vorher lag sie hier und galt nur fuer den Warnungsversand;
+# alles andere blieb deutsch (GitHub-Fehler #1).
+def _t(lang, key, **werte):
+    return sprache.t(key, lang=lang, **werte)
 
 
 def run_check():

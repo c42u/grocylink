@@ -9,7 +9,8 @@
 #   nach Docker Hub. Trigger: Push auf main-Branch oder neuer Version-Tag.
 #
 # Ziel-Registry:
-#   c42u/grocylink  (öffentliches Docker-Hub-Repo)
+#   c42u/grocylink-test  (Testphase, privates Repo)
+#   → Nach erfolgreichem Test auf c42u/grocylink ändern
 #
 # Secrets (in GitHub Repository Settings → Secrets → Actions hinterlegen):
 #   DOCKERHUB_USERNAME  → Docker Hub Benutzername (c42u)
@@ -43,12 +44,12 @@ jobs:
 
       # ------------------------------------------------------------------
       # 2. QEMU einrichten – notwendig für Cross-Compilation
-      #    amd64-Runner kann damit arm64 Images bauen
+      #    amd64-Runner kann damit arm64 und arm/v7 Images bauen
       # ------------------------------------------------------------------
       - name: QEMU einrichten (Cross-Compilation)
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
 
       # ------------------------------------------------------------------
       # 3. Docker Buildx einrichten – erweiterter Build-Daemon
@@ -70,15 +71,15 @@ jobs:
       # ------------------------------------------------------------------
       # 5. Image-Metadaten & Tags generieren
       #    Bei Tag v1.0.5 entstehen folgende Tags automatisch:
-      #      c42u/grocylink:1.0.5
-      #      c42u/grocylink:1.0
-      #      c42u/grocylink:latest
+      #      c42u/grocylink-test:1.0.5
+      #      c42u/grocylink-test:1.0
+      #      c42u/grocylink-test:latest
       # ------------------------------------------------------------------
       - name: Image-Metadaten & Tags generieren
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: c42u/grocylink
+          images: c42u/grocylink-test
           tags: |
             # Vollständige Version: 1.0.5
             type=semver,pattern={{version}}
@@ -91,7 +92,8 @@ jobs:
       # 6. Multi-Arch Image bauen und nach Docker Hub pushen
       #    Plattformen:
       #      linux/amd64   → Standard-Server, NAS, Synology, x86-PC
-      #      linux/arm64   → Raspberry Pi 3/4/5 (64-Bit-OS), Apple M-Chips
+      #      linux/arm64   → Raspberry Pi 4, Pi 5, Apple M-Chips
+      #      linux/arm/v7  → Raspberry Pi 2, Pi 3 (32-Bit)
       # ------------------------------------------------------------------
       - name: Multi-Arch Image bauen & pushen
         uses: docker/build-push-action@v6
@@ -100,9 +102,8 @@ jobs:
           context: .
           # Haupt-Dockerfile (ohne Caddy)
           file: ./docker/Dockerfile
-          # Ziel-Plattformen (arm/v7 entfernt: rapidfuzz/scikit-build-core hat
-          # keine armv7l-Wheels und scheitert beim Source-Build)
-          platforms: linux/amd64,linux/arm64
+          # Alle Ziel-Plattformen
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           # push: true → direkt nach Docker Hub pushen
           push: true
           # Generierte Tags und Labels aus Schritt 5 verwenden
@@ -124,7 +125,7 @@ jobs:
         run: |
           echo "## Docker Image erfolgreich gepusht" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Repository:** c42u/grocylink" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** c42u/grocylink-test" >> $GITHUB_STEP_SUMMARY
           echo "**Plattformen:** linux/amd64, linux/arm64, linux/arm/v7" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Tags:**" >> $GITHUB_STEP_SUMMARY

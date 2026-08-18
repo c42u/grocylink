@@ -13,7 +13,15 @@ class BaseNotifier:
         raise NotImplementedError
 
     def test(self):
-        return self.send("Grocylink - Test", "Dies ist eine Testnachricht von Grocylink.")
+        """Testnachricht -- in der eingestellten Sprache.
+
+        Sie entsteht ohne Browser, deshalb kann die Sprache nicht aus dem
+        Fenster kommen: Sie steht in den Einstellungen (GitHub-Fehler #1, die
+        Nachricht kam auf Englisch gestellter Oberflaeche auf Deutsch an).
+        """
+        import sprache
+        return self.send(sprache.t('notify.test_title'),
+                         sprache.t('notify.test_body'))
 
 
 class EmailNotifier(BaseNotifier):

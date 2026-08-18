@@ -3,3 +3,8 @@
 !Code/
 !Code/**
 !docker/entrypoint.sh
+
+# Tests und Bytecode gehoeren nicht ins Laufzeit-Image
+Code/tests/
+Code/**/__pycache__/
+Code/**/*.pyc

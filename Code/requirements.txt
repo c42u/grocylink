@@ -9,3 +9,4 @@ pdfplumber==0.11.4
 pdf2image==1.17.0
 pytesseract==0.3.13
 rapidfuzz==3.10.0
+bring-api==1.1.2

@@ -5,7 +5,7 @@ from cryptography.fernet import Fernet
 
 KEY_PATH = os.path.join(os.path.dirname(__file__), 'data', '.encryption_key')
 
-SENSITIVE_SETTINGS = {'grocy_api_key', 'caldav_password'}
+SENSITIVE_SETTINGS = {'grocy_api_key', 'caldav_password', 'bring_password'}
 
 SENSITIVE_CHANNEL_KEYS = {
     'password', 'api_token', 'user_key', 'bot_token',

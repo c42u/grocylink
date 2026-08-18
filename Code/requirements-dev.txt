@@ -1,0 +1,7 @@
+# Zusaetzliche Pakete fuer die Testausfuehrung.
+# Laufzeit-Abhaengigkeiten stehen in requirements.txt und werden nicht
+# dupliziert: -r zieht sie mit herein.
+-r requirements.txt
+
+pytest==9.0.2
+pytest-cov==7.1.0

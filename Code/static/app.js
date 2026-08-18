@@ -13,11 +13,6 @@ document.getElementById('themeToggle').addEventListener('click', () => {
 if (typeof currentLang !== 'undefined') {
     const langSel = document.getElementById('langSelect');
     if (langSel) langSel.value = currentLang;
-    // Apply language to support page
-    const supportDe = document.getElementById('supportDe');
-    const supportEn = document.getElementById('supportEn');
-    if (supportDe) supportDe.style.display = currentLang === 'de' ? '' : 'none';
-    if (supportEn) supportEn.style.display = currentLang === 'en' ? '' : 'none';
     // Apply data-i18n on initial load
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -29,20 +24,37 @@ if (typeof currentLang !== 'undefined') {
 }
 
 // Navigation
+function activatePage(page) {
+    const target = document.getElementById('page-' + page);
+    const link = document.querySelector('.nav-link[data-page="' + page + '"]');
+    if (!target || !link) return false;
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    target.classList.add('active');
+    try { localStorage.setItem('grocylink-page', page); } catch (e) {}
+    loadPageData(page);
+    return true;
+}
+
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', e => {
         if (!link.dataset.page) return;
         e.preventDefault();
-        const page = link.dataset.page;
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + page).classList.add('active');
-        const footerRight = document.querySelector('.footer-right');
-        if (footerRight) footerRight.style.visibility = page === 'support' ? 'hidden' : '';
-        loadPageData(page);
+        activatePage(link.dataset.page);
     });
 });
+
+// Beim Reload die zuletzt geöffnete Seite wiederherstellen.
+(function restoreLastPage() {
+    try {
+        const last = localStorage.getItem('grocylink-page');
+        if (last && last !== 'dashboard') {
+            // Nur ausfuehren wenn die Seite wirklich existiert; sonst Default
+            if (!activatePage(last)) activatePage('dashboard');
+        }
+    } catch (e) {}
+})();
 
 function loadPageData(page) {
     if (page === 'dashboard') loadDashboard();
@@ -51,9 +63,9 @@ function loadPageData(page) {
     else if (page === 'receipts') loadReceipts();
     else if (page === 'log') loadLog();
     else if (page === 'caldav') loadCaldav();
+    else if (page === 'bring') loadBring();
     else if (page === 'help') { /* static content, handled by CSS lang-de/lang-en */ }
-    else if (page === 'support') { /* static content, handled by setLanguage */ }
-    else if (page === 'settings') loadSettings();
+    else if (page === 'settings') { loadSettings(); loadApiKeys(); }
 }
 
 // Toast
@@ -420,6 +432,10 @@ const LOG_TYPE_LABELS = {
     'missing': 'log.type_missing',
     'test': 'log.type_test',
     'error': 'log.type_error',
+    'receipt_error': 'log.type_receipt_error',
+    'receipt_summary': 'log.type_receipt_summary',
+    'bring_sync': 'log.type_bring_sync',
+    'bring_manual': 'log.type_bring_manual',
 };
 const LOG_TYPE_COLORS = {
     'expiring': '#e67e22',
@@ -427,6 +443,10 @@ const LOG_TYPE_COLORS = {
     'missing': '#9b59b6',
     'test': '#3498db',
     'error': '#e74c3c',
+    'receipt_error': '#e74c3c',
+    'receipt_summary': '#e67e22',
+    'bring_sync': '#16a085',
+    'bring_manual': '#16a085',
 };
 
 const LOG_MSG_TRANSLATIONS = {
@@ -871,6 +891,436 @@ async function clearSyncMap() {
     loadSyncMap();
 }
 
+// Bring!
+async function loadBring() {
+    try {
+        const status = await api('/api/bring/status');
+        window._bringGlobalUuid = status.bring_list_uuid || '';
+        const accountReady = !!(status.bring_email && status.has_bring_password);
+        document.getElementById('bringItems').textContent = status.items_synced || 0;
+        document.getElementById('bringLastSync').textContent = status.last_sync || t('bring.never');
+        document.getElementById('bringLastSync').style.fontSize = status.last_sync ? '.9em' : '';
+
+        const enabled = status.enabled;
+        document.getElementById('bringEnabled').textContent = enabled ? t('bring.active') : t('bring.inactive');
+        const statusCard = document.getElementById('bringStatusCard');
+        statusCard.className = 'stat-card ' + (enabled ? 'stat-ok' : 'stat-warning');
+
+        document.getElementById('bringEmail').value = status.bring_email || '';
+        const pwField = document.getElementById('bringPassword');
+        if (status.has_bring_password && !pwField.value) {
+            pwField.placeholder = '••••••••';
+        }
+        document.getElementById('bringInterval').value = status.sync_interval || 30;
+        document.getElementById('bringSource').value = status.source || 'shopping_list';
+        document.getElementById('bringAutoRemove').checked = !!status.auto_remove;
+        document.getElementById('bringSyncEnabled').checked = enabled;
+
+        if (status.bring_list_uuid) {
+            const select = document.getElementById('bringList');
+            if (!select.querySelector('option[value="' + status.bring_list_uuid + '"]')) {
+                const opt = document.createElement('option');
+                opt.value = status.bring_list_uuid;
+                opt.textContent = status.bring_list_uuid.substring(0, 12) + '…';
+                select.appendChild(opt);
+            }
+            select.value = status.bring_list_uuid;
+        }
+
+        loadBringMap();
+
+        // Listen automatisch laden, wenn ein Konto konfiguriert ist – sonst
+        // muss der User jedes Mal manuell auf "Laden" klicken.
+        if (accountReady) {
+            bringLoadLists();
+        }
+    } catch (e) {
+        toast(t('bring.load_error') + ': ' + e.message, 'error');
+    }
+}
+
+async function loadBringMap() {
+    const map = await api('/api/bring/map');
+    const tbody = document.querySelector('#tableBringMap tbody');
+    if (!map.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">' + esc(t('bring.no_entries')) + '</td></tr>';
+        return;
+    }
+    tbody.innerHTML = map.map(m => `
+        <tr>
+            <td>${m.grocy_product_id}</td>
+            <td>${esc(m.bring_item_name)}</td>
+            <td>${esc(m.last_spec || '-')}</td>
+            <td class="uid-cell" title="${esc(m.bring_item_uuid)}">${esc((m.bring_item_uuid || '').substring(0, 18))}…</td>
+            <td>${esc(m.last_synced)}</td>
+        </tr>`).join('');
+}
+
+async function bringTestConnection() {
+    const status = document.getElementById('bringConnectionStatus');
+    status.textContent = t('bring.testing');
+    status.style.color = 'var(--text-muted)';
+    const testData = {
+        bring_email: document.getElementById('bringEmail').value,
+    };
+    const pw = document.getElementById('bringPassword').value;
+    if (pw) testData.bring_password = pw;
+    const data = await api('/api/bring/test', 'POST', testData);
+    status.textContent = data.message;
+    status.style.color = data.ok ? 'var(--success)' : 'var(--danger)';
+}
+
+async function bringLoadLists() {
+    const mainSelect = document.getElementById('bringList');
+    const manualSelect = document.getElementById('bringManualList');
+    const viewSelect = document.getElementById('bringViewList');
+    mainSelect.innerHTML = '<option value="">' + esc(t('bring.list_loading')) + '</option>';
+    const data = await api('/api/bring/lists');
+    mainSelect.innerHTML = '<option value="">' + esc(t('bring.list_select')) + '</option>';
+    if (manualSelect) manualSelect.innerHTML = '';
+    if (viewSelect) viewSelect.innerHTML = '<option value="">' + esc(t('bring.view_select')) + '</option>';
+
+    if (data.ok && data.lists) {
+        data.lists.forEach(l => {
+            const opt = document.createElement('option');
+            opt.value = l.uuid;
+            opt.textContent = l.name;
+            mainSelect.appendChild(opt);
+            if (manualSelect) manualSelect.appendChild(opt.cloneNode(true));
+            if (viewSelect) viewSelect.appendChild(opt.cloneNode(true));
+        });
+        // Globale Liste in den Sub-Dropdowns vorauswählen
+        const globalUuid = window._bringGlobalUuid || '';
+        if (globalUuid) {
+            if (manualSelect && manualSelect.querySelector('option[value="' + globalUuid + '"]')) {
+                manualSelect.value = globalUuid;
+            }
+            if (viewSelect && viewSelect.querySelector('option[value="' + globalUuid + '"]')) {
+                viewSelect.value = globalUuid;
+                bringLoadListItems();
+            }
+        }
+    } else {
+        toast(data.message || t('bring.list_error'), 'error');
+    }
+}
+
+async function bringAddItemManual() {
+    const name = document.getElementById('bringManualName').value.trim();
+    const spec = document.getElementById('bringManualSpec').value.trim();
+    const listUuid = document.getElementById('bringManualList').value;
+    if (!name) {
+        toast(t('bring.manual_name_required'), 'error');
+        return;
+    }
+    if (!listUuid) {
+        toast(t('bring.manual_list_required'), 'error');
+        return;
+    }
+    const data = await api('/api/bring/items/manual', 'POST', {
+        name: name,
+        spec: spec,
+        list_uuid: listUuid,
+    });
+    if (data.ok) {
+        toast(data.message || t('bring.manual_added'), 'success');
+        document.getElementById('bringManualName').value = '';
+        document.getElementById('bringManualSpec').value = '';
+        // Wenn die View-Liste gerade die gleiche Liste zeigt, refreshen
+        const viewSelect = document.getElementById('bringViewList');
+        if (viewSelect && viewSelect.value === listUuid) {
+            bringLoadListItems();
+        }
+    } else {
+        toast(data.message || t('bring.manual_error'), 'error');
+    }
+}
+
+async function bringLoadListItems() {
+    const select = document.getElementById('bringViewList');
+    const tbody = document.querySelector('#tableBringListItems tbody');
+    if (!select || !tbody) return;
+    const listUuid = select.value;
+    const COLSPAN = 6;
+    if (!listUuid) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="' + COLSPAN + '">' + esc(t('bring.view_no_list')) + '</td></tr>';
+        return;
+    }
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="' + COLSPAN + '">' + esc(t('bring.view_loading')) + '</td></tr>';
+    const data = await api('/api/bring/list-items?list_uuid=' + encodeURIComponent(listUuid));
+    if (!data.ok) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="' + COLSPAN + '">' + esc(data.message || t('bring.view_error')) + '</td></tr>';
+        return;
+    }
+    // Currency aus Grocy uebernehmen + Symbol cachen
+    window._bringCurrencyCode = data.currency || 'EUR';
+    window._bringCurrencySymbol = bringCurrencySymbol(window._bringCurrencyCode);
+    if (!data.items || !data.items.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="' + COLSPAN + '">' + esc(t('bring.view_empty')) + '</td></tr>';
+        bringRecalcGrandTotal();
+        return;
+    }
+    // Snapshot der Original-Werte fuer Diff merken
+    window._bringRowOrigin = {};
+    tbody.innerHTML = data.items.map((it, idx) => {
+        const qtyStr = it.quantity != null ? String(it.quantity) : '';
+        window._bringRowOrigin[idx] = {
+            name: it.name,
+            quantity: qtyStr,
+            info: it.info || '',
+            unit_price: it.unit_price != null ? String(it.unit_price) : '',
+            last_price: it.last_price != null ? Number(it.last_price) : null,
+            uuid: it.uuid,
+            grocy_product_id: it.grocy_product_id,
+        };
+        const grocyHint = it.grocy_product_name && it.grocy_product_name.toLowerCase() !== it.name.toLowerCase()
+            ? ' <span style="color:var(--text-muted);font-size:.85em" title="' + esc(t('bring.view_grocy_match')) + '">→ ' + esc(it.grocy_product_name) + '</span>'
+            : '';
+        const priceVal = it.unit_price != null ? it.unit_price : '';
+        const placeholder = it.last_price != null ? formatPriceNumber(it.last_price) : '';
+        const noMatch = !it.grocy_product_id;
+        const priceTitle = noMatch
+            ? t('bring.view_no_grocy_match')
+            : (it.unit_price != null
+                ? t('bring.view_price_userfield')
+                : (it.last_price != null ? t('bring.view_price_grocy_fallback') : ''));
+        const priceClass = noMatch ? ' bring-edit-price-unmatched' : '';
+        const totalCell = '<span class="bring-edit-total" data-row="' + idx + '" data-total="' +
+            (it.total_price != null ? esc(String(it.total_price)) : '') + '">' +
+            (it.total_price != null ? bringFormatPrice(it.total_price) : '<span style="color:var(--text-muted)">–</span>') +
+            '</span>';
+        return '<tr data-row="' + idx + '">' +
+            '<td><input type="text" class="bring-edit-name" value="' + esc(it.name) + '" oninput="bringRowDirty(' + idx + ')" />' + grocyHint + '</td>' +
+            '<td><input type="number" step="any" min="0" class="bring-edit-qty" value="' + esc(qtyStr) +
+                '" oninput="bringRowDirty(' + idx + ');bringRecalcTotal(' + idx + ')" /></td>' +
+            '<td><input type="text" class="bring-edit-info" value="' + esc(it.info || '') + '" oninput="bringRowDirty(' + idx + ')" /></td>' +
+            '<td><input type="number" step="0.01" min="0" class="bring-edit-price' + priceClass + '" value="' + esc(String(priceVal)) +
+                '" placeholder="' + esc(placeholder) + '" title="' + esc(priceTitle) + '"' +
+                ' oninput="bringRowDirty(' + idx + ');bringRecalcTotal(' + idx + ')" /></td>' +
+            '<td>' + totalCell + '</td>' +
+            '<td><button type="button" class="btn btn-secondary btn-sm" onclick="bringSaveRow(' + idx + ')" data-i18n="bring.view_save">Speichern</button></td>' +
+            '</tr>';
+    }).join('');
+    // i18n auf neue Buttons anwenden
+    document.querySelectorAll('#tableBringListItems [data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+    });
+    bringRecalcGrandTotal();
+}
+
+// Bestimmt den effektiven Preis einer Zeile: Input-Wert wenn vorhanden,
+// sonst last_price aus Grocy als Fallback (Backend-Logik 1:1 nachgebildet).
+function bringEffectivePrice(row, idx) {
+    const inputVal = parseLocaleNumber(row.querySelector('.bring-edit-price').value);
+    if (!isNaN(inputVal)) return inputVal;
+    const origin = (window._bringRowOrigin || {})[idx];
+    if (origin && origin.last_price != null) return Number(origin.last_price);
+    return NaN;
+}
+
+function bringRecalcGrandTotal() {
+    const cell = document.getElementById('bringGrandTotal');
+    if (!cell) return;
+    const tbody = document.querySelector('#tableBringListItems tbody');
+    if (!tbody) {
+        cell.textContent = '–';
+        return;
+    }
+    let sum = 0;
+    let any = false;
+    tbody.querySelectorAll('tr[data-row]').forEach(row => {
+        const idx = row.getAttribute('data-row');
+        const qty = parseLocaleNumber(row.querySelector('.bring-edit-qty').value);
+        const price = bringEffectivePrice(row, idx);
+        if (!isNaN(price)) {
+            sum += (isNaN(qty) ? 1 : qty) * price;
+            any = true;
+        }
+    });
+    cell.textContent = any ? bringFormatPrice(sum) : '–';
+}
+
+function bringRowDirty(idx) {
+    const row = document.querySelector('#tableBringListItems tr[data-row="' + idx + '"]');
+    if (row) row.classList.add('row-dirty');
+}
+
+function bringRecalcTotal(idx) {
+    const row = document.querySelector('#tableBringListItems tr[data-row="' + idx + '"]');
+    if (!row) return;
+    const qty = parseLocaleNumber(row.querySelector('.bring-edit-qty').value);
+    const price = bringEffectivePrice(row, idx);
+    const cell = row.querySelector('.bring-edit-total');
+    if (!cell) return;
+    if (!isNaN(price)) {
+        const total = (isNaN(qty) ? 1 : qty) * price;
+        cell.innerHTML = bringFormatPrice(total);
+    } else {
+        cell.innerHTML = '<span style="color:var(--text-muted)">–</span>';
+    }
+    bringRecalcGrandTotal();
+}
+
+function bringCollectRowDiff(idx) {
+    const row = document.querySelector('#tableBringListItems tr[data-row="' + idx + '"]');
+    if (!row) return null;
+    const origin = (window._bringRowOrigin || {})[idx];
+    if (!origin) return null;
+    const newName = row.querySelector('.bring-edit-name').value.trim();
+    const newQty = row.querySelector('.bring-edit-qty').value.trim();
+    const newInfo = row.querySelector('.bring-edit-info').value.trim();
+    const newPriceRaw = row.querySelector('.bring-edit-price').value.trim();
+    if (!newName) {
+        return {error: t('bring.manual_name_required')};
+    }
+    const nameChanged = newName !== origin.name;
+    const qtyChanged = newQty !== (origin.quantity || '');
+    const infoChanged = newInfo !== (origin.info || '');
+    const priceChanged = newPriceRaw !== (origin.unit_price || '');
+    if (!nameChanged && !qtyChanged && !infoChanged && !priceChanged) {
+        return null;  // nichts zu tun
+    }
+    const payload = {
+        list_uuid: document.getElementById('bringViewList').value,
+        item_uuid: origin.uuid,
+    };
+    if (nameChanged || qtyChanged || infoChanged) {
+        payload.name = newName;
+        payload.old_name = origin.name;
+        payload.quantity = newQty === '' ? null : parseLocaleNumber(newQty);
+        payload.info = newInfo;
+    }
+    if (priceChanged) {
+        payload.grocy_product_id = origin.grocy_product_id || null;
+        payload.unit_price = newPriceRaw === '' ? null : parseLocaleNumber(newPriceRaw);
+    }
+    return {payload: payload, idx: idx};
+}
+
+async function bringSaveRow(idx) {
+    const diff = bringCollectRowDiff(idx);
+    if (!diff) {
+        toast(t('bring.view_no_changes'), 'info');
+        return;
+    }
+    if (diff.error) {
+        toast(diff.error, 'error');
+        return;
+    }
+    const data = await api('/api/bring/list-items', 'PUT', diff.payload);
+    if (data.ok) {
+        toast(t('bring.view_saved'), 'success');
+        bringLoadListItems();
+    } else {
+        toast(data.message || t('bring.view_save_error'), 'error');
+    }
+}
+
+async function bringSaveAll() {
+    const origins = window._bringRowOrigin || {};
+    const diffs = [];
+    for (const idx of Object.keys(origins)) {
+        const d = bringCollectRowDiff(idx);
+        if (d && d.error) {
+            toast(d.error, 'error');
+            return;
+        }
+        if (d && d.payload) diffs.push(d);
+    }
+    if (!diffs.length) {
+        toast(t('bring.view_no_changes'), 'info');
+        return;
+    }
+    let ok = 0, fail = 0;
+    for (const d of diffs) {
+        const res = await api('/api/bring/list-items', 'PUT', d.payload);
+        if (res.ok) ok++;
+        else fail++;
+    }
+    if (fail === 0) {
+        toast(t('bring.view_saved_count').replace('{n}', String(ok)), 'success');
+    } else {
+        toast(t('bring.view_saved_partial')
+            .replace('{ok}', String(ok))
+            .replace('{fail}', String(fail)), 'error');
+    }
+    bringLoadListItems();
+}
+
+function formatPriceNumber(p) {
+    const n = parseFloat(p);
+    if (isNaN(n)) return '';
+    return n.toLocaleString(currentLang === 'en' ? 'en-US' : 'de-DE',
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function bringCurrencySymbol(code) {
+    if (!code) return '';
+    // Symbol via Intl.NumberFormat in der aktuellen UI-Sprache
+    try {
+        const parts = new Intl.NumberFormat(
+            currentLang === 'en' ? 'en-US' : 'de-DE',
+            { style: 'currency', currency: code, minimumFractionDigits: 0 }
+        ).formatToParts(0);
+        const sym = parts.find(p => p.type === 'currency');
+        return sym ? sym.value : code;
+    } catch (e) {
+        return code;
+    }
+}
+
+function bringFormatPrice(p) {
+    const n = parseFloat(p);
+    if (isNaN(n)) return '';
+    return formatPriceNumber(n) + ' ' + (window._bringCurrencySymbol || '€');
+}
+
+// Akzeptiert deutsche und englische Notation: "2,49", "2.49", "2 ,49"
+function parseLocaleNumber(str) {
+    if (str == null) return NaN;
+    const s = String(str).trim().replace(/\s/g, '').replace(',', '.');
+    if (s === '') return NaN;
+    return parseFloat(s);
+}
+
+async function saveBringSettings() {
+    const settings = {
+        bring_email: document.getElementById('bringEmail').value,
+        bring_list_uuid: document.getElementById('bringList').value,
+        bring_sync_interval_minutes: document.getElementById('bringInterval').value,
+        bring_source: document.getElementById('bringSource').value,
+        bring_auto_remove: document.getElementById('bringAutoRemove').checked ? '1' : '0',
+        bring_sync_enabled: document.getElementById('bringSyncEnabled').checked ? '1' : '0',
+    };
+    const pw = document.getElementById('bringPassword').value;
+    if (pw) settings.bring_password = pw;
+
+    await api('/api/settings', 'POST', settings);
+    toast(t('bring.saved'), 'success');
+    document.getElementById('bringPassword').value = '';
+    loadBring();
+}
+
+async function bringSyncNow() {
+    toast(t('bring.sync_running'), 'info');
+    const data = await api('/api/bring/sync-now', 'POST');
+    if (data.ok) {
+        let msg = data.message;
+        toast(msg, 'success');
+        loadBring();
+    } else {
+        toast(data.message || t('bring.sync_error'), 'error');
+    }
+}
+
+async function clearBringMap() {
+    if (!confirm(t('bring.confirm_clear_map'))) return;
+    await api('/api/bring/map', 'DELETE');
+    toast(t('bring.map_cleared'), 'success');
+    loadBringMap();
+}
+
 function showLogError(idx) {
     const msg = (window._logMessages || {})[idx] || t('log.no_details');
     showErrorDetail(t('log.error_title'), msg);
@@ -917,12 +1367,14 @@ const RECEIPT_STATUS_LABELS = {
     'confirmed': 'rcpt.status_confirmed',
     'rejected': 'rcpt.status_rejected',
     'error': 'rcpt.status_error',
+    'partial': 'rcpt.status_partial',
 };
 const RECEIPT_STATUS_COLORS = {
     'pending_review': 'var(--warning)',
     'confirmed': 'var(--success)',
     'rejected': 'var(--text-muted)',
     'error': 'var(--danger)',
+    'partial': 'var(--warning)',
 };
 
 async function loadReceipts() {
@@ -1424,22 +1876,37 @@ async function confirmCurrentReceipt() {
         });
         const body = Object.keys(newProducts).length ? { new_products: newProducts } : {};
         const data = await api('/api/receipts/' + window._currentReceiptId + '/confirm', 'POST', body);
-        if (data.ok) {
+        const errs = (data.errors && data.errors.length) ? data.errors : [];
+        const hasAny = (data.added || 0) > 0 || (data.created || 0) > 0;
+
+        if (errs.length) {
+            // Sammel-Toast mit Anzahl + Hinweis aufs Log; Details in einem Modal
+            const summary = t('rcpt.confirm_with_errors')
+                .replace('{added}', String(data.added || 0))
+                .replace('{failed}', String(errs.length));
+            toast(summary, 'error');
+            const detailLines = errs.map(e =>
+                typeof e === 'string' ? e : (e.item + ': ' + e.message)
+            ).join('\n');
+            showErrorDetail(t('rcpt.confirm_error_title'), detailLines);
+        }
+        if (hasAny && !errs.length) {
             let msg = data.added + ' ' + t('rcpt.confirmed_count');
             if (data.created > 0) {
                 msg += ', ' + data.created + ' ' + t('rcpt.created_count');
             }
             toast(msg, 'success');
-            if (data.errors && data.errors.length) {
-                data.errors.forEach(e => toast(e, 'error'));
-            }
-            closeModal('receiptReviewModal');
-            loadReceipts();
-            // Produkt-Cache invalidieren
-            window._grocyProducts = [];
-        } else {
-            toast(data.error || t('rcpt.confirm_error'), 'error');
         }
+
+        // Modal nur schliessen, wenn keine Fehler aufgetreten sind. Bei
+        // Teil-Fehlern bleibt der Review offen, damit der User die noch
+        // nicht gebuchten Items nachbearbeiten kann.
+        if (!errs.length) {
+            closeModal('receiptReviewModal');
+        }
+        loadReceipts();
+        // Produkt-Cache invalidieren (es koennten neue Produkte angelegt sein)
+        window._grocyProducts = [];
     } catch (e) {
         toast(t('rcpt.confirm_error') + ': ' + e.message, 'error');
     }
@@ -1501,3 +1968,70 @@ async function deleteMapping(id) {
 
 // Init
 loadDashboard();
+
+
+// ---------------------------------------------------------------------------
+// App-Zugaenge (Schluessel je Geraet fuer /api/v1)
+//
+// Der Schluessel erscheint genau einmal -- gespeichert ist nur sein SHA-256.
+// Deshalb steht er nach dem Anlegen im gruenen Kasten und verschwindet beim
+// naechsten Laden der Liste.
+// ---------------------------------------------------------------------------
+
+async function loadApiKeys() {
+    const box = document.getElementById('apiKeysList');
+    if (!box) return;
+    try {
+        const keys = await (await fetch('/api/keys')).json();
+        if (!keys.length) {
+            box.innerHTML = '<p class="hint">' + t('keys.none') + '</p>';
+            return;
+        }
+        box.innerHTML = '<table class="table"><thead><tr>' +
+            '<th>' + t('keys.device') + '</th><th>' + t('keys.created') +
+            '</th><th>' + t('keys.last_used') + '</th><th></th>' +
+            '</tr></thead><tbody>' + keys.map(k => `
+            <tr${k.active ? '' : ' style="opacity:.6"'}>
+                <td>${escapeHtml(k.name)}${k.active ? '' : ' <small>(' + t('keys.revoked') + ')</small>'}</td>
+                <td><small>${(k.created_at || '').replace('T', ' ')}</small></td>
+                <td><small>${k.last_used_at ? k.last_used_at.replace('T', ' ') : t('keys.never')}</small></td>
+                <td>${k.active ? `<button class="btn btn-danger btn-sm"
+                        onclick="revokeApiKey(${k.id}, '${escapeHtml(k.name)}')">${t('keys.revoke')}</button>` : ''}</td>
+            </tr>`).join('') + '</tbody></table>';
+    } catch (e) {
+        box.innerHTML = '<p class="hint">' + t('keys.unreadable') + ': ' + e + '</p>';
+    }
+}
+
+async function createApiKey() {
+    const feld = document.getElementById('newKeyName');
+    const name = (feld.value || '').trim() || t('keys.device');
+    try {
+        const antwort = await fetch('/api/keys', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name: name})
+        });
+        const daten = await antwort.json();
+        document.getElementById('newKeyValue').textContent = daten.key;
+        document.getElementById('newKeyBox').style.display = 'block';
+        feld.value = '';
+        loadApiKeys();
+    } catch (e) {
+        alert(t('keys.create_failed') + ': ' + e);
+    }
+}
+
+async function revokeApiKey(id, name) {
+    if (!confirm(t('keys.confirm_revoke').replace('{name}', name))) return;
+    await fetch('/api/keys/' + id, {method: 'DELETE'});
+    // Der angezeigte Schluessel gehoert womoeglich zum widerrufenen Zugang.
+    document.getElementById('newKeyBox').style.display = 'none';
+    loadApiKeys();
+}
+
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text == null ? '' : String(text);
+    return d.innerHTML;
+}

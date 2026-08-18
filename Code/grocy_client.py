@@ -64,6 +64,21 @@ class GrocyClient:
         except Exception as e:
             return False, str(e)
 
+    def get_system_config(self):
+        """Liefert die Grocy-System-Konfiguration (CURRENCY, etc.)."""
+        return self._get('/system/config')
+
+    def get_currency(self):
+        """Liefert den ISO-Currency-Code aus Grocy. Fallback: 'EUR'."""
+        try:
+            cfg = self.get_system_config()
+            cur = cfg.get('CURRENCY')
+            if isinstance(cur, str) and cur.strip():
+                return cur.strip()
+        except Exception:
+            pass
+        return 'EUR'
+
     def get_volatile_stock(self, due_soon_days=5):
         return self._get('/stock/volatile', params={'due_soon_days': due_soon_days})
 
@@ -164,9 +179,61 @@ class GrocyClient:
                 results.append(product)
         return results
 
+    def get_shopping_list(self):
+        """Liefert die Eintraege der Grocy-Shoppinglist (alle Listen)."""
+        return self._get('/objects/shopping_list')
+
+    def get_shopping_lists(self):
+        """Liefert die definierten Shoppinglisten (Metadaten, mehrere moeglich)."""
+        return self._get('/objects/shopping_lists')
+
     def get_userfields(self, entity='products'):
         """Liefert alle Benutzerfelder fuer eine Entity (z.B. products)."""
         return self._get(f'/userfields/{entity}')
+
+    def get_userfield_definitions(self, entity=None):
+        """Liefert alle Userfield-Definitionen (optional gefiltert auf eine Entity)."""
+        defs = self._get('/objects/userfields')
+        if entity:
+            defs = [d for d in defs if d.get('entity') == entity]
+        return defs
+
+    def create_userfield_definition(self, entity, name, caption,
+                                    ftype='number-decimal',
+                                    show_as_column_in_tables=1):
+        """Legt ein neues Userfield in Grocy an."""
+        return self._post('/objects/userfields', {
+            'entity': entity,
+            'name': name,
+            'caption': caption,
+            'type': ftype,
+            'show_as_column_in_tables': int(bool(show_as_column_in_tables)),
+        })
+
+    def ensure_userfield(self, entity, name, caption,
+                         ftype='number-decimal',
+                         show_as_column_in_tables=1):
+        """Stellt sicher, dass ein Userfield existiert. Legt es ggf. an.
+
+        Gibt True zurueck, wenn das Feld neu angelegt wurde, sonst False.
+        """
+        try:
+            existing = self.get_userfield_definitions(entity)
+        except Exception:
+            existing = []
+        if any(d.get('name') == name for d in existing):
+            return False
+        self.create_userfield_definition(
+            entity, name, caption, ftype, show_as_column_in_tables
+        )
+        return True
+
+    def get_product_userfields(self, product_id):
+        """Liest die Userfield-Werte eines Produkts."""
+        try:
+            return self._get(f'/userfields/products/{product_id}')
+        except Exception:
+            return {}
 
     def set_product_userfields(self, product_id, userfields):
         """Setzt Benutzerfelder fuer ein Produkt.

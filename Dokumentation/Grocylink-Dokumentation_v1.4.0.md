@@ -1,6 +1,6 @@
 # Grocylink - Dokumentation
 
-Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://grocy.info/)-Instanz ueberwacht und automatisch Benachrichtigungen versendet, wenn Produkte bald ablaufen, bereits abgelaufen sind oder der Mindestbestand unterschritten wird. Zusaetzlich synchronisiert Grocylink Tasks und Chores bidirektional mit einem CalDAV-Server und kann PDF-Kassenbons einlesen, Produkte extrahieren und als Bestand buchen.
+Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://grocy.info/)-Instanz ueberwacht und automatisch Benachrichtigungen versendet, wenn Produkte bald ablaufen, bereits abgelaufen sind oder der Mindestbestand unterschritten wird. Zusaetzlich synchronisiert Grocylink Tasks und Chores bidirektional mit einem CalDAV-Server, schiebt benoetigte Eintraege auf eine **Bring!-Einkaufsliste** und kann PDF-Kassenbons einlesen, Produkte extrahieren und als Bestand buchen.
 
 ## Inhaltsverzeichnis
 
@@ -16,6 +16,7 @@ Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://gr
   - [Benachrichtigungskanaele](#benachrichtigungskanaele)
   - [Individuelle Warntage](#individuelle-warntage)
   - [CalDAV-Synchronisation](#caldav-synchronisation)
+  - [Bring!-Synchronisation](#bring-synchronisation)
   - [Kassenbon-Scanner](#kassenbon-scanner)
 - [Reverse Proxy / HTTPS](#reverse-proxy--https)
 - [Sicherheit](#sicherheit)
@@ -37,6 +38,7 @@ Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://gr
 - **Responsives Design** fuer Desktop und Mobilgeraete
 - **Verschluesselte Speicherung** aller Passwoerter und API-Keys
 - **CalDAV-Synchronisation**: Bidirektionale Sync von Grocy Tasks und Chores als VTODO-Eintraege
+- **Bring!-Synchronisation**: Grocy-Einkaufsliste oder Mindestbestand-Lueckenliste auf eine Bring!-Liste schieben, mit Auto-Remove und Per-Produkt-Overrides
 - **Kassenbon-Scanner**: PDF-Kassenbons hochladen oder per Ordnerueberwachung einlesen, Produkte und Preise per OCR extrahieren, automatisch Grocy-Produkten zuordnen und als Bestand buchen
 - **Mehrsprachig**: Deutsch und Englisch
 - **Non-Root Container**: Laeuft ohne Root-Rechte mit minimalen Berechtigungen
@@ -53,17 +55,18 @@ Grocylink ist eine Webapplikation, die den Lagerbestand einer [Grocy](https://gr
 └─────────────┘                └──────────────┘    └─────┬─────┘
                                (extern, z.B.             │
                                 Caddy, Traefik,          │
-                                Nginx)          ┌────────┼────────┐
-                                                │        │        │        │
-                                           ┌────▼───┐┌───▼───┐┌──▼─────┐┌─▼───────┐
-                                           │ SQLite ││ Grocy ││Notifier││ CalDAV  │
-                                           │  (DB)  ││  API  ││ Email, ││ Server  │
-                                           └────────┘└───────┘│Pushover││(VTODO)  │
-                                                              │Telegram│└─────────┘
-                                                              │ Slack, │
-                                                              │Discord,│
-                                                              │ Gotify │
-                                                              └────────┘
+                                Nginx)                   │
+                            ┌────────┬───────────┬───────┼────────┬─────────┐
+                            │        │           │       │        │         │
+                       ┌────▼───┐┌───▼───┐┌──────▼──┐┌───▼────┐┌──▼─────┐┌─▼───────┐
+                       │ SQLite ││ Grocy ││ Notifier││ CalDAV ││ Bring! ││  OFF    │
+                       │  (DB)  ││  API  ││ Email,  ││ Server ││  API   ││ (OCR)   │
+                       └────────┘└───────┘│ Pushover││(VTODO) │└────────┘└─────────┘
+                                          │ Telegram│└────────┘
+                                          │ Slack,  │
+                                          │ Discord,│
+                                          │ Gotify  │
+                                          └─────────┘
 ```
 
 ### Projektstruktur
@@ -77,6 +80,7 @@ grocy/
 ├── notifiers.py        # Notification-Provider (6 Stueck)
 ├── scheduler.py        # Automatische Check-Logik
 ├── caldav_sync.py      # CalDAV-Synchronisation (VTODO bidirektional)
+├── bring_sync.py       # Bring!-Synchronisation (Grocy → Bring, async)
 ├── receipt_scanner.py  # Kassenbon-Pipeline (OCR, Parsing, Matching)
 ├── crypto.py           # Fernet-Verschluesselung fuer sensible Daten
 ├── requirements.txt    # Python-Dependencies
@@ -620,6 +624,69 @@ Grocylink kann Tasks und Chores aus Grocy bidirektional mit einem CalDAV-Server 
 
 Die Tabelle "Sync-Mapping" auf der CalDAV-Seite zeigt alle synchronisierten Eintraege mit Typ, Grocy-ID, CalDAV-UID, aktuellem Status, Sync-Richtung und Zeitpunkt der letzten Synchronisation.
 
+### Bring!-Synchronisation
+
+Grocylink kann Eintraege aus Grocy auf eine [Bring!](https://www.getbring.com/)-Einkaufsliste schieben. Die Integration ist als eigener Sync-Layer implementiert (analog zum CalDAV-Sync), nicht als klassischer Notification-Channel - Bring! ist eine zustandsbehaftete Liste mit Items, Mengen und Status, kein Stateless-Push-Kanal.
+
+> **Wichtig:** Bring! Labs bietet keine offizielle, dokumentierte API. Grocylink nutzt die reverse-engineered Library [`miaucl/bring-api`](https://pypi.org/project/bring-api/), die auch die Basis fuer die offizielle Home-Assistant-Bring!-Integration bildet. Da die App-API von Bring! nicht stabil zugesichert ist, kann sich das Verhalten jederzeit aendern. Grocylink ist nicht mit Bring! Labs AG affiliiert.
+
+#### Setup
+
+1. Im Tab **Bring!** in der Sidebar Bring!-E-Mail und Passwort eintragen
+2. **Verbindung testen** - bei Erfolg werden alle verfuegbaren Listen-Namen angezeigt
+3. **Listen laden** klicken und im Dropdown die gewuenschte Liste auswaehlen
+4. **Quelle** waehlen:
+   - `Grocy-Einkaufsliste` (Default): die explizite Grocy-Shoppinglist wird auf Bring! gespiegelt
+   - `Mindestbestand unterschritten`: nur Produkte, deren Bestand unter dem konfigurierten Minimum liegt
+5. **Sync-Intervall** (Standard 30 Min) und ggf. **Auto-Remove** aktivieren
+6. Checkbox **Automatische Synchronisation aktiviert** setzen und **speichern**
+
+#### Datenfluss (v1: unidirektional Grocy -> Bring!)
+
+```
+Grocy (Shoppinglist | Volatile/Missing)
+  -> Soll-Items aufbauen (Name, Menge, QU)
+  -> Per-Produkt-Override anwenden (hide_from_bring, custom_name, custom_spec)
+  -> Bring-Liste laden + Match ueber UUID-Mapping bzw. Name
+  -> save_item / update_item / remove_item
+  -> sync_map aktualisieren (grocy_product_id <-> bring_item_uuid)
+```
+
+Bidirektionaler Sync (Items in Bring! abhaken -> Grocy aktualisieren) ist fuer eine Folgeversion vorgesehen.
+
+#### Item-Naming
+
+- Der Bring!-Item-Name kommt aus dem Grocy-Produktnamen (oder dem Per-Produkt-Override `custom_name`)
+- Bring matcht Item-Namen gegen einen internen Katalog fuer Icons - kanonische Namen wie *Milch*, *Brot* erkennen das System besser als Marken-Bezeichnungen
+- Der **Spec** (Detail-Feld) wird als `<Menge> <Mengeneinheit>` gebaut. Plural-Formen aus Grocy werden bei Mengen >1 verwendet
+- Das in der Bring-API problematische Zeichen `%` wird automatisch durch `Prozent` ersetzt
+
+#### Per-Produkt-Overrides
+
+Pro Grocy-Produkt koennen folgende Overrides in der Tabelle `bring_item_overrides` gesetzt werden:
+
+| Feld              | Bedeutung                                                       |
+|-------------------|-----------------------------------------------------------------|
+| `hide_from_bring` | Produkt wird nicht auf die Bring!-Liste geschoben (Default 0)   |
+| `custom_name`     | Abweichender Name auf Bring! (z.B. "Vollmilch" statt "Bio-Milch") |
+| `custom_spec`     | Festes Spec-Feld (uebersteuert die automatische Mengen-Logik)   |
+
+Verwaltbar via REST-API `POST /api/bring/overrides`.
+
+#### Auto-Remove
+
+Wenn `bring_auto_remove=1` gesetzt ist, entfernt Grocylink Items, die im **sync_map** stehen, aber im aktuellen Soll-Set nicht mehr vorhanden sind, automatisch von der Bring!-Liste. **Default ist aus** - nutzt Du diese Option, wird die Bring!-Liste effektiv von Grocy autoritativ kontrolliert.
+
+#### Sync-Mapping
+
+Die Tabelle "Sync-Mapping" auf der Bring!-Seite zeigt: Grocy-Produkt-ID, Bring!-Item-Name, Spec, Bring-UUID und Zeitpunkt der letzten Synchronisation. Ueber **Mapping leeren** kann das Mapping zurueckgesetzt werden, ohne Items in Bring! anzufassen.
+
+#### Hinweise
+
+- Sparsam pollen - Rate-Limits der Bring-API sind nicht dokumentiert. UI erlaubt minimal 5 Min Intervall
+- Item-Umbenennung per UUID ist technisch moeglich, aber die Bring!-App zeigt den neuen Namen erst nach komplettem Reload an - daher wird auf Rename verzichtet (Items mit anderem Namen werden als neue Items angelegt)
+- Items, die manuell in Bring! abgehakt werden, landen in `recently` und werden bei der naechsten Sync nicht erneut hinzugefuegt, solange sie noch in der `recently`-Liste stehen
+
 ### Kassenbon-Scanner
 
 Grocylink kann PDF-Kassenbons einlesen, Produkte und Preise extrahieren und als Bestandsbuchungen in Grocy uebernehmen. Sowohl digital erstellte PDFs als auch gescannte Kassenbons (per OCR) werden unterstuetzt.
@@ -880,6 +947,14 @@ Alle API-Endpunkte unter `/api/`:
 | `GET` | `/api/caldav/calendars` | Verfuegbare Kalender abrufen |
 | `POST` | `/api/caldav/sync-now` | Manuelle Synchronisation ausloesen |
 | `GET` | `/api/caldav/map` | Sync-Mapping-Tabelle abrufen |
+| `GET` | `/api/bring/status` | Bring!-Sync-Status und Statistiken |
+| `POST` | `/api/bring/test` | Bring!-Login testen |
+| `GET` | `/api/bring/lists` | Verfuegbare Bring!-Listen abrufen |
+| `POST` | `/api/bring/sync-now` | Manuelle Bring!-Synchronisation ausloesen |
+| `GET` | `/api/bring/map` | Bring!-Sync-Mapping abrufen |
+| `DELETE` | `/api/bring/map` | Bring!-Sync-Mapping leeren |
+| `GET` | `/api/bring/overrides` | Per-Produkt-Overrides abrufen |
+| `POST` | `/api/bring/overrides` | Per-Produkt-Override setzen/loeschen |
 | `GET` | `/api/receipts` | Alle Kassenbons auflisten |
 | `GET` | `/api/receipts/<id>` | Einzelner Kassenbon mit Items |
 | `POST` | `/api/receipts/upload` | PDF-Kassenbon hochladen (multipart/form-data) |
@@ -946,6 +1021,14 @@ Unter Einstellungen die Checkbox "SSL-Zertifikat verifizieren" deaktivieren. Die
 4. **Benutzername/Passwort**: Bei Nextcloud ggf. ein App-Passwort verwenden
 5. **Firewall**: Der CalDAV-Server muss vom Container aus erreichbar sein
 6. **Log pruefen**: Im Container-Log (`docker compose logs -f`) erscheinen detaillierte Sync-Meldungen
+
+### Bring!-Sync funktioniert nicht
+
+1. **Verbindung testen**: Im Tab "Bring!" auf "Verbindung testen" klicken. Bei Erfolg werden alle Listen-Namen ausgegeben.
+2. **Login-Daten**: Bring!-E-Mail und Passwort eingeben - Bring! akzeptiert nur Mail/Passwort, kein Token. Bei aktivierter Zwei-Faktor-Authentifizierung im Bring!-Konto kann der Login fehlschlagen.
+3. **Liste auswaehlen**: Vor dem Speichern muss eine Liste im Dropdown ausgewaehlt sein. **Listen laden** klicken, dann auswaehlen.
+4. **Quelle pruefen**: Bei Quelle `Grocy-Einkaufsliste` muss die Liste in Grocy auch Eintraege haben. Bei Quelle `Mindestbestand` brauchen Produkte einen `min_stock_amount` > 0.
+5. **Inoffizielle API**: Sollte sich die Bring-API geaendert haben, kann es zu Library-Fehlern kommen. In dem Fall `bring-api` in `requirements.txt` auf eine neuere Version anheben oder im `notification_log` (Typ `bring_sync`) den Fehler einsehen.
 
 ### Kassenbon-Scanner erkennt keine Produkte
 
